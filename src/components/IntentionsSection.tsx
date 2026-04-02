@@ -1,0 +1,73 @@
+import React from 'react';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {colors, fonts} from '../theme';
+
+interface Props {
+  intentions: [string, string, string];
+  onChange: (index: number, text: string) => void;
+  title?: string;
+  placeholders?: [string, string, string];
+}
+
+export default function IntentionsSection({
+  intentions,
+  onChange,
+  title = 'Three intentions for tomorrow',
+  placeholders = [
+    'First intention for tomorrow...',
+    'Second intention for tomorrow...',
+    'Third intention for tomorrow...',
+  ],
+}: Props) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {([0, 1, 2] as const).map(idx => (
+        <View key={idx} style={styles.row}>
+          <Text style={styles.num}>{idx + 1}.</Text>
+          <TextInput
+            style={styles.input}
+            value={intentions[idx]}
+            onChangeText={text => onChange(idx, text)}
+            placeholder={placeholders[idx]}
+            placeholderTextColor={colors.line}
+          />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {marginBottom: 24},
+  sectionTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: colors.muted,
+    marginBottom: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingVertical: 6,
+  },
+  num: {
+    fontFamily: fonts.serifBold,
+    fontSize: 15,
+    color: colors.accent,
+    minWidth: 20,
+  },
+  input: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 28,
+    padding: 0,
+  },
+});
