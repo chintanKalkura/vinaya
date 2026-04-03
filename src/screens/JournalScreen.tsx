@@ -274,8 +274,6 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   saveRow: {
-    ...saveStyles.saveRow,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
+    ...saveStyles.saveRow
   },
 });
