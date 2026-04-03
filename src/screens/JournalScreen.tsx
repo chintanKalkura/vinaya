@@ -1,11 +1,11 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
+  NativeModules,
   ScrollView,
   StyleSheet,
   View,
   Text,
   Pressable,
-  Animated,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ChallengeConfig, DayLog, HabitState, IntentionResult, MoodGroup, WinState} from '../types';
@@ -22,6 +22,11 @@ import {
   toDateKey,
 } from '../utils/dates';
 import {loadAllLogs, loadConfig, makeEmptyLog, saveLog} from '../storage/storage';
+import {
+  cancelDayReminder,
+  requestPermission,
+  scheduleAllReminders,
+} from '../notifications/reminders';
 import ChallengeHeader from '../components/ChallengeHeader';
 import DateNav from '../components/DateNav';
 import StatsBar from '../components/StatsBar';
@@ -32,8 +37,10 @@ import MoodSection from '../components/MoodSection';
 import JournalSection from '../components/JournalSection';
 import WinSection from '../components/WinSection';
 import IntentionsSection from '../components/IntentionsSection';
-import {colors, fonts} from '../theme';
+import {colors} from '../theme';
 import {saveStyles} from '../styles/shared';
+
+const {SharedPrefs} = NativeModules;
 
 export default function JournalScreen() {
   const [config, setConfig] = useState<ChallengeConfig>(CHALLENGE_CONFIG);
@@ -44,19 +51,24 @@ export default function JournalScreen() {
     const end = getEndDate(CHALLENGE_CONFIG.startDate, CHALLENGE_CONFIG.totalDays);
     return clampDateKey(today, eve, end);
   });
-  const [savedVisible, setSavedVisible] = useState(false);
-  const savedOpacity = useRef(new Animated.Value(0)).current;
 
-  // Debounce timer ref for text inputs
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     Promise.all([loadConfig(), loadAllLogs()]).then(([cfg, allLogs]) => {
       setConfig(cfg);
       setLogs(allLogs);
+
       const eve = getEveDate(cfg.startDate);
       const end = getEndDate(cfg.startDate, cfg.totalDays);
       setCurrentDateKey(prev => clampDateKey(prev, eve, end));
+
+      // Push challenge dates to widget SharedPreferences
+      SharedPrefs?.setString('start_date', cfg.startDate);
+      SharedPrefs?.setInt('total_days', cfg.totalDays);
+
+      // Schedule daily 10PM reminders for the full challenge
+      requestPermission().then(() => scheduleAllReminders(eve, end));
     });
   }, []);
 
@@ -65,6 +77,8 @@ export default function JournalScreen() {
   const isEve = isEveDay(currentDateKey, config.startDate);
   const dayNum = getDayNumber(currentDateKey, config.startDate);
   const daysLeft = getDaysLeft(currentDateKey, config.startDate, config.totalDays);
+  const todayKey = toDateKey(new Date());
+  const isToday = currentDateKey === todayKey;
 
   const progress = isEve
     ? 0
@@ -86,7 +100,6 @@ export default function JournalScreen() {
     h => currentLog.habits[h.id] === 'done',
   ).length;
 
-  // All habit logs (per-day) for freeze/count tracking
   const allHabitLogs: Record<string, Record<string, HabitState>> = {};
   Object.entries(logs).forEach(([date, log]) => {
     allHabitLogs[date] = log.habits;
@@ -158,21 +171,16 @@ export default function JournalScreen() {
   }
 
   function handleSave() {
-    // Ensure debounced text is flushed immediately
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
       debounceTimer.current = null;
     }
-    showSaved();
   }
 
-  const showSaved = useCallback(() => {
-    Animated.sequence([
-      Animated.timing(savedOpacity, {toValue: 1, duration: 200, useNativeDriver: true}),
-      Animated.delay(1600),
-      Animated.timing(savedOpacity, {toValue: 0, duration: 300, useNativeDriver: true}),
-    ]).start();
-  }, [savedOpacity]);
+  function handleLogged() {
+    updateCurrentLog(prev => ({...prev, logged: true}));
+    cancelDayReminder(currentDateKey);
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -199,6 +207,9 @@ export default function JournalScreen() {
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
             onSave={handleSave}
+            onLogged={handleLogged}
+            isToday={isToday}
+            isLogged={!!currentLog.logged}
           />
         ) : (
           <>
@@ -232,12 +243,20 @@ export default function JournalScreen() {
               onChange={handleIntentionChange}
             />
             <View style={styles.saveRow}>
-              <Animated.Text style={[saveStyles.savedMsg, {opacity: savedOpacity}]}>
-                Saved.
-              </Animated.Text>
               <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
                 <Text style={saveStyles.saveBtnText}>Save entry</Text>
               </Pressable>
+              {isToday && (
+                <Pressable
+                  style={
+                    currentLog.logged
+                      ? saveStyles.saveBtnLogged
+                      : saveStyles.saveBtn
+                  }
+                  onPress={handleLogged}>
+                  <Text style={saveStyles.saveBtnText}>Logged</Text>
+                </Pressable>
+              )}
             </View>
           </>
         )}
@@ -255,6 +274,8 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   saveRow: {
-    ...saveStyles.saveRow
+    ...saveStyles.saveRow,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
 });

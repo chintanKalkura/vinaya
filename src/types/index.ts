@@ -23,4 +23,5 @@ export interface DayLog {
   win: WinState;
   intentions: [string, string, string];
   intentionResults: [IntentionResult, IntentionResult, IntentionResult];
+  logged?: boolean;
 }

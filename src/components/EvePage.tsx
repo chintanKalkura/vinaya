@@ -1,5 +1,5 @@
-import React, {useRef, useState} from 'react';
-import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
+import React from 'react';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import IntentionsSection from './IntentionsSection';
 import {saveStyles} from '../styles/shared';
 import {colors, fonts} from '../theme';
@@ -8,22 +8,19 @@ interface Props {
   intentions: [string, string, string];
   onIntentionChange: (index: number, text: string) => void;
   onSave: () => void;
+  onLogged: () => void;
+  isToday: boolean;
+  isLogged: boolean;
 }
 
-export default function EvePage({intentions, onIntentionChange, onSave}: Props) {
-  const [saved, setSaved] = useState(false);
-  const opacity = useRef(new Animated.Value(0)).current;
-
-  function handleSave() {
-    onSave();
-    setSaved(true);
-    Animated.sequence([
-      Animated.timing(opacity, {toValue: 1, duration: 200, useNativeDriver: true}),
-      Animated.delay(1600),
-      Animated.timing(opacity, {toValue: 0, duration: 300, useNativeDriver: true}),
-    ]).start(() => setSaved(false));
-  }
-
+export default function EvePage({
+  intentions,
+  onIntentionChange,
+  onSave,
+  onLogged,
+  isToday,
+  isLogged,
+}: Props) {
   return (
     <View>
       <Text style={styles.intro}>
@@ -41,10 +38,16 @@ export default function EvePage({intentions, onIntentionChange, onSave}: Props) 
         ]}
       />
       <View style={saveStyles.saveRow}>
-        <Animated.Text style={[saveStyles.savedMsg, {opacity}]}>Saved.</Animated.Text>
-        <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
+        <Pressable style={saveStyles.saveBtn} onPress={onSave}>
           <Text style={saveStyles.saveBtnText}>Save</Text>
         </Pressable>
+        {isToday && (
+          <Pressable
+            style={isLogged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
+            onPress={onLogged}>
+            <Text style={saveStyles.saveBtnText}>Logged</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
