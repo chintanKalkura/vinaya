@@ -1,44 +1,39 @@
 import {ChallengeConfig, HabitDefinition, MoodGroup} from '../types';
 
-// Change startDate to your actual Day 1.
-// The eve page (Day 0) is derived as startDate - 1 day.
 export const CHALLENGE_CONFIG: ChallengeConfig = {
-  title: 'The Grind',
-  startDate: '2026-04-03',
+  title: 'Vinaya goals for 21 days',
+  startDate: '2026-04-04',
   totalDays: 21,
 };
 
-export const FREEZE_UNLOCK_DAY = 15;
-
 export const HABIT_LIST: HabitDefinition[] = [
-  {id: 'celibacy', name: 'Celibacy', isKeystone: true},
-  {id: 'meditation_eve', name: 'Evening Meditation \u00b7 1 hr min \u00b7 daily'},
-  {id: 'meditation_morn', name: 'Morning Meditation \u00b7 1 hr min \u00b7 3\u00d7/wk'},
-  {id: 'yoga', name: 'Yoga \u00b7 10 min min \u00b7 4\u00d7/wk'},
-  {id: 'cooking', name: 'Cook or order healthy'},
-  {id: 'nojunk', name: 'No junk food'},
-  {id: 'dhamma', name: 'Dhamma study'},
-  {id: 'reading', name: 'Read \u00b7 1 page min'},
-  {id: 'speech', name: 'Right speech'},
-  {id: 'job', name: 'Job change action'},
-  {id: 'nomobile', name: 'No mobile on bed'},
-  {id: 'entertainment', name: 'Entertainment \u2264 1 hr'},
-  {id: 'nosmoking', name: 'No smoking'},
-  {id: 'wakeup', name: 'Wake before 7am'},
-  {id: 'run', name: 'Run \u00b7 1 km min \u00b7 4\u00d7/wk'},
-  {id: 'writing', name: 'Write \u00b7 1 para min \u00b7 3\u00d7/wk'},
+  {id: 'celibacy',       name: 'Celibacy',             isKeystone: true, maxCount: 21},
+  {id: 'meditation',     name: '1 hr Meditation',                        maxCount: 15},
+  {id: 'sutta',          name: 'Sutta a day',                            maxCount: 21},
+  {id: 'right_speech',   name: 'Right Speech',                           maxCount: 21},
+  {id: 'no_smoking',     name: 'No smoking',                             maxCount: 21},
+  {id: 'no_junk',        name: 'No junk food',                           maxCount: 21},
+  {id: 'suryanamaskara', name: '21 Suryanamaskara',                      maxCount: 10},
+  {id: 'cook_chores',    name: 'Cook or Chores',                         maxCount: 21},
+  {id: 'read',           name: 'Read',                                   maxCount: 15},
+  {id: 'job_hunt',       name: 'Job hunt',                               maxCount: 15},
+  {id: 'entertainment',  name: 'Entertainment \u2264 1 hr',              maxCount: 21},
+  {id: 'write',          name: 'Write',                                  maxCount: 10},
+  {id: 'wakeup',         name: 'Wake before 8',                          maxCount: 21},
+  {id: 'no_mobile',      name: 'No mobile on bed',                       maxCount: 21},
+  {id: 'run',            name: 'Run',                                    maxCount:  6},
 ];
 
 export const MOOD_OPTIONS: Record<MoodGroup, string[]> = {
-  viriya: ['Charged', 'Steady', 'Low', 'Drained'],
-  samadhi: ['Laser', 'Clear', 'Wandering', 'Scattered'],
-  vedana: ['Equanimous', 'Content', 'Restless', 'Irritable'],
+  viriya:     ['Charged', 'Steady', 'Low', 'Drained'],
+  samadhi:    ['Laser', 'Clear', 'Wandering', 'Scattered'],
+  vedana:     ['Equanimous', 'Content', 'Restless', 'Irritable'],
   sampajanna: ['Unbroken', 'Sustained', 'Sporadic', 'Lost'],
 };
 
 export const MOOD_LABELS: Record<MoodGroup, string> = {
-  viriya: 'Viriya',
-  samadhi: 'Sam\u0101dhi',
-  vedana: 'Vedan\u0101',
+  viriya:     'Viriya',
+  samadhi:    'Sam\u0101dhi',
+  vedana:     'Vedan\u0101',
   sampajanna: 'Sampaja\u00f1\u00f1a',
 };

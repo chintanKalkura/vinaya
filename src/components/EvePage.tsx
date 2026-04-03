@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
 import IntentionsSection from './IntentionsSection';
+import {saveStyles} from '../styles/shared';
 import {colors, fonts} from '../theme';
 
 interface Props {
@@ -26,8 +27,8 @@ export default function EvePage({intentions, onIntentionChange, onSave}: Props) 
   return (
     <View>
       <Text style={styles.intro}>
-        Tomorrow begins the 21 days. No quarter. Write three intentions for Day
-        1 — what past-you is committing to.
+        Tomorrow begins the 21 days. No quarter. Write down three intentions for Day
+        1.
       </Text>
       <IntentionsSection
         intentions={intentions}
@@ -39,10 +40,10 @@ export default function EvePage({intentions, onIntentionChange, onSave}: Props) 
           'Third intention...',
         ]}
       />
-      <View style={styles.saveRow}>
-        <Animated.Text style={[styles.savedMsg, {opacity}]}>Saved.</Animated.Text>
-        <Pressable style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveBtnText}>Save</Text>
+      <View style={saveStyles.saveRow}>
+        <Animated.Text style={[saveStyles.savedMsg, {opacity}]}>Saved.</Animated.Text>
+        <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
+          <Text style={saveStyles.saveBtnText}>Save</Text>
         </Pressable>
       </View>
     </View>
@@ -59,30 +60,5 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-  },
-  saveRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  savedMsg: {
-    fontFamily: fonts.bodyItalic,
-    fontSize: 13,
-    color: colors.done,
-  },
-  saveBtn: {
-    backgroundColor: colors.ink,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-  },
-  saveBtnText: {
-    fontFamily: fonts.serif,
-    fontSize: 14,
-    color: colors.paper,
-    letterSpacing: 0.5,
   },
 });

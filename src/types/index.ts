@@ -1,4 +1,4 @@
-export type HabitState = 'none' | 'done' | 'frozen';
+export type HabitState = 'none' | 'done';
 export type IntentionResult = 'no' | 'yes' | 'partial';
 export type WinState = 'won' | 'lost' | 'fought' | null;
 export type MoodGroup = 'viriya' | 'samadhi' | 'vedana' | 'sampajanna';
@@ -7,6 +7,7 @@ export interface HabitDefinition {
   id: string;
   name: string;
   isKeystone?: boolean;
+  maxCount: number;
 }
 
 export interface ChallengeConfig {

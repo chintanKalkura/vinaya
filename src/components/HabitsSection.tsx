@@ -2,104 +2,54 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import {HabitDefinition, HabitState} from '../types';
 import {colors, fonts} from '../theme';
-import {FREEZE_UNLOCK_DAY} from '../config/challenge';
 
 interface Props {
   habits: HabitDefinition[];
   habitStates: Record<string, HabitState>;
   allLogs: Record<string, Record<string, HabitState>>;
-  dayNum: number;
-  totalDays: number;
   onToggle: (habitId: string) => void;
-  onFreeze: (habitId: string) => void;
 }
 
 function getDoneCount(
   habitId: string,
   allLogs: Record<string, Record<string, HabitState>>,
 ): number {
-  return Object.values(allLogs).filter(
-    h => h[habitId] === 'done' || h[habitId] === 'frozen',
-  ).length;
-}
-
-function isFreezeUsed(
-  habitId: string,
-  allLogs: Record<string, Record<string, HabitState>>,
-): boolean {
-  return Object.values(allLogs).some(h => h[habitId] === 'frozen');
+  return Object.values(allLogs).filter(h => h[habitId] === 'done').length;
 }
 
 export default function HabitsSection({
   habits,
   habitStates,
   allLogs,
-  dayNum,
-  totalDays,
   onToggle,
-  onFreeze,
 }: Props) {
-  const freezeUnlocked = dayNum > FREEZE_UNLOCK_DAY;
-
-  // Extract only the habit maps from allLogs
-  const habitLogs: Record<string, Record<string, HabitState>> = {};
-  Object.entries(allLogs).forEach(([date, log]) => {
-    habitLogs[date] = log;
-  });
-
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Habits</Text>
       {habits.map(habit => {
         const state = habitStates[habit.id] ?? 'none';
-        const done = getDoneCount(habit.id, habitLogs);
-        const freezeUsed = isFreezeUsed(habit.id, habitLogs);
-        const canFreeze = freezeUnlocked && !freezeUsed;
+        const done = getDoneCount(habit.id, allLogs);
 
         return (
           <Pressable
             key={habit.id}
             onPress={() => onToggle(habit.id)}
             style={[styles.row, habit.isKeystone && styles.keystoneRow]}>
-            <View
-              style={[
-                styles.check,
-                state === 'done' && styles.checkDone,
-                state === 'frozen' && styles.checkFrozen,
-              ]}>
+            <View style={[styles.check, state === 'done' && styles.checkDone]}>
               {state === 'done' && <Text style={styles.checkMark}>✓</Text>}
-              {state === 'frozen' && <Text style={styles.checkMark}>❄</Text>}
             </View>
             <Text
               style={[
                 styles.name,
                 habit.isKeystone && styles.keystoneName,
                 state === 'done' && styles.nameDone,
-                state === 'frozen' && styles.nameFrozen,
               ]}>
               {habit.isKeystone ? '★ ' : ''}
               {habit.name}
             </Text>
             <Text style={[styles.count, state === 'done' && styles.countDone]}>
-              {done}/{totalDays}
+              {done}/{habit.maxCount}
             </Text>
-            {(canFreeze || state === 'frozen') && (
-              <Pressable
-                onPress={e => {
-                  e.stopPropagation?.();
-                  onFreeze(habit.id);
-                }}
-                style={styles.freezeBtn}
-                hitSlop={8}>
-                <Text
-                  style={[
-                    styles.freezeBtnText,
-                    state === 'frozen' && styles.freezeBtnActive,
-                  ]}>
-                  ❄
-                </Text>
-              </Pressable>
-            )}
           </Pressable>
         );
       })}
@@ -141,7 +91,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   checkDone: {backgroundColor: colors.done, borderColor: colors.done},
-  checkFrozen: {backgroundColor: colors.freeze, borderColor: colors.freeze},
   checkMark: {fontSize: 10, color: '#fff'},
   name: {
     flex: 1,
@@ -151,7 +100,6 @@ const styles = StyleSheet.create({
   },
   keystoneName: {fontFamily: fonts.bodyMedium},
   nameDone: {color: colors.done},
-  nameFrozen: {color: colors.freeze, fontFamily: fonts.bodyItalic},
   count: {
     fontFamily: fonts.bodyItalic,
     fontSize: 12,
@@ -160,7 +108,4 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   countDone: {color: colors.done},
-  freezeBtn: {paddingHorizontal: 6},
-  freezeBtnText: {fontSize: 14, color: colors.line},
-  freezeBtnActive: {color: colors.freeze},
 });

@@ -33,6 +33,7 @@ import JournalSection from '../components/JournalSection';
 import WinSection from '../components/WinSection';
 import IntentionsSection from '../components/IntentionsSection';
 import {colors, fonts} from '../theme';
+import {saveStyles} from '../styles/shared';
 
 export default function JournalScreen() {
   const [config, setConfig] = useState<ChallengeConfig>(CHALLENGE_CONFIG);
@@ -112,16 +113,7 @@ export default function JournalScreen() {
   function handleHabitToggle(habitId: string) {
     updateCurrentLog(prev => {
       const current = prev.habits[habitId] ?? 'none';
-      const next: HabitState =
-        current === 'none' || current === 'frozen' ? 'done' : 'none';
-      return {...prev, habits: {...prev.habits, [habitId]: next}};
-    });
-  }
-
-  function handleFreeze(habitId: string) {
-    updateCurrentLog(prev => {
-      const current = prev.habits[habitId] ?? 'none';
-      const next: HabitState = current === 'frozen' ? 'none' : 'frozen';
+      const next: HabitState = current === 'done' ? 'none' : 'done';
       return {...prev, habits: {...prev.habits, [habitId]: next}};
     });
   }
@@ -224,10 +216,7 @@ export default function JournalScreen() {
               habits={HABIT_LIST}
               habitStates={currentLog.habits}
               allLogs={allHabitLogs}
-              dayNum={dayNum}
-              totalDays={config.totalDays}
               onToggle={handleHabitToggle}
-              onFreeze={handleFreeze}
             />
             <MoodSection
               moods={currentLog.moods}
@@ -243,11 +232,11 @@ export default function JournalScreen() {
               onChange={handleIntentionChange}
             />
             <View style={styles.saveRow}>
-              <Animated.Text style={[styles.savedMsg, {opacity: savedOpacity}]}>
+              <Animated.Text style={[saveStyles.savedMsg, {opacity: savedOpacity}]}>
                 Saved.
               </Animated.Text>
-              <Pressable style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveBtnText}>Save entry</Text>
+              <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
+                <Text style={saveStyles.saveBtnText}>Save entry</Text>
               </Pressable>
             </View>
           </>
@@ -266,28 +255,6 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   saveRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  savedMsg: {
-    fontFamily: fonts.bodyItalic,
-    fontSize: 13,
-    color: colors.done,
-  },
-  saveBtn: {
-    backgroundColor: colors.ink,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-  },
-  saveBtnText: {
-    fontFamily: fonts.serif,
-    fontSize: 14,
-    color: colors.paper,
-    letterSpacing: 0.5,
+    ...saveStyles.saveRow
   },
 });

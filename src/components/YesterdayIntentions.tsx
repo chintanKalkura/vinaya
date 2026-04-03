@@ -43,7 +43,11 @@ export default function YesterdayIntentions({
               <Pressable
                 onPress={() => onResultChange(idx, nextResult(results[idx]))}
                 style={styles.toggle}>
-                <Text style={[styles.toggleText, results[idx] !== 'no' && styles.toggleActive]}>
+                <Text style={[
+                  styles.toggleText,
+                  results[idx] === 'no' && styles.toggleDefault,
+                  results[idx] !== 'no' && styles.toggleActive,
+                ]}>
                   {resultLabel(results[idx])}
                 </Text>
               </Pressable>
@@ -92,9 +96,8 @@ const styles = StyleSheet.create({
   toggle: {padding: 8},
   toggleText: {
     fontSize: 16,
-    color: colors.line,
+    color: colors.muted,
   },
-  toggleActive: {
-    color: colors.accent,
-  },
+  toggleDefault: {fontSize: 20},
+  toggleActive: {color: colors.accent},
 });

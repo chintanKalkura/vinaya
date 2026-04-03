@@ -16,11 +16,14 @@ A personal discipline tracker and journal. 21-day challenge. Fully offline. Andr
 
 **Challenge structure:**
 - Runs for 21 days
-- 1 streak freeze available per challenge, unlocks after day 15
 - An eve page (day 0) exists for setting intentions before the challenge begins
 
 **Daily entry contains:**
-- Habit completions (list TBD — placeholder for now)
+- Habit completions — 15 habits, each with an individual max target count:
+  Celibacy (keystone/21), 1 hr Meditation/15, Sutta a day/21, Right Speech/21,
+  No smoking/21, No junk food/21, 21 Suryanamaskara/10, Cook or Chores/21,
+  Read/15, Job hunt/15, Entertainment ≤ 1 hr/21, Write/10,
+  Wake before 8/21, No mobile on bed/21, Run/6
 - 4 mood/state readings: Viriya, Samādhi, Vedanā, Sampajañña — each with 4 options
 - Free-form journal text
 - Win/Lost/Fought outcome for the day
