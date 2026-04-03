@@ -5,7 +5,7 @@ import {CHALLENGE_CONFIG} from '../config/challenge';
 const LOGS_KEY = 'vinaya_logs';
 const CONFIG_KEY = 'vinaya_challenge_config';
 
-function emptyLog(): DayLog {
+export function makeEmptyLog(): DayLog {
   return {
     habits: {},
     moods: {},
@@ -18,10 +18,6 @@ function emptyLog(): DayLog {
       IntentionResult,
     ],
   };
-}
-
-export function makeEmptyLog(): DayLog {
-  return emptyLog();
 }
 
 export async function loadConfig(): Promise<ChallengeConfig> {

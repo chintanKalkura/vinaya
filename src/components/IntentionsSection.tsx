@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import {colors, fonts} from '../theme';
+import {sectionTitle as baseSectionTitle} from '../styles/shared';
 
 interface Props {
   intentions: [string, string, string];
@@ -40,14 +41,7 @@ export default function IntentionsSection({
 
 const styles = StyleSheet.create({
   container: {marginBottom: 24},
-  sectionTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: colors.muted,
-    marginBottom: 4,
-  },
+  sectionTitle: {...baseSectionTitle, marginBottom: 4},
   row: {
     flexDirection: 'row',
     alignItems: 'center',

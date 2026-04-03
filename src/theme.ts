@@ -5,7 +5,6 @@ export const colors = {
   muted: '#7a6e5f',
   line: '#c8bfa8',
   done: '#4a7c59',
-  freeze: '#2a5f8f',
 };
 
 export const fonts = {

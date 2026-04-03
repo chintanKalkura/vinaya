@@ -1,6 +1,19 @@
 import {colors, fonts} from '../theme';
 
 /**
+ * Shared section title style. Spread into a local StyleSheet and override
+ * marginBottom if a component needs a different spacing.
+ */
+export const sectionTitle = {
+  fontFamily: fonts.serif,
+  fontSize: 11,
+  letterSpacing: 2,
+  textTransform: 'uppercase' as const,
+  color: colors.muted,
+  marginBottom: 12,
+};
+
+/**
  * Shared save-row styles. Use directly or spread into a local StyleSheet
  * to add overrides (e.g. borderTop in JournalScreen).
  */
@@ -12,11 +25,6 @@ export const saveStyles = {
     marginTop: 24,
     paddingTop: 16,
   },
-  savedMsg: {
-    fontFamily: fonts.bodyItalic,
-    fontSize: 13,
-    color: colors.done,
-  },
   saveBtn: {
     backgroundColor: colors.ink,
     paddingVertical: 10,
@@ -27,5 +35,10 @@ export const saveStyles = {
     fontSize: 14,
     color: colors.paper,
     letterSpacing: 0.5,
+  },
+  saveBtnLogged: {
+    backgroundColor: colors.done,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
   },
 };

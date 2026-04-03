@@ -3,6 +3,7 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 import {MoodGroup} from '../types';
 import {MOOD_LABELS, MOOD_OPTIONS} from '../config/challenge';
 import {colors, fonts} from '../theme';
+import {sectionTitle} from '../styles/shared';
 
 const GROUPS: MoodGroup[] = ['viriya', 'samadhi', 'vedana', 'sampajanna'];
 
@@ -46,14 +47,7 @@ export default function MoodSection({moods, onMoodChange}: Props) {
 
 const styles = StyleSheet.create({
   container: {marginBottom: 8},
-  sectionTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: colors.muted,
-    marginBottom: 12,
-  },
+  sectionTitle,
   group: {marginBottom: 14},
   groupLabel: {
     fontFamily: fonts.bodyItalic,

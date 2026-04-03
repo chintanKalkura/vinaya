@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import {HabitDefinition, HabitState} from '../types';
 import {colors, fonts} from '../theme';
+import {sectionTitle} from '../styles/shared';
 
 interface Props {
   habits: HabitDefinition[];
@@ -59,14 +60,7 @@ export default function HabitsSection({
 
 const styles = StyleSheet.create({
   container: {marginBottom: 28},
-  sectionTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: colors.muted,
-    marginBottom: 12,
-  },
+  sectionTitle,
   row: {
     flexDirection: 'row',
     alignItems: 'center',
