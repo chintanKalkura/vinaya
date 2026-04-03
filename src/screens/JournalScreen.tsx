@@ -146,7 +146,7 @@ export default function JournalScreen() {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       updateCurrentLog(prev => ({...prev, journal: text}));
-    }, 500);
+    }, 1500);
   }
 
   function handleIntentionChange(index: number, text: string) {
@@ -157,7 +157,7 @@ export default function JournalScreen() {
         next[index] = text;
         return {...prev, intentions: next};
       });
-    }, 500);
+    }, 1500);
   }
 
   function handleIntentionResultChange(index: number, result: IntentionResult) {

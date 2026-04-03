@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import {colors, fonts} from '../theme';
 import {sectionTitle as baseSectionTitle} from '../styles/shared';
@@ -9,14 +9,25 @@ interface Props {
 }
 
 export default function JournalSection({value, onChange}: Props) {
+  const [local, setLocal] = useState(value);
+
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
+
+  function handleChange(text: string) {
+    setLocal(text);
+    onChange(text);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Journal</Text>
       <View style={styles.inputWrap}>
         <TextInput
           style={styles.input}
-          value={value}
-          onChangeText={onChange}
+          value={local}
+          onChangeText={handleChange}
           placeholder="Write freely. This is just for you."
           placeholderTextColor={colors.line}
           multiline

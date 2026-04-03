@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import {colors, fonts} from '../theme';
 import {sectionTitle as baseSectionTitle} from '../styles/shared';
@@ -20,6 +20,19 @@ export default function IntentionsSection({
     'Third intention for tomorrow...',
   ],
 }: Props) {
+  const [local, setLocal] = useState<[string, string, string]>(intentions);
+
+  useEffect(() => {
+    setLocal(intentions);
+  }, [intentions]);
+
+  function handleChange(idx: 0 | 1 | 2, text: string) {
+    const next: [string, string, string] = [...local] as [string, string, string];
+    next[idx] = text;
+    setLocal(next);
+    onChange(idx, text);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -28,8 +41,8 @@ export default function IntentionsSection({
           <Text style={styles.num}>{idx + 1}.</Text>
           <TextInput
             style={styles.input}
-            value={intentions[idx]}
-            onChangeText={text => onChange(idx, text)}
+            value={local[idx]}
+            onChangeText={text => handleChange(idx, text)}
             placeholder={placeholders[idx]}
             placeholderTextColor={colors.line}
           />
