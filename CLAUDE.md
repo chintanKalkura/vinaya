@@ -66,3 +66,32 @@ This is a minimal React Native scaffold. The app registers via `index.js` → `A
 **TypeScript** extends `@react-native/typescript-config`; all source files are `.ts`/`.tsx`.
 
 **Android targets** API 24 (min) → 36 (target), New Architecture enabled (`newArchEnabled=true`), Hermes enabled.
+
+## Branching
+At the start of every new session, create a new git branch from main before doing any work. Branch naming: feature-<short-description>, bug-<short-description>, refactor-<short-description>
+
+## Testing
+**Libraries**: Jest + React Native Testing Library
+
+**Coverage**: All new components and utility functions must have tests. Minimum 80% coverage on business logic (habit state, streak calculation, data serialization).
+
+**Naming conventions**:
+Test files should be named as<ComponentName>.test.tsx or <utilName>.test.ts, colocated with the source file.
+Test blocks should follow describe('<ComponentName>') wrapping it('should <behaviour>')
+
+**Standards**:
+Test behaviour, not implementation
+One assertion per test where possible
+Mock AsyncStorage in all tests — never hit real storage in tests
+
+## Bug Fixes
+When a bug is reported follow this process:
+1. Read and understand the issue fully before touching code
+2. Identify the root cause — do not treat symptoms
+3. Write a failing test that reproduces the bug first
+4. Fix the code until the test passes
+5. Confirm no existing tests broke
+
+## Commits
+Do not add co-authored by claude. Write commit messages that describe the short description of the work within 15-20 words.
+Make small, frequent commits. Each commit should represent one logical unit of work — a single component, a single function, a single fix. Do not batch unrelated changes into one commit.
