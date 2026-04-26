@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
+  Keyboard,
   NativeModules,
   ScrollView,
   StyleSheet,
@@ -54,9 +55,38 @@ export default function JournalScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intentionFocused = useRef(false);
+  const journalFocused = useRef(false);
+  const journalY = useRef(0);
+  const [keyboardPadding, setKeyboardPadding] = useState(0);
 
-  function scrollToEnd() {
-    scrollRef.current?.scrollToEnd({animated: true});
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardPadding(kbHeight);
+      requestAnimationFrame(() => {
+        if (intentionFocused.current) {
+          scrollRef.current?.scrollToEnd({animated: true});
+        } else if (journalFocused.current) {
+          scrollRef.current?.scrollTo({y: journalY.current, animated: true});
+        }
+      });
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardPadding(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  function handleIntentionFocus() {
+    intentionFocused.current = true;
+  }
+
+  function handleJournalFocus() {
+    journalFocused.current = true;
   }
 
   useEffect(() => {
@@ -192,7 +222,7 @@ export default function JournalScreen() {
       <ScrollView
         ref={scrollRef}
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, {paddingBottom: 80 + keyboardPadding}]}
         keyboardShouldPersistTaps="handled">
         <ChallengeHeader
           title={config.title}
@@ -212,7 +242,7 @@ export default function JournalScreen() {
           <EvePage
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
-            onIntentionFocus={scrollToEnd}
+            onIntentionFocus={handleIntentionFocus}
             onSave={handleSave}
             onLogged={handleLogged}
             isToday={isToday}
@@ -240,15 +270,18 @@ export default function JournalScreen() {
               moods={currentLog.moods}
               onMoodChange={handleMoodChange}
             />
-            <JournalSection
-              value={currentLog.journal}
-              onChange={handleJournalChange}
-            />
+            <View onLayout={e => { journalY.current = e.nativeEvent.layout.y; }}>
+              <JournalSection
+                value={currentLog.journal}
+                onChange={handleJournalChange}
+                onFocus={handleJournalFocus}
+              />
+            </View>
             <WinSection win={currentLog.win} onSelect={handleWinSelect} />
             <IntentionsSection
               intentions={currentLog.intentions}
               onChange={handleIntentionChange}
-              onFocus={scrollToEnd}
+              onFocus={handleIntentionFocus}
             />
             <View style={styles.saveRow}>
               <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
@@ -279,7 +312,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 24,
     paddingTop: 40,
-    paddingBottom: 80,
   },
   saveRow: {
     ...saveStyles.saveRow

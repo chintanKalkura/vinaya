@@ -6,9 +6,10 @@ import {sectionTitle as baseSectionTitle} from '../styles/shared';
 interface Props {
   value: string;
   onChange: (text: string) => void;
+  onFocus?: () => void;
 }
 
-export default function JournalSection({value, onChange}: Props) {
+export default function JournalSection({value, onChange, onFocus}: Props) {
   const [local, setLocal] = useState(value);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function JournalSection({value, onChange}: Props) {
           style={styles.input}
           value={local}
           onChangeText={handleChange}
+          onFocus={onFocus}
           placeholder="Write freely. This is just for you."
           placeholderTextColor={colors.line}
           multiline
