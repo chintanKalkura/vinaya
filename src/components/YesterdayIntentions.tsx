@@ -8,6 +8,7 @@ interface Props {
   intentions: [string, string, string];
   results: [IntentionResult, IntentionResult, IntentionResult];
   onResultChange: (index: number, result: IntentionResult) => void;
+  readOnly?: boolean;
 }
 
 const CYCLE: IntentionResult[] = ['no', 'yes', 'partial'];
@@ -27,6 +28,7 @@ export default function YesterdayIntentions({
   intentions,
   results,
   onResultChange,
+  readOnly = false,
 }: Props) {
   const hasAny = intentions.some(i => i.trim().length > 0);
   if (!hasAny) return null;
@@ -42,7 +44,7 @@ export default function YesterdayIntentions({
               <Text style={styles.num}>{idx + 1}.</Text>
               <Text style={styles.text}>{intention}</Text>
               <Pressable
-                onPress={() => onResultChange(idx, nextResult(results[idx]))}
+                onPress={() => !readOnly && onResultChange(idx, nextResult(results[idx]))}
                 style={styles.toggle}>
                 <Text style={[
                   styles.toggleText,

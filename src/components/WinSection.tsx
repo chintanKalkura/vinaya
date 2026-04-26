@@ -7,34 +7,18 @@ import {sectionTitle} from '../styles/shared';
 interface Props {
   win: WinState;
   onSelect: (value: WinState) => void;
+  readOnly?: boolean;
 }
 
-export default function WinSection({win, onSelect}: Props) {
+export default function WinSection({win, onSelect, readOnly = false}: Props) {
+  const handler = readOnly ? () => {} : onSelect;
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Did I win the day?</Text>
       <View style={styles.row}>
-        <WinButton
-          label="★ Won it"
-          value="won"
-          current={win}
-          activeStyle={styles.wonActive}
-          onSelect={onSelect}
-        />
-        <WinButton
-          label="✗ Lost it"
-          value="lost"
-          current={win}
-          activeStyle={styles.lostActive}
-          onSelect={onSelect}
-        />
-        <WinButton
-          label="— Fought hard"
-          value="fought"
-          current={win}
-          activeStyle={styles.foughtActive}
-          onSelect={onSelect}
-        />
+        <WinButton label="★ Won it"     value="won"    current={win} activeStyle={styles.wonActive}    onSelect={handler} />
+        <WinButton label="✗ Lost it"    value="lost"   current={win} activeStyle={styles.lostActive}   onSelect={handler} />
+        <WinButton label="— Fought hard" value="fought" current={win} activeStyle={styles.foughtActive} onSelect={handler} />
       </View>
     </View>
   );
