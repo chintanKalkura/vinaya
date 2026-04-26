@@ -52,7 +52,12 @@ export default function JournalScreen() {
     return clampDateKey(today, eve, end);
   });
 
+  const scrollRef = useRef<ScrollView>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function scrollToEnd() {
+    scrollRef.current?.scrollToEnd({animated: true});
+  }
 
   useEffect(() => {
     Promise.all([loadConfig(), loadAllLogs()]).then(([cfg, allLogs]) => {
@@ -185,6 +190,7 @@ export default function JournalScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled">
@@ -206,6 +212,7 @@ export default function JournalScreen() {
           <EvePage
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
+            onIntentionFocus={scrollToEnd}
             onSave={handleSave}
             onLogged={handleLogged}
             isToday={isToday}
@@ -241,6 +248,7 @@ export default function JournalScreen() {
             <IntentionsSection
               intentions={currentLog.intentions}
               onChange={handleIntentionChange}
+              onFocus={scrollToEnd}
             />
             <View style={styles.saveRow}>
               <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
