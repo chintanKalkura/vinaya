@@ -7,9 +7,10 @@ interface Props {
   value: string;
   onChange: (text: string) => void;
   onFocus?: () => void;
+  readOnly?: boolean;
 }
 
-export default function JournalSection({value, onChange, onFocus}: Props) {
+export default function JournalSection({value, onChange, onFocus, readOnly = false}: Props) {
   const [local, setLocal] = useState(value);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function JournalSection({value, onChange, onFocus}: Props) {
           placeholderTextColor={colors.line}
           multiline
           textAlignVertical="top"
+          editable={!readOnly}
         />
       </View>
     </View>

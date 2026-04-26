@@ -10,9 +10,10 @@ const GROUPS: MoodGroup[] = ['viriya', 'samadhi', 'vedana', 'sampajanna'];
 interface Props {
   moods: Partial<Record<MoodGroup, string>>;
   onMoodChange: (group: MoodGroup, value: string) => void;
+  readOnly?: boolean;
 }
 
-export default function MoodSection({moods, onMoodChange}: Props) {
+export default function MoodSection({moods, onMoodChange, readOnly = false}: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>How am I feeling</Text>
@@ -26,10 +27,8 @@ export default function MoodSection({moods, onMoodChange}: Props) {
                 <Pressable
                   key={option}
                   onPress={() =>
-                    onMoodChange(
-                      group,
-                      active ? '' : option.toLowerCase(),
-                    )
+                    !readOnly &&
+                    onMoodChange(group, active ? '' : option.toLowerCase())
                   }
                   style={[styles.pill, active && styles.pillActive]}>
                   <Text style={[styles.pillText, active && styles.pillTextActive]}>

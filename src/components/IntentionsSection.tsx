@@ -9,6 +9,7 @@ interface Props {
   onFocus?: () => void;
   title?: string;
   placeholders?: [string, string, string];
+  readOnly?: boolean;
 }
 
 export default function IntentionsSection({
@@ -21,6 +22,7 @@ export default function IntentionsSection({
     'Second intention for tomorrow...',
     'Third intention for tomorrow...',
   ],
+  readOnly = false,
 }: Props) {
   const [local, setLocal] = useState<[string, string, string]>(intentions);
 
@@ -48,6 +50,7 @@ export default function IntentionsSection({
             onFocus={onFocus}
             placeholder={placeholders[idx]}
             placeholderTextColor={colors.line}
+            editable={!readOnly}
           />
         </View>
       ))}

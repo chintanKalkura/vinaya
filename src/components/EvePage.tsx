@@ -10,6 +10,7 @@ interface Props {
   onIntentionFocus?: () => void;
   onLogged: () => void;
   isLogged: boolean;
+  totalDays: number;
 }
 
 export default function EvePage({
@@ -18,12 +19,13 @@ export default function EvePage({
   onIntentionFocus,
   onLogged,
   isLogged,
+  totalDays,
 }: Props) {
   return (
     <View>
       <Text style={styles.intro}>
-        Tomorrow begins the 21 days. No quarter. Write down three intentions for Day
-        1.
+        Tomorrow begins the {totalDays} days. No quarter. Write down three intentions
+        for Day 1.
       </Text>
       <IntentionsSection
         intentions={intentions}
