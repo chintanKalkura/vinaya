@@ -8,9 +8,7 @@ interface Props {
   intentions: [string, string, string];
   onIntentionChange: (index: number, text: string) => void;
   onIntentionFocus?: () => void;
-  onSave: () => void;
   onLogged: () => void;
-  isToday: boolean;
   isLogged: boolean;
 }
 
@@ -18,9 +16,7 @@ export default function EvePage({
   intentions,
   onIntentionChange,
   onIntentionFocus,
-  onSave,
   onLogged,
-  isToday,
   isLogged,
 }: Props) {
   return (
@@ -41,16 +37,11 @@ export default function EvePage({
         ]}
       />
       <View style={saveStyles.saveRow}>
-        <Pressable style={saveStyles.saveBtn} onPress={onSave}>
-          <Text style={saveStyles.saveBtnText}>Save</Text>
+        <Pressable
+          style={isLogged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
+          onPress={onLogged}>
+          <Text style={saveStyles.saveBtnText}>Logged</Text>
         </Pressable>
-        {isToday && (
-          <Pressable
-            style={isLogged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
-            onPress={onLogged}>
-            <Text style={saveStyles.saveBtnText}>Logged</Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
