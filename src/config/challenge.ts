@@ -27,34 +27,11 @@ const CHALLENGE_1: ChallengeDefinition = {
 
 const CHALLENGE_2: ChallengeDefinition = {
   config: {
-    title: '10-day challenge',
+    title: 'Buddha Purnima Challenge - 10 Days',
     startDate: '2026-04-27',
     totalDays: 10,
   },
   habits: [
-    {id: 'no_smoking',    name: 'No Smoking',                                       maxCount: 10},
-    {
-      id: 'no_ordering',
-      name: 'No ordering food',
-      maxCount: 10,
-      subHabits: [
-        {id: 'no_ordering.cook',       name: 'Cook'},
-        {id: 'no_ordering.restaurant', name: 'Go out to restaurant'},
-      ],
-      compositeRule: {type: 'any'},
-    },
-    {id: 'job_hunt',      name: 'Work 6 hrs on job hunt',          maxCount: 10},
-    {
-      id: 'meditate_twice',
-      name: 'Meditate twice for 1 hr',
-      maxCount: 10,
-      subHabits: [
-        {id: 'meditate_twice.morning', name: 'Morning Sitting'},
-        {id: 'meditate_twice.evening', name: 'Evening Sitting'},
-      ],
-      compositeRule: {type: 'all'},
-    },
-    {id: 'screen_time',   name: 'Restrict screen time to 2 hrs',                    maxCount: 10},
     {
       id: 'eight_precepts',
       name: '8 Precepts',
@@ -82,6 +59,29 @@ const CHALLENGE_2: ChallengeDefinition = {
         ],
       },
     },
+    {id: 'no_smoking',    name: 'No Smoking',                                       maxCount: 10},
+    {
+      id: 'no_ordering',
+      name: 'No ordering food',
+      maxCount: 10,
+      subHabits: [
+        {id: 'no_ordering.cook',       name: 'Cook'},
+        {id: 'no_ordering.restaurant', name: 'Go out to restaurant'},
+      ],
+      compositeRule: {type: 'any'},
+    },
+    {id: 'job_hunt',      name: 'Work 6 hrs on job hunt',          maxCount: 10},
+    {
+      id: 'meditate_twice',
+      name: 'Meditate twice for 1 hr',
+      maxCount: 10,
+      subHabits: [
+        {id: 'meditate_twice.morning', name: 'Morning Sitting'},
+        {id: 'meditate_twice.evening', name: 'Evening Sitting'},
+      ],
+      compositeRule: {type: 'all'},
+    },
+    {id: 'screen_time',   name: 'Restrict screen time to 2 hrs',                    maxCount: 10}
   ],
 };
 
