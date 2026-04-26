@@ -112,20 +112,29 @@ export default function JournalScreen() {
     });
   }, []);
 
-  // When challenge changes, clamp date to the new challenge's range
+  // Clamp date to the selected challenge's range when challenge changes
   useEffect(() => {
     setCurrentDateKey(prev => clampDateKey(prev, eveKey, endKey));
-    SharedPrefs?.setString('start_date', config.startDate);
-    SharedPrefs?.setInt('total_days', config.totalDays);
   }, [challengeIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Schedule reminders for the active (non-past) challenge
+  // Widget and reminders always use the active (non-past) challenge
   useEffect(() => {
     const today = toDateKey(new Date());
-    if (today <= endKey) {
-      requestPermission().then(() => scheduleAllReminders(eveKey, endKey));
+    const active = CHALLENGES.find(ch => {
+      const eve = getEveDate(ch.config.startDate);
+      const end = getEndDate(ch.config.startDate, ch.config.totalDays);
+      return today >= eve && today <= end;
+    }) ?? CHALLENGES[CHALLENGES.length - 1];
+
+    SharedPrefs?.setString('start_date', active.config.startDate);
+    SharedPrefs?.setInt('total_days', active.config.totalDays);
+
+    const activeEve = getEveDate(active.config.startDate);
+    const activeEnd = getEndDate(active.config.startDate, active.config.totalDays);
+    if (today <= activeEnd) {
+      requestPermission().then(() => scheduleAllReminders(activeEve, activeEnd));
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const today = toDateKey(new Date());
   const isReadOnly = today > endKey;
