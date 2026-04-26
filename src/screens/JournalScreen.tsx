@@ -9,8 +9,8 @@ import {
   Pressable,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {ChallengeConfig, DayLog, HabitState, IntentionResult, MoodGroup, WinState} from '../types';
-import {CHALLENGE_CONFIG, HABIT_LIST} from '../config/challenge';
+import {DayLog, HabitState, IntentionResult, MoodGroup, WinState} from '../types';
+import {CHALLENGES} from '../config/challenge';
 import {
   addDays,
   clampDateKey,
@@ -22,13 +22,15 @@ import {
   isEveDay,
   toDateKey,
 } from '../utils/dates';
-import {loadAllLogs, loadConfig, makeEmptyLog, saveLog} from '../storage/storage';
+import {getHabitsDoneCount} from '../utils/habits';
+import {loadAllLogs, makeEmptyLog, saveLog} from '../storage/storage';
 import {
   cancelDayReminder,
   requestPermission,
   scheduleAllReminders,
 } from '../notifications/reminders';
 import ChallengeHeader from '../components/ChallengeHeader';
+import ChallengeNav from '../components/ChallengeNav';
 import DateNav from '../components/DateNav';
 import StatsBar from '../components/StatsBar';
 import EvePage from '../components/EvePage';
@@ -43,15 +45,30 @@ import {saveStyles} from '../styles/shared';
 
 const {SharedPrefs} = NativeModules;
 
-export default function JournalScreen() {
-  const [config, setConfig] = useState<ChallengeConfig>(CHALLENGE_CONFIG);
-  const [logs, setLogs] = useState<Record<string, DayLog>>({});
-  const [currentDateKey, setCurrentDateKey] = useState<string>(() => {
-    const today = toDateKey(new Date());
-    const eve = getEveDate(CHALLENGE_CONFIG.startDate);
-    const end = getEndDate(CHALLENGE_CONFIG.startDate, CHALLENGE_CONFIG.totalDays);
-    return clampDateKey(today, eve, end);
+function getInitialChallengeIdx(): number {
+  const today = toDateKey(new Date());
+  const idx = CHALLENGES.findIndex(ch => {
+    const eve = getEveDate(ch.config.startDate);
+    const end = getEndDate(ch.config.startDate, ch.config.totalDays);
+    return today >= eve && today <= end;
   });
+  return idx >= 0 ? idx : CHALLENGES.length - 1;
+}
+
+export default function JournalScreen() {
+  const [challengeIdx, setChallengeIdx] = useState(getInitialChallengeIdx);
+  const [logs, setLogs] = useState<Record<string, DayLog>>({});
+
+  const challenge = CHALLENGES[challengeIdx];
+  const config = challenge.config;
+  const habitList = challenge.habits;
+
+  const eveKey = getEveDate(config.startDate);
+  const endKey = getEndDate(config.startDate, config.totalDays);
+
+  const [currentDateKey, setCurrentDateKey] = useState<string>(() =>
+    clampDateKey(toDateKey(new Date()), eveKey, endKey),
+  );
 
   const scrollRef = useRef<ScrollView>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,30 +107,31 @@ export default function JournalScreen() {
   }
 
   useEffect(() => {
-    Promise.all([loadConfig(), loadAllLogs()]).then(([cfg, allLogs]) => {
-      setConfig(cfg);
+    loadAllLogs().then(allLogs => {
       setLogs(allLogs);
-
-      const eve = getEveDate(cfg.startDate);
-      const end = getEndDate(cfg.startDate, cfg.totalDays);
-      setCurrentDateKey(prev => clampDateKey(prev, eve, end));
-
-      // Push challenge dates to widget SharedPreferences
-      SharedPrefs?.setString('start_date', cfg.startDate);
-      SharedPrefs?.setInt('total_days', cfg.totalDays);
-
-      // Schedule daily 10PM reminders for the full challenge
-      requestPermission().then(() => scheduleAllReminders(eve, end));
     });
   }, []);
 
-  const eveKey = getEveDate(config.startDate);
-  const endKey = getEndDate(config.startDate, config.totalDays);
+  // When challenge changes, clamp date to the new challenge's range
+  useEffect(() => {
+    setCurrentDateKey(prev => clampDateKey(prev, eveKey, endKey));
+    SharedPrefs?.setString('start_date', config.startDate);
+    SharedPrefs?.setInt('total_days', config.totalDays);
+  }, [challengeIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Schedule reminders for the active (non-past) challenge
+  useEffect(() => {
+    const today = toDateKey(new Date());
+    if (today <= endKey) {
+      requestPermission().then(() => scheduleAllReminders(eveKey, endKey));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const today = toDateKey(new Date());
+  const isReadOnly = today > endKey;
   const isEve = isEveDay(currentDateKey, config.startDate);
   const dayNum = getDayNumber(currentDateKey, config.startDate);
   const daysLeft = getDaysLeft(currentDateKey, config.startDate, config.totalDays);
-  const todayKey = toDateKey(new Date());
-  const isToday = currentDateKey === todayKey;
 
   const progress = isEve
     ? 0
@@ -131,13 +149,13 @@ export default function JournalScreen() {
   const yesterdayKey = addDays(currentDateKey, -1);
   const yesterdayLog: DayLog = logs[yesterdayKey] ?? makeEmptyLog();
 
-  const habitsDoneCount = HABIT_LIST.filter(
-    h => currentLog.habits[h.id] === 'done',
-  ).length;
+  const habitsDoneCount = getHabitsDoneCount(habitList, currentLog.habits);
 
   const allHabitLogs: Record<string, Record<string, HabitState>> = {};
   Object.entries(logs).forEach(([date, log]) => {
-    allHabitLogs[date] = log.habits;
+    if (date >= eveKey && date <= endKey) {
+      allHabitLogs[date] = log.habits;
+    }
   });
 
   function persistLog(dateKey: string, log: DayLog, updatedLogs: Record<string, DayLog>) {
@@ -156,6 +174,13 @@ export default function JournalScreen() {
     const next = addDays(currentDateKey, dir);
     const clamped = clampDateKey(next, eveKey, endKey);
     setCurrentDateKey(clamped);
+  }
+
+  function handleChallengeChange(dir: -1 | 1) {
+    const next = challengeIdx + dir;
+    if (next >= 0 && next < CHALLENGES.length) {
+      setChallengeIdx(next);
+    }
   }
 
   function handleHabitToggle(habitId: string) {
@@ -205,13 +230,6 @@ export default function JournalScreen() {
     });
   }
 
-  function handleSave() {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-      debounceTimer.current = null;
-    }
-  }
-
   function handleLogged() {
     updateCurrentLog(prev => ({...prev, logged: true}));
     cancelDayReminder(currentDateKey);
@@ -224,9 +242,15 @@ export default function JournalScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.content, {paddingBottom: 80 + keyboardPadding}]}
         keyboardShouldPersistTaps="handled">
+        <ChallengeNav
+          challenges={CHALLENGES}
+          currentIndex={challengeIdx}
+          onPrev={() => handleChallengeChange(-1)}
+          onNext={() => handleChallengeChange(1)}
+        />
         <ChallengeHeader
           title={config.title}
-          metaText={metaText}
+          metaText={isReadOnly ? 'Past challenge — read only' : metaText}
           progress={progress}
         />
         <DateNav
@@ -243,62 +267,61 @@ export default function JournalScreen() {
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
             onIntentionFocus={handleIntentionFocus}
-            onSave={handleSave}
+            onSave={() => {}}
             onLogged={handleLogged}
-            isToday={isToday}
+            isToday={today === currentDateKey}
             isLogged={!!currentLog.logged}
+            totalDays={config.totalDays}
           />
         ) : (
           <>
             <StatsBar
               done={habitsDoneCount}
-              total={HABIT_LIST.length}
+              total={habitList.length}
               dayNum={dayNum}
             />
             <YesterdayIntentions
               intentions={yesterdayLog.intentions}
               results={currentLog.intentionResults}
               onResultChange={handleIntentionResultChange}
+              readOnly={isReadOnly}
             />
             <HabitsSection
-              habits={HABIT_LIST}
+              habits={habitList}
               habitStates={currentLog.habits}
               allLogs={allHabitLogs}
               onToggle={handleHabitToggle}
+              readOnly={isReadOnly}
             />
             <MoodSection
               moods={currentLog.moods}
               onMoodChange={handleMoodChange}
+              readOnly={isReadOnly}
             />
             <View onLayout={e => { journalY.current = e.nativeEvent.layout.y; }}>
               <JournalSection
                 value={currentLog.journal}
                 onChange={handleJournalChange}
                 onFocus={handleJournalFocus}
+                readOnly={isReadOnly}
               />
             </View>
-            <WinSection win={currentLog.win} onSelect={handleWinSelect} />
+            <WinSection win={currentLog.win} onSelect={handleWinSelect} readOnly={isReadOnly} />
             <IntentionsSection
               intentions={currentLog.intentions}
               onChange={handleIntentionChange}
               onFocus={handleIntentionFocus}
+              readOnly={isReadOnly}
             />
-            <View style={styles.saveRow}>
-              <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
-                <Text style={saveStyles.saveBtnText}>Save entry</Text>
-              </Pressable>
-              {isToday && (
+            {!isReadOnly && (
+              <View style={styles.saveRow}>
                 <Pressable
-                  style={
-                    currentLog.logged
-                      ? saveStyles.saveBtnLogged
-                      : saveStyles.saveBtn
-                  }
+                  style={currentLog.logged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
                   onPress={handleLogged}>
                   <Text style={saveStyles.saveBtnText}>Logged</Text>
                 </Pressable>
-              )}
-            </View>
+              </View>
+            )}
           </>
         )}
       </ScrollView>
@@ -314,6 +337,6 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   saveRow: {
-    ...saveStyles.saveRow
+    ...saveStyles.saveRow,
   },
 });
