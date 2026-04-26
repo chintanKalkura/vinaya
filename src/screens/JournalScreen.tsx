@@ -112,9 +112,6 @@ export default function JournalScreen() {
   const isEve = isEveDay(currentDateKey, config.startDate);
   const dayNum = getDayNumber(currentDateKey, config.startDate);
   const daysLeft = getDaysLeft(currentDateKey, config.startDate, config.totalDays);
-  const todayKey = toDateKey(new Date());
-  const isToday = currentDateKey === todayKey;
-
   const progress = isEve
     ? 0
     : Math.min(1, (dayNum - 1) / (config.totalDays - 1));
@@ -205,13 +202,6 @@ export default function JournalScreen() {
     });
   }
 
-  function handleSave() {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-      debounceTimer.current = null;
-    }
-  }
-
   function handleLogged() {
     updateCurrentLog(prev => ({...prev, logged: true}));
     cancelDayReminder(currentDateKey);
@@ -243,9 +233,7 @@ export default function JournalScreen() {
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
             onIntentionFocus={handleIntentionFocus}
-            onSave={handleSave}
             onLogged={handleLogged}
-            isToday={isToday}
             isLogged={!!currentLog.logged}
           />
         ) : (
@@ -284,20 +272,15 @@ export default function JournalScreen() {
               onFocus={handleIntentionFocus}
             />
             <View style={styles.saveRow}>
-              <Pressable style={saveStyles.saveBtn} onPress={handleSave}>
-                <Text style={saveStyles.saveBtnText}>Save entry</Text>
+              <Pressable
+                style={
+                  currentLog.logged
+                    ? saveStyles.saveBtnLogged
+                    : saveStyles.saveBtn
+                }
+                onPress={handleLogged}>
+                <Text style={saveStyles.saveBtnText}>Logged</Text>
               </Pressable>
-              {isToday && (
-                <Pressable
-                  style={
-                    currentLog.logged
-                      ? saveStyles.saveBtnLogged
-                      : saveStyles.saveBtn
-                  }
-                  onPress={handleLogged}>
-                  <Text style={saveStyles.saveBtnText}>Logged</Text>
-                </Pressable>
-              )}
             </View>
           </>
         )}
