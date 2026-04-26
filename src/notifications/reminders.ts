@@ -47,7 +47,7 @@ export async function scheduleAllReminders(eveDate: string, endDate: string) {
             id,
             title: 'Log the day',
             body: 'Take a moment to record today.',
-            android: {channelId: CHANNEL_ID},
+            android: {channelId: CHANNEL_ID, pressAction: {id: 'default'}},
           },
           trigger,
         );
