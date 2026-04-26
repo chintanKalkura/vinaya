@@ -22,6 +22,14 @@ class CountdownWidget : AppWidgetProvider() {
         }
     }
 
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        when (intent.action) {
+            Intent.ACTION_DATE_CHANGED,
+            Intent.ACTION_BOOT_COMPLETED -> forceUpdate(context)
+        }
+    }
+
     companion object {
         fun forceUpdate(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
