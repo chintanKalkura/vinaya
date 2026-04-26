@@ -6,6 +6,7 @@ import {sectionTitle as baseSectionTitle} from '../styles/shared';
 interface Props {
   intentions: [string, string, string];
   onChange: (index: number, text: string) => void;
+  onFocus?: () => void;
   title?: string;
   placeholders?: [string, string, string];
 }
@@ -13,6 +14,7 @@ interface Props {
 export default function IntentionsSection({
   intentions,
   onChange,
+  onFocus,
   title = 'Three intentions for tomorrow',
   placeholders = [
     'First intention for tomorrow...',
@@ -43,6 +45,7 @@ export default function IntentionsSection({
             style={styles.input}
             value={local[idx]}
             onChangeText={text => handleChange(idx, text)}
+            onFocus={onFocus}
             placeholder={placeholders[idx]}
             placeholderTextColor={colors.line}
           />

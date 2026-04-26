@@ -7,6 +7,7 @@ import {colors, fonts} from '../theme';
 interface Props {
   intentions: [string, string, string];
   onIntentionChange: (index: number, text: string) => void;
+  onIntentionFocus?: () => void;
   onSave: () => void;
   onLogged: () => void;
   isToday: boolean;
@@ -16,6 +17,7 @@ interface Props {
 export default function EvePage({
   intentions,
   onIntentionChange,
+  onIntentionFocus,
   onSave,
   onLogged,
   isToday,
@@ -30,6 +32,7 @@ export default function EvePage({
       <IntentionsSection
         intentions={intentions}
         onChange={onIntentionChange}
+        onFocus={onIntentionFocus}
         title="Three intentions for Day 1"
         placeholders={[
           'First intention...',
