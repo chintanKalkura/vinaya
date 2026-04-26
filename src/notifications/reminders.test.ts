@@ -1,4 +1,4 @@
-import notifee, {AndroidImportance, TriggerType} from '@notifee/react-native';
+import notifee from '@notifee/react-native';
 import {scheduleAllReminders} from './reminders';
 
 jest.mock('@notifee/react-native', () => ({
@@ -39,7 +39,7 @@ describe('scheduleAllReminders', () => {
     await scheduleAllReminders('2025-01-01', '2025-01-03');
 
     const calls = (notifee.createTriggerNotification as jest.Mock).mock.calls;
-    calls.forEach(([notification, trigger]) => {
+    calls.forEach(([, trigger]) => {
       expect(trigger.timestamp).toBeGreaterThan(Date.now());
     });
   });
