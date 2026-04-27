@@ -28,7 +28,7 @@ const CHALLENGE_1: ChallengeDefinition = {
 const CHALLENGE_2: ChallengeDefinition = {
   config: {
     title: 'Buddha Purnima Challenge - 10 Days',
-    startDate: '2026-04-27',
+    startDate: '2026-04-28',
     totalDays: 10,
   },
   habits: [
