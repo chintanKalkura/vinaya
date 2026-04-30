@@ -5,14 +5,18 @@ import notifee, {
 } from '@notifee/react-native';
 import {addDays} from '../utils/dates';
 
-const CHANNEL_ID = 'vinaya_reminders';
+const CHANNEL_ID = 'vinaya_reminders_v2';
+const LEGACY_CHANNEL_ID = 'vinaya_reminders';
+const NOTIFICATION_COLOR = '#1E88E5';
 const TEST_MODE = false; // set true to schedule 2-min-from-now for testing
 
 async function ensureChannel() {
+  await notifee.deleteChannel(LEGACY_CHANNEL_ID);
   await notifee.createChannel({
     id: CHANNEL_ID,
     name: 'Daily Reminders',
     importance: AndroidImportance.HIGH,
+    sound: 'zen_bell',
   });
 }
 
@@ -47,7 +51,12 @@ export async function scheduleAllReminders(eveDate: string, endDate: string) {
             id,
             title: 'Log the day',
             body: 'Take a moment to record today.',
-            android: {channelId: CHANNEL_ID, pressAction: {id: 'default'}},
+            android: {
+              channelId: CHANNEL_ID,
+              pressAction: {id: 'default'},
+              smallIcon: 'ic_notification',
+              color: NOTIFICATION_COLOR,
+            },
           },
           trigger,
         );
