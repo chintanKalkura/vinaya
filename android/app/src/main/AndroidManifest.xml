@@ -27,6 +27,16 @@
         </intent-filter>
       </activity>
 
+      <receiver android:name=".MindfulnessReceiver" android:exported="false">
+        <intent-filter>
+          <action android:name="com.vinaya.MINDFULNESS_ALARM" />
+          <action android:name="com.vinaya.MINDFULNESS_SNOOZE" />
+          <action android:name="com.vinaya.MINDFULNESS_ALERT" />
+          <action android:name="android.intent.action.BOOT_COMPLETED" />
+          <action android:name="android.intent.action.DATE_CHANGED" />
+        </intent-filter>
+      </receiver>
+
       <receiver android:name=".CountdownWidget" android:exported="true">
         <intent-filter>
           <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
