@@ -276,9 +276,7 @@ export default function JournalScreen() {
             intentions={currentLog.intentions}
             onIntentionChange={handleIntentionChange}
             onIntentionFocus={handleIntentionFocus}
-            onSave={() => {}}
             onLogged={handleLogged}
-            isToday={today === currentDateKey}
             isLogged={!!currentLog.logged}
             totalDays={config.totalDays}
           />
