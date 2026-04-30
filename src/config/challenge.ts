@@ -43,7 +43,7 @@ const CHALLENGE_2: ChallengeDefinition = {
         {id: 'eight_precepts.nk', name: 'No Killing'},
         {id: 'eight_precepts.ns', name: 'No Stealing'},
         {id: 'eight_precepts.c',  name: 'Celibacy'},
-        {id: 'eight_precepts.nl', name: 'No Lying'},
+        {id: 'eight_precepts.nl', name: 'Right Speech'},
         {id: 'eight_precepts.ni', name: 'No Intoxication'},
         {id: 'eight_precepts.nd', name: 'No Dinner'},
         {id: 'eight_precepts.ne', name: 'No Entertainment'},
