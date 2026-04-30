@@ -384,6 +384,12 @@ class MindfulnessReceiver : BroadcastReceiver() {
 
         fun showNotification(context: Context) {
             ensureChannel(context)
+            val launchPi = PendingIntent.getActivity(
+                context, REQUEST_LAUNCH,
+                context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
             val alertPi = PendingIntent.getBroadcast(
                 context, REQUEST_ALERT,
                 Intent(context, MindfulnessReceiver::class.java).apply { action = ACTION_ALERT },
@@ -401,6 +407,7 @@ class MindfulnessReceiver : BroadcastReceiver() {
                 .setContentTitle("Mindfulness Bell")
                 .setContentText("Be Alert! Be Attentive! Be Aware!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(launchPi)
                 .setAutoCancel(true)
                 .addAction(0, "Alert!", alertPi)
                 .addAction(0, "Snooze · next bell", snoozePi)
@@ -413,5 +420,6 @@ class MindfulnessReceiver : BroadcastReceiver() {
         private const val REQUEST_ALARM  = 200
         private const val REQUEST_ALERT  = 201
         private const val REQUEST_SNOOZE = 202
+        private const val REQUEST_LAUNCH = 203
     }
 }
