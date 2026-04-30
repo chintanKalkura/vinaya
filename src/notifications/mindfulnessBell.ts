@@ -5,7 +5,7 @@ import {NativeModules} from 'react-native';
 function scheduler() {
   return NativeModules.MindfulnessScheduler as
     | {
-        init: (endDate: string, testMode: boolean) => void;
+        init: (startDate: string, endDate: string, testMode: boolean) => void;
         setBellState: (state: string) => void;
         getBellState: (cb: (s: string) => void) => void;
         getNextAlarmMs: (cb: (ms: number) => void) => void;
@@ -17,15 +17,15 @@ export type BellState = 'active' | 'snoozed_next' | 'snoozed_day';
 
 // Flip to true for 2-minute intervals and 4-minute snooze during emulator testing.
 // The native layer reads this from SharedPrefs after init() is called.
-export const MINDFULNESS_TEST_MODE = false;
+export const MINDFULNESS_TEST_MODE = true;
 
 /**
- * Call once when the active challenge is determined. Stores the end date,
+ * Call once when the active challenge is determined. Stores start/end dates,
  * arms the first alarm (if none is already scheduled), and propagates
  * TEST_MODE to the native scheduler.
  */
-export function initMindfulnessBell(challengeEndDate: string): void {
-  scheduler()?.init(challengeEndDate, MINDFULNESS_TEST_MODE);
+export function initMindfulnessBell(startDate: string, endDate: string): void {
+  scheduler()?.init(startDate, endDate, MINDFULNESS_TEST_MODE);
 }
 
 /**
@@ -63,18 +63,8 @@ export function getNextAlarmMs(): Promise<number> {
   });
 }
 
-/**
- * Next state in the in-app press cycle:
- *   active → snoozed_next → snoozed_day → snoozed_day (terminal)
- */
-export function nextBellState(current: BellState): BellState {
-  if (current === 'active') return 'snoozed_next';
-  if (current === 'snoozed_next') return 'snoozed_day';
-  return 'snoozed_day';
-}
-
 export const BELL_STATE_LABELS: Record<BellState, string> = {
-  active: 'Mindfulness (Active)',
-  snoozed_next: 'Mindfulness (Snoozed Next)',
-  snoozed_day: 'Mindfulness (Snoozed Day)',
+  active: 'Active',
+  snoozed_next: 'Snoozed — Next Bell',
+  snoozed_day: 'Snoozed — Today',
 };
