@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
-import {HabitDefinition, HabitState} from '../types';
+import {HabitDefinition, HabitState, CompositeRule} from '../types';
 import {getEffectiveHabitState} from '../utils/habits';
 import {colors, fonts} from '../theme';
 import {sectionTitle} from '../styles/shared';
@@ -12,6 +12,8 @@ interface Props {
   onToggle: (habitId: string) => void;
   readOnly?: boolean;
 }
+
+export type ParentIndicatorState = 'none' | 'partial' | 'done';
 
 function getDoneCount(
   habit: HabitDefinition,
@@ -29,6 +31,56 @@ function getSubHabitDoneCount(
   return Object.values(allLogs).filter(
     dayStates => dayStates[subHabitId] === 'done',
   ).length;
+}
+
+export function getParentIndicatorState(
+  habit: HabitDefinition,
+  habitStates: Record<string, HabitState>,
+): ParentIndicatorState {
+  if (getEffectiveHabitState(habit, habitStates) === 'done') return 'done';
+  const anySubDone = habit.subHabits!.some(sub => habitStates[sub.id] === 'done');
+  return anySubDone ? 'partial' : 'none';
+}
+
+function ParentIndicator({state}: {state: ParentIndicatorState}) {
+  if (state === 'done') {
+    return (
+      <View style={styles.parentDone}>
+        <Text style={styles.parentDoneMark}>✓</Text>
+      </View>
+    );
+  }
+  if (state === 'partial') {
+    return (
+      <View style={styles.parentWrap}>
+        <View style={styles.parentPartialClip}>
+          <View style={styles.parentPartialFill} />
+        </View>
+        <View style={styles.parentRingAccent} />
+      </View>
+    );
+  }
+  return <View style={styles.parentRing} />;
+}
+
+function SubHabitIndicator({rule, done}: {rule: CompositeRule; done: boolean}) {
+  if (rule.type === 'required') {
+    return (
+      <View style={[styles.subRadio, done && styles.subRadioDone]}>
+        {done && <View style={styles.subRadioDot} />}
+      </View>
+    );
+  }
+  return (
+    <View
+      style={[
+        styles.subCheck,
+        rule.type === 'any' && styles.subCheckSquare,
+        done && styles.subCheckDone,
+      ]}>
+      {done && <Text style={styles.subCheckMark}>✓</Text>}
+    </View>
+  );
 }
 
 export default function HabitsSection({
@@ -51,9 +103,9 @@ export default function HabitsSection({
           <View key={habit.id}>
             {isComposite ? (
               <View style={[styles.row, habit.isKeystone && styles.keystoneRow]}>
-                <View style={[styles.check, state === 'done' && styles.checkDone]}>
-                  {state === 'done' && <Text style={styles.checkMark}>✓</Text>}
-                </View>
+                <ParentIndicator
+                  state={getParentIndicatorState(habit, habitStates)}
+                />
                 <Text
                   style={[
                     styles.name,
@@ -63,7 +115,7 @@ export default function HabitsSection({
                   {habit.isKeystone ? '★ ' : ''}
                   {habit.name}
                 </Text>
-                <Text style={[styles.count, state === 'done' && styles.countDone]}>
+                <Text style={styles.count}>
                   {done}/{habit.maxCount}
                 </Text>
               </View>
@@ -88,46 +140,44 @@ export default function HabitsSection({
                 </Text>
               </Pressable>
             )}
-            {isComposite &&
-              habit.subHabits!.map(sub => {
-                const subState = habitStates[sub.id] ?? 'none';
-                const subDone = getSubHabitDoneCount(sub.id, allLogs);
-                const isSquare = rule?.type === 'any';
-                const isRequired =
-                  rule?.type === 'required' && rule.ids.includes(sub.id);
+            {isComposite && (
+              <View style={styles.chipsRow}>
+                {habit.subHabits!.map(sub => {
+                  const subState = habitStates[sub.id] ?? 'none';
+                  const subDone = getSubHabitDoneCount(sub.id, allLogs);
+                  const isDone = subState === 'done';
+                  const isRequired =
+                    rule?.type === 'required' && rule.ids.includes(sub.id);
 
-                return (
-                  <Pressable
-                    key={sub.id}
-                    onPress={() => !readOnly && onToggle(sub.id)}
-                    style={styles.subRow}>
-                    <View
-                      style={[
-                        styles.check,
-                        isSquare && styles.checkSquare,
-                        subState === 'done' && styles.checkDone,
-                      ]}>
-                      {subState === 'done' && (
-                        <Text style={styles.checkMark}>✓</Text>
-                      )}
-                    </View>
-                    <Text
-                      style={[styles.subName, subState === 'done' && styles.nameDone]}>
-                      {isRequired ? '★ ' : ''}
-                      {sub.name}
-                    </Text>
-                    <Text style={[styles.subCount, subState === 'done' && styles.countDone]}>
-                      {subDone}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                  return (
+                    <Pressable
+                      key={sub.id}
+                      onPress={() => !readOnly && onToggle(sub.id)}
+                      style={[styles.chip, isDone && styles.chipDone]}>
+                      <SubHabitIndicator rule={rule!} done={isDone} />
+                      <Text style={[styles.chipName, isDone && styles.chipNameDone]}>
+                        {isRequired ? '★ ' : ''}
+                        {sub.name}
+                      </Text>
+                      <Text
+                        style={[styles.chipCount, isDone && styles.chipCountDone]}>
+                        {subDone}d
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </View>
         );
       })}
     </View>
   );
 }
+
+const INDICATOR_SIZE = 16;
+const SUB_INDICATOR_SIZE = 12;
+const CHIP_DONE_BG = 'rgba(74,124,89,0.08)';
 
 const styles = StyleSheet.create({
   container: {marginBottom: 28},
@@ -137,21 +187,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
   },
   keystoneRow: {
     borderLeftWidth: 3,
     borderLeftColor: colors.accent,
     paddingLeft: 10,
   },
-  subRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 6,
-    paddingLeft: 36,
-  },
+  // Standalone habit checkbox
   check: {
     width: 20,
     height: 20,
@@ -162,9 +204,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  checkSquare: {
-    borderRadius: 3,
-  },
   checkDone: {backgroundColor: colors.done, borderColor: colors.done},
   checkMark: {fontSize: 10, color: '#fff'},
   name: {
@@ -172,12 +211,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.ink,
-  },
-  subName: {
-    flex: 1,
-    fontFamily: fonts.bodyItalic,
-    fontSize: 13,
-    color: colors.muted,
   },
   keystoneName: {fontFamily: fonts.bodyMedium},
   nameDone: {color: colors.done},
@@ -188,12 +221,119 @@ const styles = StyleSheet.create({
     minWidth: 36,
     textAlign: 'right',
   },
-  subCount: {
-    fontFamily: fonts.bodyItalic,
+  countDone: {color: colors.done},
+  // Parent indicator — none state (empty ring)
+  parentRing: {
+    width: INDICATOR_SIZE,
+    height: INDICATOR_SIZE,
+    borderRadius: INDICATOR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: colors.muted,
+    flexShrink: 0,
+  },
+  // Parent indicator — partial state (half-filled ring)
+  parentWrap: {
+    width: INDICATOR_SIZE,
+    height: INDICATOR_SIZE,
+    flexShrink: 0,
+  },
+  parentPartialClip: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: INDICATOR_SIZE / 2,
+    height: INDICATOR_SIZE,
+    overflow: 'hidden',
+  },
+  parentPartialFill: {
+    width: INDICATOR_SIZE,
+    height: INDICATOR_SIZE,
+    borderRadius: INDICATOR_SIZE / 2,
+    backgroundColor: colors.accent,
+  },
+  parentRingAccent: {
+    position: 'absolute',
+    width: INDICATOR_SIZE,
+    height: INDICATOR_SIZE,
+    borderRadius: INDICATOR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: colors.accent,
+  },
+  // Parent indicator — done state (filled green with ✓)
+  parentDone: {
+    width: INDICATOR_SIZE,
+    height: INDICATOR_SIZE,
+    borderRadius: INDICATOR_SIZE / 2,
+    backgroundColor: colors.done,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  parentDoneMark: {fontSize: 9, color: '#fff'},
+  // Chips row
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingTop: 4,
+    paddingBottom: 10,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  chipDone: {
+    borderColor: colors.done,
+    backgroundColor: CHIP_DONE_BG,
+  },
+  chipName: {
+    fontFamily: fonts.body,
     fontSize: 12,
     color: colors.muted,
-    minWidth: 20,
-    textAlign: 'right',
   },
-  countDone: {color: colors.done},
+  chipNameDone: {color: colors.done},
+  chipCount: {
+    fontFamily: fonts.bodyItalic,
+    fontSize: 11,
+    color: colors.muted,
+  },
+  chipCountDone: {color: colors.done},
+  // Sub-habit indicator — square (any rule)
+  subCheck: {
+    width: SUB_INDICATOR_SIZE,
+    height: SUB_INDICATOR_SIZE,
+    borderRadius: SUB_INDICATOR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  subCheckSquare: {borderRadius: 2},
+  subCheckDone: {backgroundColor: colors.done, borderColor: colors.done},
+  subCheckMark: {fontSize: 7, color: '#fff'},
+  // Sub-habit indicator — radio (required rule)
+  subRadio: {
+    width: SUB_INDICATOR_SIZE,
+    height: SUB_INDICATOR_SIZE,
+    borderRadius: SUB_INDICATOR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  subRadioDone: {borderColor: colors.done},
+  subRadioDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.done,
+  },
 });
