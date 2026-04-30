@@ -22,6 +22,15 @@ function getDoneCount(
   ).length;
 }
 
+function getSubHabitDoneCount(
+  subHabitId: string,
+  allLogs: Record<string, Record<string, HabitState>>,
+): number {
+  return Object.values(allLogs).filter(
+    dayStates => dayStates[subHabitId] === 'done',
+  ).length;
+}
+
 export default function HabitsSection({
   habits,
   habitStates,
@@ -36,6 +45,7 @@ export default function HabitsSection({
         const isComposite = !!(habit.subHabits && habit.compositeRule);
         const state = getEffectiveHabitState(habit, habitStates);
         const done = getDoneCount(habit, allLogs);
+        const rule = habit.compositeRule;
 
         return (
           <View key={habit.id}>
@@ -81,16 +91,33 @@ export default function HabitsSection({
             {isComposite &&
               habit.subHabits!.map(sub => {
                 const subState = habitStates[sub.id] ?? 'none';
+                const subDone = getSubHabitDoneCount(sub.id, allLogs);
+                const isSquare = rule?.type === 'any';
+                const isRequired =
+                  rule?.type === 'required' && rule.ids.includes(sub.id);
+
                 return (
                   <Pressable
                     key={sub.id}
                     onPress={() => !readOnly && onToggle(sub.id)}
                     style={styles.subRow}>
-                    <View style={[styles.check, subState === 'done' && styles.checkDone]}>
-                      {subState === 'done' && <Text style={styles.checkMark}>✓</Text>}
+                    <View
+                      style={[
+                        styles.check,
+                        isSquare && styles.checkSquare,
+                        subState === 'done' && styles.checkDone,
+                      ]}>
+                      {subState === 'done' && (
+                        <Text style={styles.checkMark}>✓</Text>
+                      )}
                     </View>
-                    <Text style={[styles.subName, subState === 'done' && styles.nameDone]}>
+                    <Text
+                      style={[styles.subName, subState === 'done' && styles.nameDone]}>
+                      {isRequired ? '★ ' : ''}
                       {sub.name}
+                    </Text>
+                    <Text style={[styles.subCount, subState === 'done' && styles.countDone]}>
+                      {subDone}
                     </Text>
                   </Pressable>
                 );
@@ -135,6 +162,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
+  checkSquare: {
+    borderRadius: 3,
+  },
   checkDone: {backgroundColor: colors.done, borderColor: colors.done},
   checkMark: {fontSize: 10, color: '#fff'},
   name: {
@@ -156,6 +186,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.muted,
     minWidth: 36,
+    textAlign: 'right',
+  },
+  subCount: {
+    fontFamily: fonts.bodyItalic,
+    fontSize: 12,
+    color: colors.muted,
+    minWidth: 20,
     textAlign: 'right',
   },
   countDone: {color: colors.done},
