@@ -5,13 +5,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.media.AudioAttributes
-import android.net.Uri
+import android.media.MediaPlayer
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
@@ -46,6 +45,34 @@ class MindfulnessReceiver : BroadcastReceiver() {
         persistAndSchedule(context, prefs, next, testMode)
 
         showNotification(context)
+        playBellSound(context)
+    }
+
+    private fun playBellSound(context: Context) {
+        val pending = goAsync()
+        Thread {
+            try {
+                val afd = context.resources.openRawResourceFd(R.raw.zen_bell)
+                val mp = MediaPlayer().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                    setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                    afd.close()
+                    prepare()
+                    setOnCompletionListener {
+                        it.release()
+                        pending.finish()
+                    }
+                }
+                mp.start()
+            } catch (e: Exception) {
+                pending.finish()
+            }
+        }.start()
     }
 
     // ── notification actions ───────────────────────────────────────────────
@@ -195,8 +222,8 @@ class MindfulnessReceiver : BroadcastReceiver() {
 
         // Notification
         const val NOTIFICATION_ID = 2001
-        private const val CHANNEL_ID = "vinaya_mindfulness_v3"
-        private const val CHANNEL_ID_LEGACY = "vinaya_mindfulness_v2"
+        private const val CHANNEL_ID = "vinaya_mindfulness_v4"
+        private const val CHANNEL_ID_LEGACY = "vinaya_mindfulness_v3"
 
         // Fixed daily schedule: every 2h from 8AM to 10PM
         val SCHEDULE_HOURS = intArrayOf(8, 10, 12, 14, 16, 18, 20, 22)
@@ -368,17 +395,10 @@ class MindfulnessReceiver : BroadcastReceiver() {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.deleteNotificationChannel(CHANNEL_ID_LEGACY)
             if (nm.getNotificationChannel(CHANNEL_ID) != null) return
-            val soundUri = Uri.parse(
-                "${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/zen_bell"
-            )
-            val audioAttr = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
             val channel = NotificationChannel(
                 CHANNEL_ID, "Mindfulness Bell", NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                setSound(soundUri, audioAttr)
+                setSound(null, null)
                 enableVibration(true)
             }
             nm.createNotificationChannel(channel)
