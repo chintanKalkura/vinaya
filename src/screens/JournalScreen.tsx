@@ -372,7 +372,7 @@ export default function JournalScreen() {
                 <Text style={styles.bellStatusText}>
                   {bellState === 'snoozed_day'
                     ? 'No Bells Today'
-                    : `Next bell at ${formatAlarmTime(nextAlarmMs)}`}
+                    : `Next bell: ${formatAlarmTime(nextAlarmMs)}`}
                 </Text>
               </>
             )}
