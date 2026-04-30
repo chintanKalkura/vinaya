@@ -3,7 +3,6 @@ import {
   getBellState,
   getNextAlarmMs,
   initMindfulnessBell,
-  nextBellState,
   setBellState,
   BELL_STATE_LABELS,
 } from './mindfulnessBell';
@@ -23,20 +22,25 @@ beforeEach(() => {
 // ── initMindfulnessBell ────────────────────────────────────────────────────
 
 describe('initMindfulnessBell', () => {
-  it('should call native init with the end date and TEST_MODE=false', () => {
-    initMindfulnessBell('2025-12-31');
-    expect(mockScheduler.init).toHaveBeenCalledWith('2025-12-31', false);
+  it('should call native init with start date, end date, and MINDFULNESS_TEST_MODE', () => {
+    initMindfulnessBell('2025-12-01', '2025-12-31');
+    expect(mockScheduler.init).toHaveBeenCalledWith('2025-12-01', '2025-12-31', true);
   });
 
   it('should not throw when native module is unavailable', () => {
     NativeModules.MindfulnessScheduler = undefined;
-    expect(() => initMindfulnessBell('2025-12-31')).not.toThrow();
+    expect(() => initMindfulnessBell('2025-12-01', '2025-12-31')).not.toThrow();
   });
 });
 
 // ── setBellState ───────────────────────────────────────────────────────────
 
 describe('setBellState', () => {
+  it('should call native setBellState with active', () => {
+    setBellState('active');
+    expect(mockScheduler.setBellState).toHaveBeenCalledWith('active');
+  });
+
   it('should call native setBellState with snoozed_next', () => {
     setBellState('snoozed_next');
     expect(mockScheduler.setBellState).toHaveBeenCalledWith('snoozed_next');
@@ -85,34 +89,18 @@ describe('getNextAlarmMs', () => {
   });
 });
 
-// ── nextBellState ──────────────────────────────────────────────────────────
-
-describe('nextBellState', () => {
-  it('should advance active → snoozed_next', () => {
-    expect(nextBellState('active')).toBe('snoozed_next');
-  });
-
-  it('should advance snoozed_next → snoozed_day', () => {
-    expect(nextBellState('snoozed_next')).toBe('snoozed_day');
-  });
-
-  it('should keep snoozed_day → snoozed_day (no further progression)', () => {
-    expect(nextBellState('snoozed_day')).toBe('snoozed_day');
-  });
-});
-
 // ── BELL_STATE_LABELS ──────────────────────────────────────────────────────
 
 describe('BELL_STATE_LABELS', () => {
   it('should have the correct label for active', () => {
-    expect(BELL_STATE_LABELS.active).toBe('Mindfulness (Active)');
+    expect(BELL_STATE_LABELS.active).toBe('Active');
   });
 
   it('should have the correct label for snoozed_next', () => {
-    expect(BELL_STATE_LABELS.snoozed_next).toBe('Mindfulness (Snoozed Next)');
+    expect(BELL_STATE_LABELS.snoozed_next).toBe('Snoozed — Next Bell');
   });
 
   it('should have the correct label for snoozed_day', () => {
-    expect(BELL_STATE_LABELS.snoozed_day).toBe('Mindfulness (Snoozed Day)');
+    expect(BELL_STATE_LABELS.snoozed_day).toBe('Snoozed — Today');
   });
 });
