@@ -18,8 +18,9 @@ class MindfulnessModule(private val reactContext: ReactApplicationContext) :
      * then arms the first alarm if none is already scheduled.
      */
     @ReactMethod
-    fun init(endDate: String, testMode: Boolean) {
+    fun init(startDate: String, endDate: String, testMode: Boolean) {
         prefs().edit()
+            .putString(MindfulnessReceiver.KEY_CHALLENGE_START, startDate)
             .putString(MindfulnessReceiver.KEY_CHALLENGE_END, endDate)
             .putBoolean(MindfulnessReceiver.KEY_TEST_MODE, testMode)
             .apply()
@@ -34,6 +35,7 @@ class MindfulnessModule(private val reactContext: ReactApplicationContext) :
     fun setBellState(state: String) {
         prefs().edit().putString(MindfulnessReceiver.KEY_BELL_STATE, state).apply()
         when (state) {
+            MindfulnessReceiver.STATE_ACTIVE       -> receiver().handleInAppSetActive(reactContext)
             MindfulnessReceiver.STATE_SNOOZED_NEXT -> receiver().handleInAppSnoozeNext(reactContext)
             MindfulnessReceiver.STATE_SNOOZED_DAY  -> receiver().handleInAppSnoozedDay(reactContext)
         }

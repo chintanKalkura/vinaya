@@ -6,9 +6,9 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
 class MindfulnessPackage : ReactPackage {
-    override fun createNativeModules(ctx: ReactApplicationContext): List<NativeModule> =
-        listOf(MindfulnessModule(ctx))
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
+        listOf(MindfulnessModule(reactContext))
 
-    override fun createViewManagers(ctx: ReactApplicationContext): List<ViewManager<*, *>> =
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
         emptyList()
 }

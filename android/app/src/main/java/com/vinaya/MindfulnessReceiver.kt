@@ -26,16 +26,21 @@ class MindfulnessReceiver : BroadcastReceiver() {
     // ── alarm chain ────────────────────────────────────────────────────────
 
     private fun handleAlarmFire(context: Context) {
-        showNotification(context)
-
         val prefs = prefs(context)
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
 
-        // Use the stored scheduled time as the "current" slot so drift doesn't compound
-        val scheduledMs = prefs.getLong(KEY_NEXT_ALARM_MS, System.currentTimeMillis())
-        val next = computeNextSlot(scheduledMs, endDate, testMode)
+        // The stored value is the exact scheduled slot that just fired
+        val firedMs = prefs.getLong(KEY_NEXT_ALARM_MS, System.currentTimeMillis())
+
+        // Persist fired time so notification snooze can reference it
+        prefs.edit().putLong(KEY_LAST_FIRED_MS, firedMs).apply()
+
+        // Schedule the next slot immediately — independent of user notification response
+        val next = nextFixedSlot(firedMs, endDate, testMode)
         persistAndSchedule(context, prefs, next, testMode)
+
+        showNotification(context)
     }
 
     // ── notification actions ───────────────────────────────────────────────
@@ -46,10 +51,15 @@ class MindfulnessReceiver : BroadcastReceiver() {
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
 
+        prefs.edit().putString(KEY_BELL_STATE, STATE_SNOOZED_NEXT).apply()
+
+        // Cancel the already-scheduled next alarm
         cancelAlarm(context)
-        // Notification snooze: +4h (or +4min) from NOW
+
+        // Reschedule 4h (or 4min in test mode) from the fired slot — not from now
+        val firedMs = prefs.getLong(KEY_LAST_FIRED_MS, System.currentTimeMillis())
         val snoozeMs = if (testMode) TEST_SNOOZE_MS else SNOOZE_MS
-        val target = System.currentTimeMillis() + snoozeMs
+        val target = firedMs + snoozeMs
         val next = constrainToWindow(target, endDate, testMode)
         persistAndSchedule(context, prefs, next, testMode)
     }
@@ -64,16 +74,17 @@ class MindfulnessReceiver : BroadcastReceiver() {
     private fun handleBoot(context: Context) {
         val prefs = prefs(context)
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
+        val startDate = prefs.getString(KEY_CHALLENGE_START, null)
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
         val bellState = prefs.getString(KEY_BELL_STATE, STATE_ACTIVE) ?: STATE_ACTIVE
 
-        if (bellState == STATE_SNOOZED_DAY) return  // wait for midnight reset
+        if (bellState == STATE_SNOOZED_DAY) return
 
         val storedNextMs = prefs.getLong(KEY_NEXT_ALARM_MS, 0L)
         val now = System.currentTimeMillis()
         val next: Long? = when {
-            storedNextMs > now -> storedNextMs          // still future, just re-arm
-            else -> findNextSlotFromNow(endDate, testMode) // missed — resume chain
+            storedNextMs > now -> storedNextMs
+            else -> findNextSlotFromNow(startDate, endDate, testMode)
         }
         if (next != null) scheduleAlarm(context, next, testMode)
     }
@@ -83,19 +94,21 @@ class MindfulnessReceiver : BroadcastReceiver() {
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
 
-        // Midnight reset
         prefs.edit().putString(KEY_BELL_STATE, STATE_ACTIVE).apply()
 
-        val today8am = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, START_HOUR)
-            set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        if (!isAfterChallengeEnd(today8am, endDate)) {
-            persistAndSchedule(context, prefs, today8am, testMode)
+        val next: Long? = if (!testMode) {
+            val today8am = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, SCHEDULE_HOURS[0])
+                set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+            if (!isAfterChallengeEnd(today8am, endDate)) today8am else null
         } else {
-            prefs.edit().remove(KEY_NEXT_ALARM_MS).apply()
+            val startDate = prefs.getString(KEY_CHALLENGE_START, null)
+            findNextSlotFromNow(startDate, endDate, testMode)
         }
+
+        if (next != null) persistAndSchedule(context, prefs, next, testMode)
+        else prefs.edit().remove(KEY_NEXT_ALARM_MS).apply()
     }
 
     // ── in-app controls (called by MindfulnessModule) ─────────────────────
@@ -105,11 +118,11 @@ class MindfulnessReceiver : BroadcastReceiver() {
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
 
-        val originalNextMs = prefs.getLong(KEY_NEXT_ALARM_MS, 0L)
+        val currentNextMs = prefs.getLong(KEY_NEXT_ALARM_MS, 0L)
         cancelAlarm(context)
 
-        // In-app snooze: +interval from ORIGINAL scheduled time (not from now)
-        val next = computeNextSlot(originalNextMs, endDate, testMode)
+        // Push to the slot after the currently-scheduled one
+        val next = nextFixedSlot(currentNextMs, endDate, testMode)
         persistAndSchedule(context, prefs, next, testMode)
     }
 
@@ -118,15 +131,25 @@ class MindfulnessReceiver : BroadcastReceiver() {
         prefs(context).edit().remove(KEY_NEXT_ALARM_MS).apply()
     }
 
+    fun handleInAppSetActive(context: Context) {
+        val prefs = prefs(context)
+        val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
+        val startDate = prefs.getString(KEY_CHALLENGE_START, null)
+        val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
+        cancelAlarm(context)
+        val next = findNextSlotFromNow(startDate, endDate, testMode) ?: return
+        persistAndSchedule(context, prefs, next, testMode)
+    }
+
     fun scheduleFirstAlarm(context: Context) {
         val prefs = prefs(context)
         val endDate = prefs.getString(KEY_CHALLENGE_END, null) ?: return
+        val startDate = prefs.getString(KEY_CHALLENGE_START, null)
         val testMode = prefs.getBoolean(KEY_TEST_MODE, false)
 
-        // Don't overwrite a future alarm that is already armed
         if (prefs.getLong(KEY_NEXT_ALARM_MS, 0L) > System.currentTimeMillis()) return
 
-        val next = findNextSlotFromNow(endDate, testMode) ?: return
+        val next = findNextSlotFromNow(startDate, endDate, testMode) ?: return
         persistAndSchedule(context, prefs, next, testMode)
     }
 
@@ -153,10 +176,12 @@ class MindfulnessReceiver : BroadcastReceiver() {
         const val ACTION_ALERT  = "com.vinaya.MINDFULNESS_ALERT"
 
         // SharedPreferences keys
-        const val KEY_NEXT_ALARM_MS   = "mindfulness_next_alarm_ms"
-        const val KEY_BELL_STATE      = "mindfulness_bell_state"
-        const val KEY_CHALLENGE_END   = "mindfulness_challenge_end"
-        const val KEY_TEST_MODE       = "mindfulness_test_mode"
+        const val KEY_NEXT_ALARM_MS    = "mindfulness_next_alarm_ms"
+        const val KEY_LAST_FIRED_MS    = "mindfulness_last_fired_ms"
+        const val KEY_BELL_STATE       = "mindfulness_bell_state"
+        const val KEY_CHALLENGE_START  = "mindfulness_challenge_start"
+        const val KEY_CHALLENGE_END    = "mindfulness_challenge_end"
+        const val KEY_TEST_MODE        = "mindfulness_test_mode"
 
         // Bell states
         const val STATE_ACTIVE       = "active"
@@ -167,13 +192,10 @@ class MindfulnessReceiver : BroadcastReceiver() {
         const val NOTIFICATION_ID = 2001
         private const val CHANNEL_ID = "vinaya_reminders_v2"
 
-        // Schedule window (hours, 24h clock)
-        const val START_HOUR      = 8
-        const val END_HOUR        = 22
-        const val INTERVAL_HOURS  = 2
+        // Fixed daily schedule: every 2h from 8AM to 10PM
+        val SCHEDULE_HOURS = intArrayOf(8, 10, 12, 14, 16, 18, 20, 22)
 
         // Intervals in milliseconds
-        const val INTERVAL_MS      = INTERVAL_HOURS * 60 * 60 * 1000L
         const val SNOOZE_MS        = 4L * 60 * 60 * 1000   // 4 hours
         const val TEST_INTERVAL_MS = 2L * 60 * 1000        // 2 minutes
         const val TEST_SNOOZE_MS   = 4L * 60 * 1000        // 4 minutes
@@ -184,84 +206,117 @@ class MindfulnessReceiver : BroadcastReceiver() {
         // ── slot computation ──────────────────────────────────────────────
 
         /**
-         * Returns the next alarm time after [fromMs], respecting the daily window
-         * and challenge end date. Returns null if no further alarms should fire.
+         * Returns the next fixed schedule slot strictly after [fromMs].
+         * Scans SCHEDULE_HOURS on the same calendar day as fromMs, then wraps to
+         * the first slot of the following day.
+         * In test mode: fromMs + TEST_INTERVAL_MS (relative, for fast testing).
          */
-        fun computeNextSlot(fromMs: Long, endDate: String, testMode: Boolean): Long? {
+        fun nextFixedSlot(fromMs: Long, endDate: String, testMode: Boolean): Long? {
             if (testMode) {
                 val next = fromMs + TEST_INTERVAL_MS
                 return if (isAfterChallengeEnd(next, endDate)) null else next
             }
-            val cal = Calendar.getInstance().apply { timeInMillis = fromMs }
-            val nextHour = cal.get(Calendar.HOUR_OF_DAY) + INTERVAL_HOURS
-
-            if (nextHour > END_HOUR) {
-                cal.add(Calendar.DAY_OF_MONTH, 1)
-                cal.set(Calendar.HOUR_OF_DAY, START_HOUR)
-            } else {
-                cal.set(Calendar.HOUR_OF_DAY, nextHour)
+            for (h in SCHEDULE_HOURS) {
+                val slotCal = Calendar.getInstance().apply {
+                    timeInMillis = fromMs
+                    set(Calendar.HOUR_OF_DAY, h)
+                    set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                if (slotCal.timeInMillis > fromMs) {
+                    return if (isAfterChallengeEnd(slotCal.timeInMillis, endDate)) null
+                    else slotCal.timeInMillis
+                }
             }
-            cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
-
-            return if (isAfterChallengeEnd(cal.timeInMillis, endDate)) null else cal.timeInMillis
+            // All slots today are exhausted — first slot tomorrow
+            val tomorrowFirst = Calendar.getInstance().apply {
+                timeInMillis = fromMs
+                add(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, SCHEDULE_HOURS[0])
+                set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            return if (isAfterChallengeEnd(tomorrowFirst.timeInMillis, endDate)) null
+            else tomorrowFirst.timeInMillis
         }
 
         /**
-         * Given a raw snooze target (now + snoozeOffset), clamp it to the window
-         * or advance to 8AM next day if it overshoots END_HOUR.
+         * Finds the first fixed schedule slot strictly after now, but never before
+         * [startDate] 8AM. If the challenge hasn't started yet, returns [startDate] 8AM.
+         * In test mode: now + TEST_INTERVAL_MS (no start-date guard needed for testing).
          */
-        fun constrainToWindow(targetMs: Long, endDate: String, testMode: Boolean): Long? {
-            if (testMode) {
-                return if (isAfterChallengeEnd(targetMs, endDate)) null else targetMs
-            }
-            val cal = Calendar.getInstance().apply { timeInMillis = targetMs }
-            val totalMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
-
-            if (totalMins > END_HOUR * 60) {
-                cal.add(Calendar.DAY_OF_MONTH, 1)
-                cal.set(Calendar.HOUR_OF_DAY, START_HOUR)
-                cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
-            }
-            return if (isAfterChallengeEnd(cal.timeInMillis, endDate)) null else cal.timeInMillis
-        }
-
-        /**
-         * Find the next valid slot from the current moment. Used for boot recovery
-         * and cold-start scheduling.
-         */
-        fun findNextSlotFromNow(endDate: String, testMode: Boolean): Long? {
+        fun findNextSlotFromNow(startDate: String?, endDate: String, testMode: Boolean): Long? {
             if (testMode) {
                 val next = System.currentTimeMillis() + TEST_INTERVAL_MS
                 return if (isAfterChallengeEnd(next, endDate)) null else next
             }
             val now = System.currentTimeMillis()
-            val cal = Calendar.getInstance().apply { timeInMillis = now }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
 
-            val targetCal = Calendar.getInstance().apply { timeInMillis = now }
-            targetCal.set(Calendar.MINUTE, 0); targetCal.set(Calendar.SECOND, 0)
-            targetCal.set(Calendar.MILLISECOND, 0)
+            // Determine the earliest millisecond we can search from.
+            // If now is before startDate 8AM, use (startDate 8AM - 1ms) so the loop
+            // returns startDate 8AM as the first valid slot.
+            val searchFrom: Long = if (startDate != null) {
+                val parts = startDate.split("-")
+                val start8am = Calendar.getInstance().apply {
+                    set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(),
+                        SCHEDULE_HOURS[0], 0, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+                if (now < start8am) start8am - 1 else now
+            } else {
+                now
+            }
 
-            val nextHour = when {
-                hour < START_HOUR -> START_HOUR
-                hour >= END_HOUR  -> {
-                    // After window — go to 8AM tomorrow
-                    targetCal.add(Calendar.DAY_OF_MONTH, 1)
-                    START_HOUR
+            for (h in SCHEDULE_HOURS) {
+                val slotCal = Calendar.getInstance().apply {
+                    timeInMillis = searchFrom
+                    set(Calendar.HOUR_OF_DAY, h)
+                    set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
                 }
-                else -> {
-                    // During window — find the first slot strictly after current hour
-                    var h = START_HOUR
-                    while (h <= END_HOUR && h <= hour) h += INTERVAL_HOURS
-                    if (h > END_HOUR) {
-                        targetCal.add(Calendar.DAY_OF_MONTH, 1)
-                        START_HOUR
-                    } else h
+                if (slotCal.timeInMillis > searchFrom) {
+                    return if (isAfterChallengeEnd(slotCal.timeInMillis, endDate)) null
+                    else slotCal.timeInMillis
                 }
             }
-            targetCal.set(Calendar.HOUR_OF_DAY, nextHour)
-            return if (isAfterChallengeEnd(targetCal.timeInMillis, endDate)) null
-            else targetCal.timeInMillis
+            // All slots on searchFrom's day are exhausted — first slot the next day
+            val tomorrowFirst = Calendar.getInstance().apply {
+                timeInMillis = searchFrom
+                add(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, SCHEDULE_HOURS[0])
+                set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            return if (isAfterChallengeEnd(tomorrowFirst.timeInMillis, endDate)) null
+            else tomorrowFirst.timeInMillis
+        }
+
+        /**
+         * Given a snooze target (firedMs + 4h), finds the first fixed schedule slot
+         * at or after that target on the same calendar day, or 8AM the following day
+         * if no slot fits. This keeps snoozed alarms on the fixed schedule grid.
+         * In test mode: just checks challenge end (no snapping needed).
+         */
+        fun constrainToWindow(targetMs: Long, endDate: String, testMode: Boolean): Long? {
+            if (testMode) {
+                return if (isAfterChallengeEnd(targetMs, endDate)) null else targetMs
+            }
+            for (h in SCHEDULE_HOURS) {
+                val slotCal = Calendar.getInstance().apply {
+                    timeInMillis = targetMs
+                    set(Calendar.HOUR_OF_DAY, h)
+                    set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                if (slotCal.timeInMillis >= targetMs) {
+                    return if (isAfterChallengeEnd(slotCal.timeInMillis, endDate)) null
+                    else slotCal.timeInMillis
+                }
+            }
+            // Target is past last slot — first slot next day
+            val tomorrow8am = Calendar.getInstance().apply {
+                timeInMillis = targetMs
+                add(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, SCHEDULE_HOURS[0])
+                set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            return if (isAfterChallengeEnd(tomorrow8am.timeInMillis, endDate)) null
+            else tomorrow8am.timeInMillis
         }
 
         fun isAfterChallengeEnd(alarmMs: Long, endDate: String): Boolean {
