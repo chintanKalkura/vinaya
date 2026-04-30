@@ -84,6 +84,7 @@ const CHALLENGE_2: ChallengeDefinition = {
         {id: 'stay_productive.sit',      name: 'Sit'},
         {id: 'stay_productive.errands',  name: 'Errands'},
         {id: 'stay_productive.read',     name: 'Read'},
+        {id: 'stay_productive.get_creative',     name: 'Get Creative'},
       ],
       compositeRule: {type: 'any'},
     },
