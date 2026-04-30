@@ -1,13 +1,18 @@
 package com.vinaya
 
 import android.app.AlarmManager
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.media.AudioAttributes
+import android.net.Uri
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
 
@@ -190,7 +195,7 @@ class MindfulnessReceiver : BroadcastReceiver() {
 
         // Notification
         const val NOTIFICATION_ID = 2001
-        private const val CHANNEL_ID = "vinaya_reminders_v2"
+        private const val CHANNEL_ID = "vinaya_mindfulness_v1"
 
         // Fixed daily schedule: every 2h from 8AM to 10PM
         val SCHEDULE_HOURS = intArrayOf(8, 10, 12, 14, 16, 18, 20, 22)
@@ -357,7 +362,28 @@ class MindfulnessReceiver : BroadcastReceiver() {
 
         // ── notification ──────────────────────────────────────────────────
 
+        private fun ensureChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (nm.getNotificationChannel(CHANNEL_ID) != null) return
+            val soundUri = Uri.parse(
+                ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.packageName + "/raw/zen_bell"
+            )
+            val audioAttr = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            val channel = NotificationChannel(
+                CHANNEL_ID, "Mindfulness Bell", NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                setSound(soundUri, audioAttr)
+                enableVibration(true)
+            }
+            nm.createNotificationChannel(channel)
+        }
+
         fun showNotification(context: Context) {
+            ensureChannel(context)
             val alertPi = PendingIntent.getBroadcast(
                 context, REQUEST_ALERT,
                 Intent(context, MindfulnessReceiver::class.java).apply { action = ACTION_ALERT },
