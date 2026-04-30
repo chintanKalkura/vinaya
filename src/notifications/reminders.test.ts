@@ -5,6 +5,7 @@ jest.mock('@notifee/react-native', () => ({
   __esModule: true,
   default: {
     createChannel: jest.fn().mockResolvedValue(undefined),
+    deleteChannel: jest.fn().mockResolvedValue(undefined),
     getTriggerNotificationIds: jest.fn().mockResolvedValue([]),
     createTriggerNotification: jest.fn().mockResolvedValue(undefined),
     requestPermission: jest.fn().mockResolvedValue(undefined),
