@@ -29,6 +29,14 @@ import {
   requestPermission,
   scheduleAllReminders,
 } from '../notifications/reminders';
+import {
+  BellState,
+  BELL_STATE_LABELS,
+  getBellState,
+  initMindfulnessBell,
+  nextBellState,
+  setBellState,
+} from '../notifications/mindfulnessBell';
 import ChallengeHeader from '../components/ChallengeHeader';
 import ChallengeNav from '../components/ChallengeNav';
 import DateNav from '../components/DateNav';
@@ -58,6 +66,7 @@ function getInitialChallengeIdx(): number {
 export default function JournalScreen() {
   const [challengeIdx, setChallengeIdx] = useState(getInitialChallengeIdx);
   const [logs, setLogs] = useState<Record<string, DayLog>>({});
+  const [bellState, setBellStateLocal] = useState<BellState>('active');
 
   const challenge = CHALLENGES[challengeIdx];
   const config = challenge.config;
@@ -133,7 +142,12 @@ export default function JournalScreen() {
     const activeEnd = getEndDate(active.config.startDate, active.config.totalDays);
     if (today <= activeEnd) {
       requestPermission().then(() => scheduleAllReminders(activeEve, activeEnd));
+      initMindfulnessBell(activeEnd);
     }
+  }, []);
+
+  useEffect(() => {
+    getBellState().then(setBellStateLocal);
   }, []);
 
   const today = toDateKey(new Date());
@@ -239,6 +253,12 @@ export default function JournalScreen() {
     });
   }
 
+  function handleBellPress() {
+    const next = nextBellState(bellState);
+    setBellStateLocal(next);
+    setBellState(next);
+  }
+
   function handleLogged() {
     updateCurrentLog(prev => ({...prev, logged: true}));
     cancelDayReminder(currentDateKey);
@@ -321,13 +341,29 @@ export default function JournalScreen() {
               readOnly={isReadOnly}
             />
             {!isReadOnly && (
-              <View style={styles.saveRow}>
-                <Pressable
-                  style={currentLog.logged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
-                  onPress={handleLogged}>
-                  <Text style={saveStyles.saveBtnText}>Logged</Text>
-                </Pressable>
-              </View>
+              <>
+                <View style={styles.bellRow}>
+                  <Pressable
+                    style={[
+                      styles.bellBtn,
+                      bellState !== 'active' && styles.bellBtnSnoozed,
+                      bellState === 'snoozed_day' && styles.bellBtnSnoozedDay,
+                    ]}
+                    onPress={handleBellPress}
+                    disabled={bellState === 'snoozed_day'}>
+                    <Text style={styles.bellBtnText}>
+                      {BELL_STATE_LABELS[bellState]}
+                    </Text>
+                  </Pressable>
+                </View>
+                <View style={styles.saveRow}>
+                  <Pressable
+                    style={currentLog.logged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
+                    onPress={handleLogged}>
+                    <Text style={saveStyles.saveBtnText}>Logged</Text>
+                  </Pressable>
+                </View>
+              </>
             )}
           </>
         )}
@@ -345,5 +381,28 @@ const styles = StyleSheet.create({
   },
   saveRow: {
     ...saveStyles.saveRow,
+  },
+  bellRow: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  bellBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  bellBtnSnoozed: {
+    borderColor: colors.accent,
+  },
+  bellBtnSnoozedDay: {
+    opacity: 0.5,
+  },
+  bellBtnText: {
+    fontFamily: 'Lora-Italic',
+    fontSize: 12,
+    color: colors.muted,
   },
 });
