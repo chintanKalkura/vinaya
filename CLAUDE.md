@@ -59,13 +59,65 @@ npx jest path/to/file.test.tsx
 
 ## Architecture
 
-This is a minimal React Native scaffold. The app registers via `index.js` → `App.tsx`. No navigation library, state manager, or `src/` directory structure has been established yet.
+Single-screen app. Registers via `index.js` → `App.tsx` → `JournalScreen`. No navigation library or state manager.
+
+**`src/` structure:**
+```
+src/
+├── theme.ts              — colors, fonts
+├── types/                — shared TypeScript types
+├── config/               — challenge definitions (CHALLENGES array)
+├── utils/                — dates.ts, habits.ts, time.ts
+├── storage/              — storage.ts (AsyncStorage wrappers)
+├── screens/              — JournalScreen.tsx (single screen)
+├── components/           — all UI components
+├── notifications/        — reminders.ts, mindfulnessBell.ts
+└── styles/               — shared.ts (remindersStyles, sectionTitle)
+```
 
 **Code style** (enforced via `.prettierrc.js`): single quotes, trailing commas, no parens on single arrow-function params.
 
 **TypeScript** extends `@react-native/typescript-config`; all source files are `.ts`/`.tsx`.
 
 **Android targets** API 24 (min) → 36 (target), New Architecture enabled (`newArchEnabled=true`), Hermes enabled.
+
+## Notifications
+
+### Daily reminders (`src/notifications/reminders.ts`)
+- Library: `@notifee/react-native`
+- Channel: `vinaya_reminders_v2` (previous channel `vinaya_reminders` is deleted on init)
+- Sound: `zen_bell`, icon: `ic_notification`, colour: `#1E88E5`
+
+### Mindfulness Bell (`src/notifications/mindfulnessBell.ts` + native)
+Recurring bell at fixed clock times every day: **8AM, 10AM, 12PM, 2PM, 4PM, 6PM, 8PM, 10PM**.
+
+- Implemented as a single-alarm chain via `AlarmManager.setExactAndAllowWhileIdle` in `MindfulnessReceiver.kt`
+- Next alarm is scheduled **at alarm fire time**, independent of user notification response
+- JS wrapper exports: `initMindfulnessBell(startDate, endDate)`, `setBellState()`, `getBellState()`, `getNextAlarmMs()`
+- Three states: `active`, `snoozed_next` (next bell pushed 2 slots), `snoozed_day` (all bells cancelled until midnight)
+- Notification snooze ("Snooze · next bell"): cancels next alarm, reschedules 4h after the fired slot
+- Midnight reset: state resets to `active`, 8AM alarm armed for the new day
+- Boot recovery: re-arms stored alarm if future; finds next valid slot if missed
+- First bell never fires before `startDate` — `initMindfulnessBell` enforces this
+
+**⚠️ `MINDFULNESS_TEST_MODE` in `mindfulnessBell.ts`:**
+- `false` = production (fixed clock times, 4h snooze)
+- `true` = emulator testing (2-minute intervals, 4-minute snooze)
+- **Must be `false` before shipping.** Check this at the start of any session that touches notifications.
+
+## Native Modules
+
+Located in `android/app/src/main/java/com/vinaya/`:
+
+| File | Bridge name | Purpose |
+|---|---|---|
+| `MindfulnessReceiver.kt` | — | `BroadcastReceiver`: alarm chain, notification actions, BOOT/DATE_CHANGED recovery |
+| `MindfulnessModule.kt` | `"MindfulnessScheduler"` | RN bridge: `init`, `setBellState`, `getBellState`, `getNextAlarmMs` |
+| `MindfulnessPackage.kt` | — | Registers `MindfulnessModule` |
+| `SharedPrefsModule.kt` | `"SharedPrefs"` | RN bridge: key/value store for home-screen widget data |
+| `SharedPrefsPackage.kt` | — | Registers `SharedPrefsModule` |
+
+SharedPreferences namespace: `"com.vinaya.prefs"`. Keys prefixed `mindfulness_*` are owned by the bell system.
 
 ## Branching
 At the start of every new session, create a new git branch from main before doing any work. Branch naming: feature-<short-description>, bug-<short-description>, refactor-<short-description>
