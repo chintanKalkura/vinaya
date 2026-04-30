@@ -370,8 +370,8 @@ export default function JournalScreen() {
                   </Pressable>
                 </View>
                 <Text style={styles.bellStatusText}>
-                  {bellState === 'active'
-                    ? 'Active'
+                  {bellState === 'snoozed_day'
+                    ? 'No Bells Today'
                     : `Next bell at ${formatAlarmTime(nextAlarmMs)}`}
                 </Text>
               </>

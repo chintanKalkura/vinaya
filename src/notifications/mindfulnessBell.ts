@@ -17,7 +17,7 @@ export type BellState = 'active' | 'snoozed_next' | 'snoozed_day';
 
 // Flip to true for 2-minute intervals and 4-minute snooze during emulator testing.
 // The native layer reads this from SharedPrefs after init() is called.
-export const MINDFULNESS_TEST_MODE = false;
+export const MINDFULNESS_TEST_MODE = true;
 
 /**
  * Call once when the active challenge is determined. Stores start/end dates,
