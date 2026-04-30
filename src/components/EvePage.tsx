@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import IntentionsSection from './IntentionsSection';
-import {saveStyles} from '../styles/shared';
+import {remindersStyles} from '../styles/shared';
 import {colors, fonts} from '../theme';
 
 interface Props {
@@ -38,11 +38,11 @@ export default function EvePage({
           'Third intention...',
         ]}
       />
-      <View style={saveStyles.saveRow}>
+      <View style={remindersStyles.remindersRow}>
         <Pressable
-          style={isLogged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
+          style={isLogged ? remindersStyles.remindersBtnLogged : remindersStyles.remindersBtn}
           onPress={onLogged}>
-          <Text style={saveStyles.saveBtnText}>Logged</Text>
+          <Text style={remindersStyles.remindersBtnText}>Logged</Text>
         </Pressable>
       </View>
     </View>

@@ -14,29 +14,28 @@ export const sectionTitle = {
 };
 
 /**
- * Shared save-row styles. Use directly or spread into a local StyleSheet
- * to add overrides (e.g. borderTop in JournalScreen).
+ * Shared reminders row styles (Logged + Mindfulness Bell buttons).
  */
-export const saveStyles = {
-  saveRow: {
+export const remindersStyles = {
+  remindersRow: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
     alignItems: 'center' as const,
     marginTop: 24,
     paddingTop: 16,
   },
-  saveBtn: {
+  remindersBtn: {
     backgroundColor: colors.ink,
     paddingVertical: 10,
     paddingHorizontal: 24,
   },
-  saveBtnText: {
+  remindersBtnText: {
     fontFamily: fonts.serif,
     fontSize: 14,
     color: colors.paper,
     letterSpacing: 0.5,
   },
-  saveBtnLogged: {
+  remindersBtnLogged: {
     backgroundColor: colors.done,
     paddingVertical: 10,
     paddingHorizontal: 24,
