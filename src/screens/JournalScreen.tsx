@@ -1,6 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
+  AppState,
   Keyboard,
+  Modal,
   NativeModules,
   ScrollView,
   StyleSheet,
@@ -29,6 +31,14 @@ import {
   requestPermission,
   scheduleAllReminders,
 } from '../notifications/reminders';
+import {
+  BellState,
+  BELL_STATE_LABELS,
+  getBellState,
+  getNextAlarmMs,
+  initMindfulnessBell,
+  setBellState,
+} from '../notifications/mindfulnessBell';
 import ChallengeHeader from '../components/ChallengeHeader';
 import ChallengeNav from '../components/ChallengeNav';
 import DateNav from '../components/DateNav';
@@ -40,8 +50,9 @@ import MoodSection from '../components/MoodSection';
 import JournalSection from '../components/JournalSection';
 import WinSection from '../components/WinSection';
 import IntentionsSection from '../components/IntentionsSection';
-import {colors} from '../theme';
-import {saveStyles} from '../styles/shared';
+import {colors, fonts} from '../theme';
+import {remindersStyles} from '../styles/shared';
+import {formatAlarmTime} from '../utils/time';
 
 const {SharedPrefs} = NativeModules;
 
@@ -58,6 +69,9 @@ function getInitialChallengeIdx(): number {
 export default function JournalScreen() {
   const [challengeIdx, setChallengeIdx] = useState(getInitialChallengeIdx);
   const [logs, setLogs] = useState<Record<string, DayLog>>({});
+  const [bellState, setBellStateLocal] = useState<BellState>('active');
+  const [nextAlarmMs, setNextAlarmMs] = useState(0);
+  const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
 
   const challenge = CHALLENGES[challengeIdx];
   const config = challenge.config;
@@ -133,8 +147,22 @@ export default function JournalScreen() {
     const activeEnd = getEndDate(active.config.startDate, active.config.totalDays);
     if (today <= activeEnd) {
       requestPermission().then(() => scheduleAllReminders(activeEve, activeEnd));
+      initMindfulnessBell(active.config.startDate, activeEnd);
     }
   }, []);
+
+  function refreshBellStatus() {
+    getBellState().then(setBellStateLocal);
+    getNextAlarmMs().then(setNextAlarmMs);
+  }
+
+  useEffect(() => {
+    refreshBellStatus();
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') refreshBellStatus();
+    });
+    return () => sub.remove();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const today = toDateKey(new Date());
   const isReadOnly = today > endKey;
@@ -239,6 +267,13 @@ export default function JournalScreen() {
     });
   }
 
+  function handleBellSelect(state: BellState) {
+    setBellStateLocal(state);
+    setBellState(state);
+    setBellDropdownOpen(false);
+    getNextAlarmMs().then(setNextAlarmMs);
+  }
+
   function handleLogged() {
     updateCurrentLog(prev => ({...prev, logged: true}));
     cancelDayReminder(currentDateKey);
@@ -321,14 +356,56 @@ export default function JournalScreen() {
               readOnly={isReadOnly}
             />
             {!isReadOnly && (
-              <View style={styles.saveRow}>
-                <Pressable
-                  style={currentLog.logged ? saveStyles.saveBtnLogged : saveStyles.saveBtn}
-                  onPress={handleLogged}>
-                  <Text style={saveStyles.saveBtnText}>Logged</Text>
-                </Pressable>
-              </View>
+              <>
+                <View style={styles.remindersRow}>
+                  <Pressable
+                    style={currentLog.logged ? remindersStyles.remindersBtnLogged : remindersStyles.remindersBtn}
+                    onPress={handleLogged}>
+                    <Text style={remindersStyles.remindersBtnText}>Logged</Text>
+                  </Pressable>
+                  <Pressable
+                    style={remindersStyles.remindersBtn}
+                    onPress={() => setBellDropdownOpen(true)}>
+                    <Text style={remindersStyles.remindersBtnText}>Mindfulness Bell</Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.bellStatusText}>
+                  {bellState === 'snoozed_day'
+                    ? 'No Bells Today'
+                    : `Next bell at ${formatAlarmTime(nextAlarmMs)}`}
+                </Text>
+              </>
             )}
+
+            <Modal
+              visible={bellDropdownOpen}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setBellDropdownOpen(false)}>
+              <Pressable
+                style={styles.dropdownOverlay}
+                onPress={() => setBellDropdownOpen(false)}>
+                <View style={styles.dropdownMenu}>
+                  {(['active', 'snoozed_next', 'snoozed_day'] as BellState[]).map(state => (
+                    <Pressable
+                      key={state}
+                      style={[
+                        styles.dropdownItem,
+                        bellState === state && styles.dropdownItemSelected,
+                      ]}
+                      onPress={() => handleBellSelect(state)}>
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          bellState === state && styles.dropdownItemTextSelected,
+                        ]}>
+                        {BELL_STATE_LABELS[state]}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </Pressable>
+            </Modal>
           </>
         )}
       </ScrollView>
@@ -343,7 +420,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 40,
   },
-  saveRow: {
-    ...saveStyles.saveRow,
+  remindersRow: {
+    ...remindersStyles.remindersRow,
+  },
+  bellStatusText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.muted,
+    textAlign: 'right',
+    marginTop: 6,
+  },
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+    paddingBottom: 120,
+    paddingHorizontal: 24,
+  },
+  dropdownMenu: {
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dropdownItemSelected: {
+    backgroundColor: colors.ink,
+  },
+  dropdownItemText: {
+    fontFamily: fonts.serif,
+    fontSize: 14,
+    color: colors.ink,
+    letterSpacing: 0.5,
+  },
+  dropdownItemTextSelected: {
+    color: colors.paper,
   },
 });

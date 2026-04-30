@@ -23,4 +23,9 @@ class SharedPrefsModule(private val reactContext: ReactApplicationContext) :
         prefs().edit().putInt(key, value).apply()
         CountdownWidget.forceUpdate(reactContext)
     }
+
+    @ReactMethod
+    fun getString(key: String, defaultValue: String, callback: com.facebook.react.bridge.Callback) {
+        callback.invoke(prefs().getString(key, defaultValue) ?: defaultValue)
+    }
 }
