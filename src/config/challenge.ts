@@ -61,7 +61,6 @@ const CHALLENGE_2: ChallengeDefinition = {
         ],
       },
     },
-    {id: 'no_smoking',    name: 'No Smoking',                      maxCount: C2_DAYS},
     {
       id: 'eat_healthy',
       name: 'Eat Healthy',
@@ -118,8 +117,7 @@ const CHALLENGE_2: ChallengeDefinition = {
         {id: 'sleep_discipline.sleep_on_tim', name: 'Lights Out By 11'},
       ],
       compositeRule: {type: 'any'},
-    },
-    {id: 'screen_time',   name: 'Restrict screen time to 2 hrs', maxCount: C2_DAYS}
+    }
   ],
 };
 
