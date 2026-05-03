@@ -1,4 +1,4 @@
-export type HabitState = 'none' | 'done';
+export type HabitState = 'none' | 'done' | number;
 export type IntentionResult = 'no' | 'yes' | 'partial';
 export type WinState = 'won' | 'lost' | 'fought' | null;
 export type MoodGroup = 'viriya' | 'samadhi' | 'vedana' | 'sampajanna';
@@ -11,7 +11,8 @@ export interface SubHabit {
 export type CompositeRule =
   | {type: 'any'}
   | {type: 'all'}
-  | {type: 'required'; ids: string[]};
+  | {type: 'required'; ids: string[]}
+  | {type: 'hours'; threshold: number};
 
 export interface HabitDefinition {
   id: string;

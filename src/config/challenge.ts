@@ -86,7 +86,7 @@ const CHALLENGE_2: ChallengeDefinition = {
         {id: 'stay_productive.read',     name: 'Read'},
         {id: 'stay_productive.get_creative',     name: 'Get Creative'},
       ],
-      compositeRule: {type: 'any'},
+      compositeRule: {type: 'hours', threshold: 8},
     },
     {
       id: 'meditate_twice',
