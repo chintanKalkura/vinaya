@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import {HabitDefinition, HabitState, CompositeRule} from '../types';
-import {getEffectiveHabitState} from '../utils/habits';
+import {getEffectiveHabitState, getSubHabitHours, getHoursSum} from '../utils/habits';
 import {colors, fonts} from '../theme';
 import {sectionTitle} from '../styles/shared';
 
@@ -10,6 +10,7 @@ interface Props {
   habitStates: Record<string, HabitState>;
   allLogs: Record<string, Record<string, HabitState>>;
   onToggle: (habitId: string) => void;
+  onLongPress?: (habitId: string) => void;
   readOnly?: boolean;
 }
 
@@ -24,13 +25,16 @@ function getDoneCount(
   ).length;
 }
 
-function getSubHabitDoneCount(
+function getSubHabitActiveDays(
   subHabitId: string,
   allLogs: Record<string, Record<string, HabitState>>,
+  isHours: boolean,
 ): number {
-  return Object.values(allLogs).filter(
-    dayStates => dayStates[subHabitId] === 'done',
-  ).length;
+  return Object.values(allLogs).filter(dayStates => {
+    const state = dayStates[subHabitId];
+    if (isHours) return typeof state === 'number' && state > 0;
+    return state === 'done';
+  }).length;
 }
 
 export function getParentIndicatorState(
@@ -38,6 +42,11 @@ export function getParentIndicatorState(
   habitStates: Record<string, HabitState>,
 ): ParentIndicatorState {
   if (getEffectiveHabitState(habit, habitStates) === 'done') return 'done';
+
+  if (habit.compositeRule?.type === 'hours') {
+    return getHoursSum(habit, habitStates) > 0 ? 'partial' : 'none';
+  }
+
   const anySubDone = habit.subHabits!.some(sub => habitStates[sub.id] === 'done');
   return anySubDone ? 'partial' : 'none';
 }
@@ -83,11 +92,22 @@ function SubHabitIndicator({rule, done}: {rule: CompositeRule; done: boolean}) {
   );
 }
 
+function HoursIndicator({hours, active}: {hours: number; active: boolean}) {
+  return (
+    <View style={[styles.hoursBox, active && styles.hoursBoxActive]}>
+      <Text style={[styles.hoursText, active && styles.hoursTextActive]}>
+        {hours}
+      </Text>
+    </View>
+  );
+}
+
 export default function HabitsSection({
   habits,
   habitStates,
   allLogs,
   onToggle,
+  onLongPress,
   readOnly = false,
 }: Props) {
   return (
@@ -95,6 +115,7 @@ export default function HabitsSection({
       <Text style={styles.sectionTitle}>Habits</Text>
       {habits.map(habit => {
         const isComposite = !!(habit.subHabits && habit.compositeRule);
+        const isHoursRule = habit.compositeRule?.type === 'hours';
         const state = getEffectiveHabitState(habit, habitStates);
         const done = getDoneCount(habit, allLogs);
         const rule = habit.compositeRule;
@@ -144,11 +165,31 @@ export default function HabitsSection({
               <View style={styles.chipsRow}>
                 {habit.subHabits!.map(sub => {
                   const subState = habitStates[sub.id] ?? 'none';
-                  const subDone = getSubHabitDoneCount(sub.id, allLogs);
-                  const isDone = subState === 'done';
+                  const subDone = getSubHabitActiveDays(sub.id, allLogs, isHoursRule);
                   const isRequired =
                     rule?.type === 'required' && rule.ids.includes(sub.id);
 
+                  if (isHoursRule) {
+                    const hours = getSubHabitHours(subState);
+                    const active = hours > 0;
+                    return (
+                      <Pressable
+                        key={sub.id}
+                        onPress={() => !readOnly && onToggle(sub.id)}
+                        onLongPress={() => !readOnly && onLongPress?.(sub.id)}
+                        style={[styles.chip, active && styles.chipDone]}>
+                        <HoursIndicator hours={hours} active={active} />
+                        <Text style={[styles.chipName, active && styles.chipNameDone]}>
+                          {sub.name}
+                        </Text>
+                        <Text style={[styles.chipCount, active && styles.chipCountDone]}>
+                          {subDone}d
+                        </Text>
+                      </Pressable>
+                    );
+                  }
+
+                  const isDone = subState === 'done';
                   return (
                     <Pressable
                       key={sub.id}
@@ -336,4 +377,23 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: colors.done,
   },
+  // Hours indicator badge
+  hoursBox: {
+    width: SUB_INDICATOR_SIZE,
+    height: SUB_INDICATOR_SIZE,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  hoursBoxActive: {borderColor: colors.done},
+  hoursText: {
+    fontSize: 7,
+    fontFamily: fonts.bodyMedium,
+    color: colors.muted,
+    lineHeight: 10,
+  },
+  hoursTextActive: {color: colors.done},
 });

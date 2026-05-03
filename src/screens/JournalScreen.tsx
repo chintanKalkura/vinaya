@@ -24,7 +24,7 @@ import {
   isEveDay,
   toDateKey,
 } from '../utils/dates';
-import {getHabitsDoneCount} from '../utils/habits';
+import {getHabitsDoneCount, getSubHabitHours} from '../utils/habits';
 import {loadAllLogs, makeEmptyLog, saveLog} from '../storage/storage';
 import {
   cancelDayReminder,
@@ -220,12 +220,32 @@ export default function JournalScreen() {
     }
   }
 
+  function isHoursSubHabit(subHabitId: string): boolean {
+    return habitList.some(
+      h =>
+        h.compositeRule?.type === 'hours' &&
+        h.subHabits?.some(sh => sh.id === subHabitId),
+    );
+  }
+
   function handleHabitToggle(habitId: string) {
     updateCurrentLog(prev => {
+      if (isHoursSubHabit(habitId)) {
+        const current = getSubHabitHours(prev.habits[habitId] ?? 'none');
+        const next: HabitState = current >= 12 ? 0 : current + 1;
+        return {...prev, habits: {...prev.habits, [habitId]: next}};
+      }
       const current = prev.habits[habitId] ?? 'none';
       const next: HabitState = current === 'done' ? 'none' : 'done';
       return {...prev, habits: {...prev.habits, [habitId]: next}};
     });
+  }
+
+  function handleHabitLongPress(habitId: string) {
+    updateCurrentLog(prev => ({
+      ...prev,
+      habits: {...prev.habits, [habitId]: 0},
+    }));
   }
 
   function handleMoodChange(group: MoodGroup, value: string) {
@@ -333,6 +353,7 @@ export default function JournalScreen() {
               habitStates={currentLog.habits}
               allLogs={allHabitLogs}
               onToggle={handleHabitToggle}
+              onLongPress={handleHabitLongPress}
               readOnly={isReadOnly}
             />
             <MoodSection
