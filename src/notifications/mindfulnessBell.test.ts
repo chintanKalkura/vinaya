@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('initMindfulnessBell', () => {
   it('should call native init with start date, end date, and MINDFULNESS_TEST_MODE', () => {
     initMindfulnessBell('2025-12-01', '2025-12-31');
-    expect(mockScheduler.init).toHaveBeenCalledWith('2025-12-01', '2025-12-31', true);
+    expect(mockScheduler.init).toHaveBeenCalledWith('2025-12-01', '2025-12-31', false);
   });
 
   it('should not throw when native module is unavailable', () => {

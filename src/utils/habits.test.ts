@@ -1,4 +1,4 @@
-import {getEffectiveHabitState, getHabitsDoneCount} from './habits';
+import {getEffectiveHabitState, getHabitsDoneCount, getSubHabitHours, getHoursSum} from './habits';
 import {HabitDefinition} from '../types';
 
 const simpleHabit: HabitDefinition = {id: 'celibacy', name: 'Celibacy', maxCount: 10};
@@ -119,6 +119,88 @@ describe('getEffectiveHabitState', () => {
     it('should return none when all sub-habits are undone', () => {
       expect(getEffectiveHabitState(requiredHabit, {})).toBe('none');
     });
+  });
+});
+
+const hoursHabit: HabitDefinition = {
+  id: 'stay_productive',
+  name: 'Stay Productive for at least 8 hrs',
+  maxCount: 31,
+  subHabits: [
+    {id: 'stay_productive.job_hunt', name: 'Job Hunt'},
+    {id: 'stay_productive.study',    name: 'Study'},
+    {id: 'stay_productive.build',    name: 'Build'},
+  ],
+  compositeRule: {type: 'hours', threshold: 8},
+};
+
+describe('getSubHabitHours', () => {
+  it('should return 0 for none', () => {
+    expect(getSubHabitHours('none')).toBe(0);
+  });
+
+  it('should return 0 for done', () => {
+    expect(getSubHabitHours('done')).toBe(0);
+  });
+
+  it('should return the number for a numeric state', () => {
+    expect(getSubHabitHours(5)).toBe(5);
+    expect(getSubHabitHours(0)).toBe(0);
+    expect(getSubHabitHours(12)).toBe(12);
+  });
+});
+
+describe('getHoursSum', () => {
+  it('should sum hours across all sub-habits', () => {
+    expect(
+      getHoursSum(hoursHabit, {
+        'stay_productive.job_hunt': 3,
+        'stay_productive.study': 2,
+        'stay_productive.build': 1,
+      }),
+    ).toBe(6);
+  });
+
+  it('should treat missing sub-habits as 0', () => {
+    expect(getHoursSum(hoursHabit, {'stay_productive.job_hunt': 4})).toBe(4);
+  });
+
+  it('should return 0 when all sub-habits are none', () => {
+    expect(getHoursSum(hoursHabit, {})).toBe(0);
+  });
+});
+
+describe('getEffectiveHabitState — hours rule', () => {
+  it('should return done when sum meets threshold', () => {
+    expect(
+      getEffectiveHabitState(hoursHabit, {
+        'stay_productive.job_hunt': 4,
+        'stay_productive.study': 4,
+      }),
+    ).toBe('done');
+  });
+
+  it('should return done when sum exceeds threshold', () => {
+    expect(
+      getEffectiveHabitState(hoursHabit, {
+        'stay_productive.job_hunt': 6,
+        'stay_productive.study': 4,
+        'stay_productive.build': 2,
+      }),
+    ).toBe('done');
+  });
+
+  it('should return none when sum is below threshold', () => {
+    expect(
+      getEffectiveHabitState(hoursHabit, {
+        'stay_productive.job_hunt': 3,
+        'stay_productive.study': 2,
+      }),
+    ).toBe('none');
+  });
+
+  it('should return none when all sub-habits are 0', () => {
+    expect(getEffectiveHabitState(hoursHabit, {})).toBe('none');
   });
 });
 
