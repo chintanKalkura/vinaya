@@ -10,33 +10,27 @@ Follow instructions exactly as given. Do not add unrequested features, suggestio
 
 **Vinaya** — bare React Native, TypeScript, Android-only target. Uses `@react-native-async-storage/async-storage` for local storage. No Expo.
 
-## Vinaya — App Context
+## Vinaya — App Context (v2)
 
-A personal discipline tracker and journal. 21-day challenge. Fully offline. Android-only.
+**v2 is a major rewrite, in progress.** v1 was a fixed 21-day precepts challenge with a single journal screen — that model is gone. v2 is a general-purpose, user-defined habit and habit-group tracker with its own navigation shell. Fully offline. Android-only.
 
-**Challenge structure:**
-- Runs for 21 days
-- An eve page (day 0) exists for setting intentions before the challenge begins
+The v1 implementation (`components/`, `screens/`, `config/`, `styles/`) has been moved to `src_v1_backup/` for reference/reuse — see **Architecture** below. `src/theme.ts`, `types/`, `utils/`, `storage/`, `notifications/` remain in place as a v1-shaped starting point but are not yet rewired to the v2 model described here.
 
-**Daily entry contains:**
-- Habit completions — 15 habits, each with an individual max target count:
-  Celibacy (keystone/21), 1 hr Meditation/15, Sutta a day/21, Right Speech/21,
-  No smoking/21, No junk food/21, 21 Suryanamaskara/10, Cook or Chores/21,
-  Read/15, Job hunt/15, Entertainment ≤ 1 hr/21, Write/10,
-  Wake before 8/21, No mobile on bed/21, Run/6
-- 4 mood/state readings: Viriya, Samādhi, Vedanā, Sampajañña — each with 4 options
-- Free-form journal text
-- Win/Lost/Fought outcome for the day
-- 3 intentions for the next day
+**Design source of truth**: `docs/screens/*.png` (numbered mockups) and `docs/navigation/*.md` (mermaid flowcharts, node IDs match screen numbers). Keep these in sync as the design evolves — treat them as authoritative over this summary.
 
-**Intentions carry-forward:**
-- Previous day's intentions are shown at the top of the next day
-- Each intention has a 3-state toggle: default (no), single tap (yes ✅), double tap (partial ＊)
+**Core model:**
+- **Habit** — name, cadence (`Day`/`Week`/`Month`/`Year`), a cadence-scoped target count (Day has none — "repeats every day, no target needed"; Week/Month/Year have a user-adjustable target up to a cadence max, e.g. 6/20/100), a streak-freeze allowance ("1 skip per N streaks", N configurable), a type (`Checkmark` or `Hours` — Hours swaps the target for a "Daily Target Hours" stepper), and optional membership in a Habit Group.
+- **Habit Group** — name, cadence, and a group type: `Required` (a marked subset of assigned habits must be done), `Any` (any one assigned habit completes the group), `All` (every assigned habit must be done), or `Hours` (total logged hours across assigned habits must meet an aggregate target). v1's `CompositeRule` union in `src/types` (`any`/`all`/`required`/`hours`) already matches this shape — reuse/evolve it rather than redesigning from scratch.
 
-**Data architecture:**
-- Config (habit definitions, challenge metadata) is separated from daily log data
-- Daily log keyed by date string (`YYYY-MM-DD`)
-- Storage: `@react-native-async-storage/async-storage`
+**Navigation** — bottom tab bar: **Habits**, **Journal**, **Level-Up**, **Profile**. Only **Habits** has designed screens/flows so far; Journal/Level-Up/Profile are nav destinations with no mockups yet.
+
+**Habits tab:**
+- **Group view** (default, habits nested under group cards) and **List view** (flat, each habit shows its parent group inline), toggled by an icon.
+- **Sort & Filter** bottom sheet: sort by Streak/A-Z/Manual/Recent; filter by Marked/Active/Paused/Archived.
+- FAB (＋) → **Choice sheet** → *New Habit* or *New Habit Group*.
+- **New Habit flow**: Name → Cadence → Target (skipped for Day) → Streak Freeze → Type (Checkmark/Hours) → optional Habit Group assignment (existing groups as chips, or "+Create Group" cross-link).
+- **New Habit Group flow**: Name → Cadence → Group Type → Assign Habits (checkbox sheet) → type-specific step (`Required`: pick the required subset via a sheet; `Hours`: set an aggregate hours target; `Any`/`All`: no extra step) → optional "+Create Habit" cross-link.
+- **Hours Entry Modal**: logs hours against an Hours-type habit (stepper, tap-to-type, default 0).
 
 ## Commands
 
@@ -59,20 +53,25 @@ npx jest path/to/file.test.tsx
 
 ## Architecture
 
-Single-screen app. Registers via `index.js` → `App.tsx` → `JournalScreen`. No navigation library or state manager.
+**Transitional state (v2 rewrite in progress).** `index.js` → `App.tsx` currently renders a placeholder screen — the v1 `JournalScreen` was removed pending the v2 navigation shell and screens described above. No navigation library or state manager is wired up yet.
 
-**`src/` structure:**
+**`src_v1_backup/` — frozen v1 code**, kept for reference/reuse, not part of the active build (excluded from `tsconfig.json`, `.eslintignore`, `jest.config.js`):
+```
+src_v1_backup/
+├── config/               — challenge.ts (v1 CHALLENGE_CONFIG)
+├── screens/              — JournalScreen.tsx (v1 single screen)
+├── components/           — all v1 UI components
+└── styles/               — shared.ts (remindersStyles, sectionTitle)
+```
+
+**`src/` — active, but still v1-shaped**; kept as a low-level starting point and not yet rewired to the v2 Habit/HabitGroup model:
 ```
 src/
-├── theme.ts              — colors, fonts
-├── types/                — shared TypeScript types
-├── config/               — challenge definitions (CHALLENGES array)
+├── theme.ts              — colors, fonts (still v1's parchment palette — doesn't match v2's dark/orange screens yet)
+├── types/                — shared TypeScript types (still DayLog/HabitDefinition-shaped, pre-dates Habit/HabitGroup)
 ├── utils/                — dates.ts, habits.ts, time.ts
-├── storage/              — storage.ts (AsyncStorage wrappers)
-├── screens/              — JournalScreen.tsx (single screen)
-├── components/           — all UI components
-├── notifications/        — reminders.ts, mindfulnessBell.ts
-└── styles/               — shared.ts (remindersStyles, sectionTitle)
+├── storage/              — storage.ts (AsyncStorage wrappers; still DayLog-shaped, config-loading removed with `config/`)
+└── notifications/        — reminders.ts, mindfulnessBell.ts (unaffected by the data-model rewrite)
 ```
 
 **Code style** (enforced via `.prettierrc.js`): single quotes, trailing commas, no parens on single arrow-function params.

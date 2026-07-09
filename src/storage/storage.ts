@@ -1,9 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ChallengeConfig, DayLog, IntentionResult, WinState} from '../types';
-import {CHALLENGE_CONFIG} from '../config/challenge';
+import {DayLog, IntentionResult, WinState} from '../types';
 
 const LOGS_KEY = 'vinaya_logs';
-const CONFIG_KEY = 'vinaya_challenge_config';
 
 export function makeEmptyLog(): DayLog {
   return {
@@ -18,20 +16,6 @@ export function makeEmptyLog(): DayLog {
       IntentionResult,
     ],
   };
-}
-
-export async function loadConfig(): Promise<ChallengeConfig> {
-  try {
-    const raw = await AsyncStorage.getItem(CONFIG_KEY);
-    if (raw) return JSON.parse(raw) as ChallengeConfig;
-  } catch {}
-  return {...CHALLENGE_CONFIG};
-}
-
-export async function saveConfig(config: ChallengeConfig): Promise<void> {
-  try {
-    await AsyncStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  } catch {}
 }
 
 export async function loadAllLogs(): Promise<Record<string, DayLog>> {
