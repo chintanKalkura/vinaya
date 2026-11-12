@@ -5,6 +5,7 @@ import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
 import { toDateKey } from '../utils/dates';
 import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
+import { seedDevFixturesIfEmpty } from '../storage/devSeed';
 import { markHabitDone, unmarkHabitDone } from '../services/habitService';
 import GroupCard from './habits/GroupCard';
 import HabitPill from './habits/HabitPill';
@@ -26,11 +27,13 @@ export default function HabitsScreen(): React.JSX.Element {
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([loadHabits(), loadHabitGroups()]).then(([h, g]) => {
-      if (!mounted) return;
-      setHabits(h);
-      setGroups(g);
-    });
+    seedDevFixturesIfEmpty()
+      .then(() => Promise.all([loadHabits(), loadHabitGroups()]))
+      .then(([h, g]) => {
+        if (!mounted) return;
+        setHabits(h);
+        setGroups(g);
+      });
     return () => {
       mounted = false;
     };
