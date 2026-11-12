@@ -12,6 +12,8 @@ export const colors = {
   v2Border: '#3a3a5c',
   v2BorderActive: '#f5821f',
   v2Orange: '#f5821f',
+  v2OrangeCardBackground: '#3a2a12',
+  v2Blue: '#3d9be9',
   v2GreyText: '#8a8aa3',
   v2GreyOutline: '#4a4a6a',
   v2White: '#f5f5fa',
