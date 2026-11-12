@@ -1,0 +1,95 @@
+import React from 'react';
+import { fireEvent, render } from '@testing-library/react-native';
+import HabitPill from './HabitPill';
+import { Habit } from '../../types/habit';
+
+const TODAY = '2024-06-15';
+const D1 = '2024-06-14';
+const D2 = '2024-06-13';
+
+function makeHabit(overrides: Partial<Habit> = {}): Habit {
+  return {
+    id: 'habit-1',
+    name: 'No Killing',
+    cadence: 'Day',
+    type: 'Checkmark',
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+    ...overrides,
+  };
+}
+
+describe('HabitPill', () => {
+  it('renders marked state: checked and streak visible when today is marked', () => {
+    const habit = makeHabit({
+      recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+    });
+    const { getByTestId } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+      checked: true,
+      disabled: false,
+    });
+  });
+
+  it('renders unmarked-but-streak-alive state: unchecked, streak still shown', () => {
+    const habit = makeHabit({
+      recentLog: [{ date: D1, kind: 'marker', value: 1 }],
+    });
+    const { getByTestId, getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+      checked: false,
+      disabled: false,
+    });
+    expect(getByText('1')).toBeTruthy();
+  });
+
+  it('renders broken-streak state: unchecked, streak zero', () => {
+    const habit = makeHabit({
+      recentLog: [{ date: D2, kind: 'marker', value: 1 }],
+    });
+    const { getByTestId, getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+      checked: false,
+      disabled: false,
+    });
+    expect(getByText('0')).toBeTruthy();
+  });
+
+  it('calls onPress with the habit id when an interactive habit is tapped', () => {
+    const habit = makeHabit();
+    const onPress = jest.fn();
+    const { getByTestId } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={onPress} />,
+    );
+
+    fireEvent.press(getByTestId('habit-pill-habit-1'));
+
+    expect(onPress).toHaveBeenCalledWith('habit-1');
+  });
+
+  it('is disabled and shows a dash for a non-Day/non-Checkmark habit', () => {
+    const habit = makeHabit({ type: 'Hours' });
+    const { getByTestId, getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+      checked: false,
+      disabled: true,
+    });
+    expect(getByText('–')).toBeTruthy();
+  });
+});
