@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
+import { Check } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { useHabitVisual } from './useHabitVisual';
 
@@ -8,12 +9,16 @@ interface HabitPillProps {
   habit: Habit;
   todayKey: string;
   onPress: (habitId: string) => void;
+  required?: boolean;
+  shape?: 'round' | 'square';
 }
 
 export default function HabitPill({
   habit,
   todayKey,
   onPress,
+  required = false,
+  shape = 'round',
 }: HabitPillProps): React.JSX.Element {
   const { interactive, visual } = useHabitVisual(habit, todayKey);
   const isMarked = visual?.habitColorState === 'marked';
@@ -32,16 +37,24 @@ export default function HabitPill({
       onPress={() => onPress(habit.id)}
       style={[
         styles.pill,
-        { borderColor: isMarked ? colors.v2BorderActive : colors.v2Border },
+        { borderColor: required ? colors.v2Blue : colors.v2Border },
       ]}
     >
       <View
         style={[
           styles.icon,
-          { borderColor: isMarked ? colors.v2Orange : colors.v2GreyOutline },
+          shape === 'square' && styles.iconSquare,
+          isMarked
+            ? {
+                borderColor: colors.v2Orange,
+                backgroundColor: colors.v2Orange,
+              }
+            : { borderColor: colors.v2GreyOutline },
         ]}
       >
-        {isMarked ? <Text style={styles.checkmark}>✓</Text> : null}
+        {isMarked ? (
+          <Check color={colors.v2Background} size={12} strokeWidth={3.5} />
+        ) : null}
       </View>
       <Text style={[styles.name, { color: nameColor }]}>{habit.name}</Text>
       {visual ? (
@@ -74,9 +87,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
   },
-  checkmark: {
-    color: colors.v2Orange,
-    fontSize: 12,
+  iconSquare: {
+    borderRadius: 3,
   },
   name: {
     fontWeight: '600',

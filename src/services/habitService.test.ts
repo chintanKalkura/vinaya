@@ -112,7 +112,7 @@ describe('markHabitDone', () => {
 });
 
 describe('unmarkHabitDone', () => {
-  it('removes the marker entry from recentLog but leaves history untouched', async () => {
+  it('removes the marker entry from both recentLog and history', async () => {
     const entry = { date: TODAY, kind: 'marker' as const, value: 1 };
     await saveHabits({
       'habit-1': makeHabit({ recentLog: [entry], history: [entry] }),
@@ -121,7 +121,7 @@ describe('unmarkHabitDone', () => {
     const updated = await unmarkHabitDone('habit-1', TODAY);
 
     expect(updated.recentLog).toEqual([]);
-    expect(updated.history).toEqual([entry]);
+    expect(updated.history).toEqual([]);
   });
 
   it('is a no-op when today is not marked', async () => {
@@ -141,7 +141,7 @@ describe('unmarkHabitDone', () => {
     );
   });
 
-  it('round trips with markHabitDone, leaving recentLog unchanged and history with the transient entry', async () => {
+  it('round trips with markHabitDone, leaving recentLog and history unchanged', async () => {
     const D1 = { date: '2024-06-14', kind: 'marker' as const, value: 1 };
     const D2 = { date: '2024-06-13', kind: 'marker' as const, value: 1 };
     await saveHabits({
@@ -152,10 +152,6 @@ describe('unmarkHabitDone', () => {
     const final = await unmarkHabitDone('habit-1', TODAY);
 
     expect(final.recentLog).toEqual([D1, D2]);
-    expect(final.history).toEqual([
-      D2,
-      D1,
-      { date: TODAY, kind: 'marker', value: 1 },
-    ]);
+    expect(final.history).toEqual([D2, D1]);
   });
 });

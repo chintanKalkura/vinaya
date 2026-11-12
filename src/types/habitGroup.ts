@@ -15,5 +15,5 @@ export interface HabitGroup {
   sortOrder: number;
   createdAt: number;
   recentLog: LogEntry[]; // capped rolling window, newest-first
-  history: LogEntry[]; // append-only, oldest -> newest, unbounded
+  history: LogEntry[]; // oldest -> newest, unbounded; today's entry is removed when the group stops being complete
 }

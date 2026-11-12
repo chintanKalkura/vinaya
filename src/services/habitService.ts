@@ -3,6 +3,7 @@ import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
 import { loadHabits, saveHabit } from '../storage/habitStorage';
+import { syncGroupCompletion } from './habitGroupService';
 
 export class InvalidMarkError extends Error {}
 
@@ -42,6 +43,7 @@ export async function markHabitDone(
   };
 
   await saveHabit(updated);
+  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
   return updated;
 }
 
@@ -59,9 +61,11 @@ export async function unmarkHabitDone(
   const updated: Habit = {
     ...habit,
     recentLog: habit.recentLog.filter(entry => entry.date !== todayKey),
+    history: habit.history.filter(entry => entry.date !== todayKey),
   };
 
   await saveHabit(updated);
+  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
   return updated;
 }
 
