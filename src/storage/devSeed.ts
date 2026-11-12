@@ -8,12 +8,18 @@ function marker(date: string): LogEntry {
   return { date, kind: 'marker', value: 1 };
 }
 
+// `days` consecutive markers, newest-first, starting `startOffset` days before today
+function streakLog(today: string, days: number, startOffset = 0): LogEntry[] {
+  return Array.from({ length: days }, (_, i) =>
+    marker(addDays(today, -(startOffset + i))),
+  );
+}
+
 export async function seedDevFixturesIfEmpty(): Promise<void> {
   const existing = await loadHabits();
   if (Object.keys(existing).length > 0) return;
 
   const today = toDateKey(new Date());
-  const yesterday = addDays(today, -1);
 
   let sortOrder = 0;
   const nextSortOrder = () => sortOrder++;
@@ -58,21 +64,38 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
   }
 
   const habits: Habit[] = [
-    checkmarkHabit('no-killing', 'No Killing', 'precepts', [marker(today)]),
-    checkmarkHabit('no-stealing', 'No Stealing', 'precepts', [
-      marker(yesterday),
-    ]),
-    checkmarkHabit('celibacy', 'Celibacy', 'precepts', [marker(today)]),
+    checkmarkHabit(
+      'no-killing',
+      'No Killing',
+      'precepts',
+      streakLog(today, 12),
+    ),
+    checkmarkHabit(
+      'no-stealing',
+      'No Stealing',
+      'precepts',
+      streakLog(today, 12),
+    ),
+    checkmarkHabit('celibacy', 'Celibacy', 'precepts', streakLog(today, 8)),
     checkmarkHabit('right-speech', 'Right Speech', 'precepts', []),
-    checkmarkHabit('no-intoxication', 'No Intoxication', 'precepts', [
+    checkmarkHabit(
+      'no-intoxication',
+      'No Intoxication',
+      'precepts',
+      streakLog(today, 12),
+    ),
+    checkmarkHabit('no-dinner', 'No Dinner', 'precepts', streakLog(today, 5)),
+    checkmarkHabit(
+      'no-entertainment',
+      'No Entertainment',
+      'precepts',
+      streakLog(today, 12),
+    ),
+    checkmarkHabit('sleep-on-floor', 'Sleep On Floor', 'precepts', [
       marker(today),
     ]),
-    checkmarkHabit('no-dinner', 'No Dinner', 'precepts', [marker(today)]),
-    checkmarkHabit('no-entertainment', 'No Entertainment', 'precepts', [
-      marker(today),
-    ]),
-    checkmarkHabit('sleep-on-floor', 'Sleep On Floor', 'precepts', []),
-    checkmarkHabit('cook', 'Cook', 'eat-healthy', [marker(today)]),
+    // Not marked today; streak still alive through yesterday
+    checkmarkHabit('cook', 'Cook', 'eat-healthy', streakLog(today, 3, 1)),
     checkmarkHabit('restaurant', 'Restaurant', 'eat-healthy', []),
     checkmarkHabit('drink-water', 'Drink Water', undefined, [marker(today)]),
     hoursHabit('job-hunt', 'Job Hunt', 'stay-productive'),
@@ -86,7 +109,15 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
       cadence: 'Day',
       groupType: 'Required',
       habitIds: habits.filter(h => h.groupId === 'precepts').map(h => h.id),
-      requiredHabitIds: [],
+      requiredHabitIds: [
+        'no-killing',
+        'no-stealing',
+        'celibacy',
+        'no-intoxication',
+        'no-dinner',
+        'sleep-on-floor',
+      ],
+      streakPlaceholder: 12,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -99,6 +130,7 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
       cadence: 'Day',
       groupType: 'Any',
       habitIds: habits.filter(h => h.groupId === 'eat-healthy').map(h => h.id),
+      streakPlaceholder: 0,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
