@@ -17,5 +17,5 @@ export interface Habit {
   sortOrder: number;
   createdAt: number;
   recentLog: LogEntry[]; // capped rolling window, newest-first
-  history: LogEntry[]; // append-only, oldest -> newest, unbounded
+  history: LogEntry[]; // oldest -> newest, unbounded; today's entry is removed on unmark
 }
