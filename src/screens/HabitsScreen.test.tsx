@@ -215,6 +215,28 @@ describe('HabitsScreen', () => {
     );
   });
 
+  it('updates the group streak number when a habit completes the group', async () => {
+    await seed(
+      { 'no-killing': makeHabit() },
+      {
+        precepts: makeGroup({
+          requiredHabitIds: ['no-killing'],
+          recentLog: [{ date: '2024-06-14', kind: 'marker', value: 1 }],
+          history: [{ date: '2024-06-14', kind: 'marker', value: 1 }],
+        }),
+      },
+    );
+
+    const { findByTestId } = render(<HabitsScreen />);
+    const pill = await findByTestId('habit-pill-no-killing');
+    const number = await findByTestId('group-number-precepts');
+    await waitFor(() => expect(number.props.children).toBe(1));
+
+    fireEvent.press(pill);
+
+    await waitFor(() => expect(number.props.children).toBe(2));
+  });
+
   it('turns an Any group orange when one of its habits is marked', async () => {
     await seed(
       { cook: makeHabit({ id: 'cook', name: 'Cook', groupId: 'eat' }) },

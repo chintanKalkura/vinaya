@@ -47,6 +47,7 @@ export default function HabitsScreen(): React.JSX.Element {
         : await markHabitDone(habitId, todayKey);
 
       setHabits(prev => ({ ...prev, [habitId]: updated }));
+      setGroups(await loadHabitGroups());
     },
     [habits, todayKey],
   );

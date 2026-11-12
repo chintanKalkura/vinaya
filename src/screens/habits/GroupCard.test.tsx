@@ -76,10 +76,14 @@ describe('GroupCard', () => {
     expect(queryAllByTestId(/habit-pill-/)).toHaveLength(0);
   });
 
-  it('shows the group number placeholder when present', () => {
+  it('shows the group streak calculated from the group log', () => {
+    const log = [
+      { date: TODAY, kind: 'marker' as const, value: 1 },
+      { date: '2024-06-14', kind: 'marker' as const, value: 1 },
+    ];
     const { getByTestId } = render(
       <GroupCard
-        group={makeGroup({ streakPlaceholder: 12 })}
+        group={makeGroup({ recentLog: log, history: log })}
         habits={[]}
         todayKey={TODAY}
         complete={true}
@@ -87,21 +91,21 @@ describe('GroupCard', () => {
       />,
     );
 
-    expect(getByTestId('group-number-group-1').props.children).toBe(12);
+    expect(getByTestId('group-number-group-1').props.children).toBe(2);
   });
 
-  it('omits the group number when there is no placeholder', () => {
-    const { queryByTestId } = render(
+  it('shows 0 when the group log is empty', () => {
+    const { getByTestId } = render(
       <GroupCard
         group={makeGroup()}
         habits={[]}
         todayKey={TODAY}
-        complete={true}
+        complete={false}
         onToggle={jest.fn()}
       />,
     );
 
-    expect(queryByTestId('group-number-group-1')).toBeNull();
+    expect(getByTestId('group-number-group-1').props.children).toBe(0);
   });
 
   it('uses an orange border when complete and a grey border otherwise', () => {

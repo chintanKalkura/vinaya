@@ -3,6 +3,7 @@ import { seedDevFixturesIfEmpty } from './devSeed';
 import { loadHabits, loadHabitGroups, saveHabits } from './habitStorage';
 import { calculateStreak } from '../utils/streak';
 import { toDateKey } from '../utils/dates';
+import { getGroupStreak } from '../services/habitGroupService';
 import { isGroupComplete } from '../utils/groupCompletion';
 
 beforeEach(async () => {
@@ -70,6 +71,16 @@ describe('seedDevFixturesIfEmpty', () => {
     expect(
       isGroupComplete(groups['eat-healthy'], members('eat-healthy'), today),
     ).toBe(false);
+  });
+
+  it('seeds group logs so 8 Precepts has a 12-day streak and Eat Healthy has none', async () => {
+    await seedDevFixturesIfEmpty();
+
+    const groups = await loadHabitGroups();
+    const today = toDateKey(new Date());
+
+    expect(getGroupStreak(groups.precepts, today)).toBe(12);
+    expect(getGroupStreak(groups['eat-healthy'], today)).toBe(0);
   });
 
   it('seeds Hours-type habits that carry no marker log entries', async () => {

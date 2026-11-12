@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { colors } from '../../theme';
+import { getGroupStreak } from '../../services/habitGroupService';
 import HabitPill from './HabitPill';
 
 interface GroupCardProps {
@@ -49,14 +50,12 @@ export default function GroupCard({
           ) : null}
         </View>
         <Text style={styles.title}>{group.name}</Text>
-        {group.streakPlaceholder !== undefined ? (
-          <Text
-            testID={`group-number-${group.id}`}
-            style={[styles.number, { color: accent }]}
-          >
-            {group.streakPlaceholder}
-          </Text>
-        ) : null}
+        <Text
+          testID={`group-number-${group.id}`}
+          style={[styles.number, { color: accent }]}
+        >
+          {getGroupStreak(group, todayKey)}
+        </Text>
       </View>
       <View style={styles.pillRow}>
         {habits.map(habit => (
