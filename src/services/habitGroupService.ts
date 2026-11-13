@@ -19,7 +19,7 @@ export async function syncGroupCompletion(
 ): Promise<HabitGroup | undefined> {
   const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
   const group = groups[groupId];
-  if (!group || group.groupType === 'Hours') return group;
+  if (!group) return group;
 
   const members = Object.values(habits).filter(h => h.groupId === groupId);
   const complete = isGroupComplete(group, members, todayKey);
