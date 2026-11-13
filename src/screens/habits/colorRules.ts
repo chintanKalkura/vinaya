@@ -20,9 +20,11 @@ const bannerStyles = StyleSheet.create({
   },
 });
 
+// Title, number and banner follow `complete`; the icon follows `markedToday`
 export function getColorScheme(
   kind: ColorKind,
   complete: boolean,
+  markedToday: boolean = complete,
 ): ColorScheme {
   const accent = complete ? colors.v2Orange : colors.v2GreyText;
   const isBanner = kind === 'banner';
@@ -30,8 +32,8 @@ export function getColorScheme(
   return {
     titleColor: isBanner ? colors.v2White : accent,
     numberColor: accent,
-    iconColor: complete ? colors.v2Orange : colors.v2GreyOutline,
-    iconFilled: complete,
+    iconColor: markedToday ? colors.v2Orange : colors.v2GreyOutline,
+    iconFilled: markedToday,
     container: isBanner && complete ? bannerStyles.complete : null,
   };
 }

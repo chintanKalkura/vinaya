@@ -1,4 +1,4 @@
-import {LogEntry} from './log';
+import { LogEntry } from './log';
 
 export type HabitCadence = 'Day' | 'Week' | 'Month' | 'Year';
 export type HabitType = 'Checkmark' | 'Hours';
@@ -9,7 +9,7 @@ export interface Habit {
   name: string;
   cadence: HabitCadence;
   type: HabitType;
-  target?: number; // Checkmark type, Week/Month/Year cadence only
+  target?: number; // Week/Month/Year cadence, any type — marked days per window, max cadenceTargetMax
   targetHours?: number; // Hours type, any cadence — daily target, max hoursTargetMax
   streakFreezeInterval: number; // the "N" in "1 skip per N streaks"
   groupId?: string; // FK -> HabitGroup.id, kept in sync by the service layer

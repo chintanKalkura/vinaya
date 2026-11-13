@@ -1,5 +1,5 @@
 import { addDays } from './dates';
-import { calculateStreak, deriveHabitVisualState } from './streak';
+import { calculateStreak } from './streak';
 import { LogEntry } from '../types/log';
 
 const TODAY = '2024-06-15';
@@ -52,28 +52,5 @@ describe('calculateStreak', () => {
   it('ignores entries with kind "hours"', () => {
     const log: LogEntry[] = [{ date: TODAY, kind: 'hours', value: 3 }];
     expect(calculateStreak(log, TODAY)).toBe(0);
-  });
-});
-
-describe('deriveHabitVisualState', () => {
-  it('today marked: habit marked with its streak', () => {
-    expect(deriveHabitVisualState([marker(TODAY), marker(D1)], TODAY)).toEqual({
-      habitColorState: 'marked',
-      streakValue: 2,
-    });
-  });
-
-  it('today unmarked, yesterday marked: habit unmarked, streak kept', () => {
-    expect(deriveHabitVisualState([marker(D1), marker(D2)], TODAY)).toEqual({
-      habitColorState: 'unmarked',
-      streakValue: 2,
-    });
-  });
-
-  it('today and yesterday both unmarked: habit unmarked, streak broken', () => {
-    expect(deriveHabitVisualState([marker(D2)], TODAY)).toEqual({
-      habitColorState: 'unmarked',
-      streakValue: 0,
-    });
   });
 });

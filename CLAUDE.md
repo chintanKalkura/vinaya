@@ -21,3 +21,5 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/feature-development/` — feature development (empty)
 - `docs/style-choices/coloring-rules.md` — Habits coloring rules for pills and banners (complete vs not complete), implemented in `src/screens/habits/colorRules.ts`
 - `docs/style-choices/hours-progress.md` — Hours progress bar with its `{hours}/{target}h` label on one line, implemented in `src/screens/habits/HoursProgress.tsx`
+- `docs/style-choices/cadence-filter.md` — cadence filter dropdown (All, Day, Week, Month, Year) in the Habits header, implemented in `src/screens/habits/CadenceFilter.tsx`
+- `docs/style-choices/cadence-label.md` — cadence label (repeating calendar + Daily/Weekly/Monthly/Yearly) in the bottom-right corner of habit and group banners, implemented in `src/screens/habits/CadenceLabel.tsx`

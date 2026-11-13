@@ -32,8 +32,9 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the marks, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 
@@ -48,8 +49,9 @@ function makeGroup(overrides: Partial<HabitGroup> = {}): HabitGroup {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the marks, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 
@@ -78,6 +80,13 @@ function hoursFixture(
   ];
 }
 
+// List view is the default; most tests here exercise group view
+function renderInGroupView() {
+  const utils = render(<HabitsScreen />);
+  fireEvent.press(utils.getByTestId('view-mode-toggle-group'));
+  return utils;
+}
+
 async function seed(
   habits: Record<string, Habit>,
   groups: Record<string, HabitGroup> = {},
@@ -91,19 +100,32 @@ beforeEach(async () => {
 });
 
 describe('HabitsScreen', () => {
-  it('renders group view by default with seeded habits visible', async () => {
+  it('renders list view by default with seeded habits visible', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { findByText, findByTestId } = render(<HabitsScreen />);
+    const { findByTestId, queryByTestId } = render(<HabitsScreen />);
 
-    expect(await findByText('8 Precepts')).toBeTruthy();
-    expect(await findByTestId('habit-pill-no-killing')).toBeTruthy();
+    expect([
+      !!(await findByTestId('habit-row-no-killing')),
+      queryByTestId('group-card-precepts'),
+    ]).toEqual([true, null]);
+  });
+
+  it('shows the list toggle as selected by default', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId, getByTestId } = render(<HabitsScreen />);
+    await findByTestId('habit-row-no-killing');
+
+    expect(
+      getByTestId('view-mode-toggle-list').props.accessibilityState.selected,
+    ).toBe(true);
   });
 
   it('marks an unmarked Day/Checkmark habit on tap', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
     const pill = await findByTestId('habit-pill-no-killing');
 
     fireEvent.press(pill);
@@ -123,7 +145,7 @@ describe('HabitsScreen', () => {
       { precepts: makeGroup() },
     );
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
     const pill = await findByTestId('habit-pill-no-killing');
     await waitFor(() =>
       expect(pill.props.accessibilityState.checked).toBe(true),
@@ -139,7 +161,7 @@ describe('HabitsScreen', () => {
   it('opens the Hours Entry Modal when an Hours habit is tapped', async () => {
     await seed(...hoursFixture(4));
 
-    const { findByTestId, queryByTestId } = render(<HabitsScreen />);
+    const { findByTestId, queryByTestId } = renderInGroupView();
     expect(queryByTestId('hours-modal')).toBeNull();
 
     fireEvent.press(await findByTestId('habit-row-study'));
@@ -150,7 +172,7 @@ describe('HabitsScreen', () => {
   it('updates the habit hours when Done is pressed in the modal', async () => {
     await seed(...hoursFixture(4));
 
-    const { findByTestId, findByText, getByTestId } = render(<HabitsScreen />);
+    const { findByTestId, findByText, getByTestId } = renderInGroupView();
     fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '2');
     fireEvent.press(getByTestId('hours-modal-done'));
@@ -161,7 +183,7 @@ describe('HabitsScreen', () => {
   it('turns an Hours group orange when Done brings it to its target', async () => {
     await seed(...hoursFixture(4));
 
-    const { findByTestId, getByTestId } = render(<HabitsScreen />);
+    const { findByTestId, getByTestId } = renderInGroupView();
     const card = await findByTestId('group-card-productive');
     fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
@@ -177,7 +199,7 @@ describe('HabitsScreen', () => {
   it('does not save hours when the modal is closed with ×', async () => {
     await seed(...hoursFixture(4));
 
-    const { findByTestId, getByTestId, getByText } = render(<HabitsScreen />);
+    const { findByTestId, getByTestId, getByText } = renderInGroupView();
     fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
     fireEvent.press(getByTestId('hours-modal-close'));
@@ -185,30 +207,13 @@ describe('HabitsScreen', () => {
     await waitFor(() => expect(getByText('0/1h')).toBeTruthy());
   });
 
-  it('switches to list view when the list toggle is pressed', async () => {
+  it('switches to group view when the group toggle is pressed', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { findByTestId, getByTestId, queryByTestId } = render(
       <HabitsScreen />,
     );
-    await findByTestId('habit-pill-no-killing');
-
-    fireEvent.press(getByTestId('view-mode-toggle-list'));
-
-    expect([
-      !!queryByTestId('habit-row-no-killing'),
-      queryByTestId('group-card-precepts'),
-    ]).toEqual([true, null]);
-  });
-
-  it('switches back to group view when the group toggle is pressed', async () => {
-    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
-
-    const { findByTestId, getByTestId, queryByTestId } = render(
-      <HabitsScreen />,
-    );
-    await findByTestId('habit-pill-no-killing');
-    fireEvent.press(getByTestId('view-mode-toggle-list'));
+    await findByTestId('habit-row-no-killing');
 
     fireEvent.press(getByTestId('view-mode-toggle-group'));
 
@@ -218,10 +223,27 @@ describe('HabitsScreen', () => {
     ]).toEqual([true, null]);
   });
 
+  it('switches back to list view when the list toggle is pressed', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId, getByTestId, queryByTestId } = render(
+      <HabitsScreen />,
+    );
+    await findByTestId('habit-row-no-killing');
+    fireEvent.press(getByTestId('view-mode-toggle-group'));
+
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+
+    expect([
+      !!queryByTestId('habit-row-no-killing'),
+      queryByTestId('group-card-precepts'),
+    ]).toEqual([true, null]);
+  });
+
   it('shows the group name under a habit in list view', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { findByTestId, getByTestId, findByText } = render(<HabitsScreen />);
+    const { findByTestId, getByTestId, findByText } = renderInGroupView();
     await findByTestId('habit-pill-no-killing');
     fireEvent.press(getByTestId('view-mode-toggle-list'));
 
@@ -240,7 +262,7 @@ describe('HabitsScreen', () => {
       {},
     );
 
-    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
     const row = await findByTestId('habit-row-drink-water');
 
@@ -248,13 +270,13 @@ describe('HabitsScreen', () => {
       .getAllByText(/.+/)
       .map(node => node.props.children);
 
-    expect(texts).toEqual(['Drink Water', 0]);
+    expect(texts).toEqual(['Drink Water', 0, 'Daily']);
   });
 
   it('marks a habit when its list row is tapped', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
     const row = await findByTestId('habit-row-no-killing');
 
@@ -268,7 +290,7 @@ describe('HabitsScreen', () => {
   it('turns a list row orange when its habit is marked', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
     const row = await findByTestId('habit-row-no-killing');
 
@@ -284,7 +306,7 @@ describe('HabitsScreen', () => {
   it('opens the Hours Entry Modal when an Hours row is tapped', async () => {
     await seed(...hoursFixture(4));
 
-    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
 
     fireEvent.press(await findByTestId('habit-row-study'));
@@ -305,7 +327,7 @@ describe('HabitsScreen', () => {
       { precepts: makeGroup() },
     );
 
-    const { findByTestId, queryByTestId } = render(<HabitsScreen />);
+    const { findByTestId, queryByTestId } = renderInGroupView();
     await findByTestId('habit-pill-no-killing');
 
     expect(queryByTestId('habit-pill-drink-water')).toBeNull();
@@ -314,7 +336,7 @@ describe('HabitsScreen', () => {
   it('renders Hours groups', async () => {
     await seed(...hoursFixture(4));
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
 
     expect(await findByTestId('group-card-productive')).toBeTruthy();
   });
@@ -326,10 +348,16 @@ describe('HabitsScreen', () => {
           recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
         }),
       },
-      { precepts: makeGroup({ requiredHabitIds: ['no-killing'] }) },
+      {
+        precepts: makeGroup({
+          requiredHabitIds: ['no-killing'],
+          recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+          history: [{ date: TODAY, kind: 'marker', value: 1 }],
+        }),
+      },
     );
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
     const pill = await findByTestId('habit-pill-no-killing');
     const card = await findByTestId('group-card-precepts');
     await waitFor(() =>
@@ -359,7 +387,7 @@ describe('HabitsScreen', () => {
       },
     );
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
     const pill = await findByTestId('habit-pill-no-killing');
     const number = await findByTestId('group-number-precepts');
     await waitFor(() => expect(number.props.children).toBe(1));
@@ -382,7 +410,7 @@ describe('HabitsScreen', () => {
       },
     );
 
-    const { findByTestId } = render(<HabitsScreen />);
+    const { findByTestId } = renderInGroupView();
     const pill = await findByTestId('habit-pill-cook');
     const card = await findByTestId('group-card-eat');
     expect(StyleSheet.flatten(card.props.style).borderColor).toBe(
@@ -401,7 +429,7 @@ describe('HabitsScreen', () => {
   it('shows the FAB and the four bottom menu items', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const { findByTestId, getByTestId } = render(<HabitsScreen />);
+    const { findByTestId, getByTestId } = renderInGroupView();
     await findByTestId('habit-pill-no-killing');
 
     expect(getByTestId('fab')).toBeTruthy();
@@ -413,7 +441,7 @@ describe('HabitsScreen', () => {
   it('persists marks across a remount against the same storage', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
-    const first = render(<HabitsScreen />);
+    const first = renderInGroupView();
     const pill = await first.findByTestId('habit-pill-no-killing');
     fireEvent.press(pill);
     await waitFor(() =>
@@ -421,11 +449,107 @@ describe('HabitsScreen', () => {
     );
     first.unmount();
 
-    const second = render(<HabitsScreen />);
+    const second = renderInGroupView();
     const reloadedPill = await second.findByTestId('habit-pill-no-killing');
 
     await waitFor(() => {
       expect(reloadedPill.props.accessibilityState.checked).toBe(true);
+    });
+  });
+
+  describe('cadence filter', () => {
+    const weekHabit = makeHabit({
+      id: 'run',
+      name: 'Run',
+      cadence: 'Week',
+      target: 2,
+      groupId: 'fitness',
+    });
+    const dayInWeekGroup = makeHabit({
+      id: 'stretch',
+      name: 'Stretch',
+      groupId: 'fitness',
+    });
+    const fixtures = () =>
+      seed(
+        { 'no-killing': makeHabit(), run: weekHabit, stretch: dayInWeekGroup },
+        {
+          precepts: makeGroup(),
+          fitness: makeGroup({
+            id: 'fitness',
+            name: 'Fitness',
+            cadence: 'Week',
+            groupType: 'Any',
+            target: 2,
+            habitIds: ['run', 'stretch'],
+            sortOrder: 1,
+          }),
+        },
+      );
+    const choose = async (utils: ReturnType<typeof render>, option: string) => {
+      fireEvent.press(await utils.findByTestId('cadence-filter'));
+      fireEvent.press(utils.getByTestId(`cadence-option-${option}`));
+    };
+
+    it('shows All by default with every group', async () => {
+      await fixtures();
+
+      const utils = renderInGroupView();
+
+      expect([
+        !!(await utils.findByTestId('group-card-precepts')),
+        !!utils.getByTestId('group-card-fitness'),
+      ]).toEqual([true, true]);
+    });
+
+    it('shows only Week groups in group view when Week is chosen', async () => {
+      await fixtures();
+      const utils = renderInGroupView();
+      await utils.findByTestId('group-card-precepts');
+
+      await choose(utils, 'Week');
+
+      expect([
+        utils.queryByTestId('group-card-precepts'),
+        !!utils.getByTestId('group-card-fitness'),
+      ]).toEqual([null, true]);
+    });
+
+    it('still shows Day habits inside a Week group', async () => {
+      await fixtures();
+      const utils = renderInGroupView();
+      await utils.findByTestId('group-card-precepts');
+
+      await choose(utils, 'Week');
+
+      expect(utils.getByTestId('habit-pill-stretch')).toBeTruthy();
+    });
+
+    it('shows only Week habits in list view when Week is chosen', async () => {
+      await fixtures();
+      const utils = renderInGroupView();
+      await utils.findByTestId('group-card-precepts');
+      fireEvent.press(utils.getByTestId('view-mode-toggle-list'));
+
+      await choose(utils, 'Week');
+
+      expect([
+        !!utils.getByTestId('habit-row-run'),
+        utils.queryByTestId('habit-row-stretch'),
+        utils.queryByTestId('habit-row-no-killing'),
+      ]).toEqual([true, null, null]);
+    });
+
+    it('marks a Week habit when tapped', async () => {
+      await fixtures();
+      const utils = renderInGroupView();
+      const pill = await utils.findByTestId('habit-pill-run');
+
+      fireEvent.press(pill);
+
+      await waitFor(() =>
+        expect(pill.props.accessibilityState.checked).toBe(true),
+      );
     });
   });
 });

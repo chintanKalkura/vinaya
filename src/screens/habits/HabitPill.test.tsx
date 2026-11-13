@@ -20,8 +20,9 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the marks, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 
@@ -36,7 +37,6 @@ describe('HabitPill', () => {
 
     expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
       checked: true,
-      disabled: false,
     });
   });
 
@@ -50,7 +50,6 @@ describe('HabitPill', () => {
 
     expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
       checked: false,
-      disabled: false,
     });
     expect(getByText('1')).toBeTruthy();
   });
@@ -65,7 +64,6 @@ describe('HabitPill', () => {
 
     expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
       checked: false,
-      disabled: false,
     });
     expect(getByText('0')).toBeTruthy();
   });
@@ -82,17 +80,39 @@ describe('HabitPill', () => {
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
 
-  it('is disabled and shows a dash for a non-Day habit', () => {
-    const habit = makeHabit({ cadence: 'Week' });
+  it('can be pressed and shows the streak for a Week habit', () => {
+    const onPress = jest.fn();
+    const habit = makeHabit({
+      cadence: 'Week',
+      target: 2,
+      recentLog: [{ date: D1, kind: 'marker', value: 1 }],
+    });
+    const { getByTestId, getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={onPress} />,
+    );
+
+    fireEvent.press(getByTestId('habit-pill-habit-1'));
+
+    expect([onPress.mock.calls.length, !!getByText('1')]).toEqual([1, true]);
+  });
+
+  it('shows a Week habit orange but unchecked when its window meets the target without a mark today', () => {
+    const habit = makeHabit({
+      cadence: 'Week',
+      target: 2,
+      recentLog: [
+        { date: D1, kind: 'marker', value: 1 },
+        { date: D2, kind: 'marker', value: 1 },
+      ],
+    });
     const { getByTestId, getByText } = render(
       <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
     );
 
-    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
-      checked: false,
-      disabled: true,
-    });
-    expect(getByText('–')).toBeTruthy();
+    expect([
+      getByTestId('habit-pill-habit-1').props.accessibilityState.checked,
+      StyleSheet.flatten(getByText('No Killing').props.style).color,
+    ]).toEqual([false, colors.v2Orange]);
   });
 
   it('shows the title and streak number orange when marked today', () => {

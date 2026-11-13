@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Habit } from '../types/habit';
-import { HabitGroup } from '../types/habitGroup';
+import { Habit, HabitCadence, HabitType } from '../types/habit';
+import { HabitGroup, HabitGroupType } from '../types/habitGroup';
+import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { addDays, toDateKey } from '../utils/dates';
+import { isGroupComplete } from '../utils/groupCompletion';
 import { getAppLastUpdateTime } from './appInfo';
 import { loadHabits, saveHabitGroups, saveHabits } from './habitStorage';
 
@@ -15,6 +17,12 @@ function streakLog(today: string, days: number, startOffset = 0): LogEntry[] {
   return Array.from({ length: days }, (_, i) =>
     marker(addDays(today, -(startOffset + i))),
   );
+}
+
+function range(from: number, to: number, step: number): number[] {
+  const out: number[] = [];
+  for (let n = from; n <= to; n += step) out.push(n);
+  return out;
 }
 
 const SEEDED_UPDATE_TIME_KEY = 'dev_seed_app_update_time';
@@ -82,6 +90,48 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     };
   }
 
+  // Week/Month/Year habit; `days` maps days-ago to hours (Hours) or 1 (Checkmark)
+  function periodHabit(
+    id: string,
+    name: string,
+    cadence: HabitCadence,
+    type: HabitType,
+    groupId: string | undefined,
+    target: number,
+    days: [number, number][],
+    targetHours?: number,
+  ): Habit {
+    const history: LogEntry[] = [...days]
+      .sort(([a], [b]) => b - a)
+      .map(([daysAgo, value]) => ({
+        date: addDays(today, -daysAgo),
+        kind: type === 'Hours' ? 'hours' : 'marker',
+        value,
+      }));
+    return {
+      id,
+      name,
+      cadence,
+      type,
+      target,
+      targetHours,
+      streakFreezeInterval: 7,
+      groupId,
+      status: 'active',
+      sortOrder: nextSortOrder(),
+      createdAt,
+      recentLog: [...history]
+        .reverse()
+        .slice(0, DEFAULT_HABIT_LIMITS.recentLogSize),
+      history,
+    };
+  }
+
+  const marks = (daysAgo: number[]): [number, number][] =>
+    daysAgo.map(d => [d, 1]);
+  const hours = (daysAgo: number[], value: number): [number, number][] =>
+    daysAgo.map(d => [d, value]);
+
   const habits: Habit[] = [
     checkmarkHabit(
       'no-killing',
@@ -125,6 +175,73 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     hoursHabit('errands', 'Errands', 'stay-productive', 0),
     hoursHabit('read', 'Read', 'stay-productive', 1),
     hoursHabit('create', 'Create', 'stay-productive', 0),
+    // Fitness: Run complete; Gym alive but incomplete
+    periodHabit(
+      'run',
+      'Run',
+      'Week',
+      'Checkmark',
+      'fitness',
+      3,
+      marks([0, 2, 4, 8, 10, 12]),
+    ),
+    periodHabit('gym', 'Gym', 'Week', 'Checkmark', 'fitness', 2, marks([3, 9])),
+    // Deep Work: Write Book complete (15 met days); Piano incomplete
+    periodHabit(
+      'write-book',
+      'Write Book',
+      'Month',
+      'Hours',
+      'deep-work',
+      15,
+      [
+        ...hours(
+          range(0, 16, 1).filter(d => d !== 5 && d !== 11),
+          2,
+        ),
+        [5, 1],
+      ],
+      2,
+    ),
+    periodHabit(
+      'piano',
+      'Piano',
+      'Month',
+      'Hours',
+      'deep-work',
+      10,
+      hours([1, 3, 6, 9, 13, 20], 1),
+      1,
+    ),
+    // Yearly Goals: Read Paper complete; Volunteer incomplete
+    periodHabit(
+      'read-paper',
+      'Read Paper',
+      'Year',
+      'Checkmark',
+      'yearly-goals',
+      50,
+      marks(range(0, 177, 3)),
+    ),
+    periodHabit(
+      'volunteer',
+      'Volunteer',
+      'Year',
+      'Checkmark',
+      'yearly-goals',
+      20,
+      marks(range(7, 203, 14)),
+    ),
+    // Complete for the week but not marked today
+    periodHabit(
+      'call-family',
+      'Call Family',
+      'Week',
+      'Checkmark',
+      undefined,
+      2,
+      marks([1, 5]),
+    ),
     checkmarkHabit(
       'drink-water',
       'Drink Water',
@@ -132,6 +249,46 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       streakLog(today, 4),
     ),
   ];
+
+  // Group log derived from member marks for the past year, so the two agree
+  function periodGroup(
+    id: string,
+    name: string,
+    cadence: HabitCadence,
+    groupType: HabitGroupType,
+    target: number,
+    targetHours?: number,
+  ): HabitGroup {
+    const members = habits
+      .filter(h => h.groupId === id)
+      .map(h => ({ ...h, recentLog: h.history }));
+    const group: HabitGroup = {
+      id,
+      name,
+      cadence,
+      groupType,
+      target,
+      targetHours,
+      habitIds: members.map(h => h.id),
+      status: 'active',
+      sortOrder: nextSortOrder(),
+      createdAt,
+      recentLog: [],
+      history: [],
+    };
+    const history = range(0, 366, 1)
+      .reverse()
+      .map(daysAgo => addDays(today, -daysAgo))
+      .filter(date => isGroupComplete(group, members, date))
+      .map(marker);
+    return {
+      ...group,
+      recentLog: [...history]
+        .reverse()
+        .slice(0, DEFAULT_HABIT_LIMITS.recentLogSize),
+      history,
+    };
+  }
 
   const groups: HabitGroup[] = [
     {
@@ -181,6 +338,9 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       recentLog: streakLog(today, 5),
       history: streakLog(today, 5).reverse(),
     },
+    periodGroup('fitness', 'Fitness', 'Week', 'Any', 3),
+    periodGroup('deep-work', 'Deep Work', 'Month', 'Hours', 12, 3),
+    periodGroup('yearly-goals', 'Yearly Goals', 'Year', 'All', 40),
   ];
 
   await saveHabits(Object.fromEntries(habits.map(h => [h.id, h])));

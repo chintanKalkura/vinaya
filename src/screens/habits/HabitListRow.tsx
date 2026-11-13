@@ -5,6 +5,7 @@ import { Habit } from '../../types/habit';
 import { colors } from '../../theme';
 import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
+import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import { ColorKind, getColorScheme } from './colorRules';
 
 interface HabitListRowProps {
@@ -22,10 +23,23 @@ export default function HabitListRow({
   onPress,
   colorKind,
 }: HabitListRowProps): React.JSX.Element {
-  const { interactive, visual, hours } = useHabitVisual(habit, todayKey);
-  const isMarked = visual?.habitColorState === 'marked';
-  const scheme = getColorScheme(colorKind, isMarked);
-  const rowStyle = [styles.row, scheme.container];
+  const { status, hours } = useHabitVisual(habit, todayKey);
+  const scheme = getColorScheme(colorKind, status.complete, status.markedToday);
+  // Banners (list view) right-align the streak and show the cadence label;
+  // pills (Hours habits inside a group card) keep the streak beside the name
+  const isBanner = colorKind === 'banner';
+  const rowStyle = [styles.row, scheme.container, isBanner && styles.bannerRow];
+  const streakStyle = [
+    styles.streak,
+    isBanner && styles.streakRight,
+    { color: scheme.numberColor },
+  ];
+  const cadenceLabel = isBanner ? (
+    <CadenceLabel
+      cadence={habit.cadence}
+      testID={`habit-row-cadence-${habit.id}`}
+    />
+  ) : null;
   const groupLabel = groupName ? (
     <Text style={styles.groupName}>{groupName}</Text>
   ) : null;
@@ -35,7 +49,7 @@ export default function HabitListRow({
       <Pressable
         testID={`habit-row-${habit.id}`}
         accessibilityRole="button"
-        accessibilityState={{ checked: isMarked, disabled: false }}
+        accessibilityState={{ checked: status.markedToday }}
         onPress={() => onPress(habit.id)}
         style={rowStyle}
       >
@@ -44,11 +58,8 @@ export default function HabitListRow({
             <Text style={[styles.name, { color: scheme.titleColor }]}>
               {habit.name}
             </Text>
-            <Text
-              testID={`habit-row-streak-${habit.id}`}
-              style={[styles.streak, { color: scheme.numberColor }]}
-            >
-              {visual?.streakValue ?? 0}
+            <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
+              {status.streak}
             </Text>
           </View>
           {groupLabel}
@@ -60,6 +71,7 @@ export default function HabitListRow({
             />
           </View>
         </View>
+        {cadenceLabel}
       </Pressable>
     );
   }
@@ -67,9 +79,8 @@ export default function HabitListRow({
   return (
     <Pressable
       testID={`habit-row-${habit.id}`}
-      disabled={!interactive}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: isMarked, disabled: !interactive }}
+      accessibilityState={{ checked: status.markedToday }}
       onPress={() => onPress(habit.id)}
       style={rowStyle}
     >
@@ -92,16 +103,13 @@ export default function HabitListRow({
           <Text style={[styles.name, { color: scheme.titleColor }]}>
             {habit.name}
           </Text>
-          {visual ? (
-            <Text style={[styles.streak, { color: scheme.numberColor }]}>
-              {visual.streakValue}
-            </Text>
-          ) : (
-            <Text style={[styles.streak, { color: colors.v2GreyText }]}>–</Text>
-          )}
+          <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
+            {status.streak}
+          </Text>
         </View>
         {groupLabel}
       </View>
+      {cadenceLabel}
     </Pressable>
   );
 }
@@ -116,6 +124,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     backgroundColor: colors.v2CardBackground,
+  },
+  bannerRow: {
+    paddingBottom: 12 + CADENCE_LABEL_SPACE,
   },
   icon: {
     width: 20,
@@ -141,6 +152,9 @@ const styles = StyleSheet.create({
   streak: {
     fontStyle: 'italic',
     fontWeight: '600',
+  },
+  streakRight: {
+    marginLeft: 'auto',
   },
   groupName: {
     color: colors.v2GreyText,

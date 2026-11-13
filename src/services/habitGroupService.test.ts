@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getGroupStreak, syncGroupCompletion } from './habitGroupService';
+import { getGroupStatus, syncGroupCompletion } from './habitGroupService';
 import { markHabitDone, unmarkHabitDone } from './habitService';
 import {
   loadHabitGroups,
@@ -230,28 +230,50 @@ describe('marking habits syncs the group log', () => {
   });
 });
 
-describe('getGroupStreak', () => {
-  it('should count consecutive complete days ending today', () => {
-    const group = makeGroup('Any', {
-      recentLog: [
-        marker(TODAY),
-        marker(addDays(TODAY, -1)),
-        marker(addDays(TODAY, -2)),
-      ],
+describe('getGroupStatus', () => {
+  const dayGroup = (log: LogEntry[]) =>
+    makeGroup('Any', { recentLog: log, history: log });
+  const weekGroup = (daysAgo: number[]) => {
+    const log = daysAgo.map(d => marker(addDays(TODAY, -d)));
+    return makeGroup('Any', {
+      cadence: 'Week',
+      target: 2,
+      recentLog: log,
+      history: log,
     });
+  };
 
-    expect(getGroupStreak(group, TODAY)).toBe(3);
+  it('should count consecutive complete days ending today for a Day group', () => {
+    const group = dayGroup([
+      marker(TODAY),
+      marker(addDays(TODAY, -1)),
+      marker(addDays(TODAY, -2)),
+    ]);
+
+    expect(getGroupStatus(group, TODAY).streak).toBe(3);
   });
 
-  it('should keep the streak alive through yesterday when today is not complete', () => {
-    const group = makeGroup('Any', { recentLog: [marker(addDays(TODAY, -1))] });
-
-    expect(getGroupStreak(group, TODAY)).toBe(1);
+  it('should keep a Day group streak alive through yesterday', () => {
+    expect(
+      getGroupStatus(dayGroup([marker(addDays(TODAY, -1))]), TODAY).streak,
+    ).toBe(1);
   });
 
-  it('should be 0 when yesterday and today are both missing', () => {
-    const group = makeGroup('Any', { recentLog: [marker(addDays(TODAY, -2))] });
+  it('should break a Day group streak when yesterday and today are missing', () => {
+    expect(
+      getGroupStatus(dayGroup([marker(addDays(TODAY, -2))]), TODAY).streak,
+    ).toBe(0);
+  });
 
-    expect(getGroupStreak(group, TODAY)).toBe(0);
+  it('should complete a Week group when its complete days in the window meet the target', () => {
+    expect(getGroupStatus(weekGroup([1, 5]), TODAY).complete).toBe(true);
+  });
+
+  it('should not complete a Week group below its target', () => {
+    expect(getGroupStatus(weekGroup([1, 8]), TODAY).complete).toBe(false);
+  });
+
+  it('should count every complete day in the run as the Week group streak', () => {
+    expect(getGroupStatus(weekGroup([1, 5, 9]), TODAY).streak).toBe(3);
   });
 });

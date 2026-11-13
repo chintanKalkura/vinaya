@@ -26,7 +26,7 @@ Implement habit and habit group with type hours where the habit can be tracked u
 4. An Hours group is complete (orange) for today when the total hours logged today across its habits ≥ the group's `targetHours`. Otherwise it is grey. A group with a `targetHours` of 0 or no `targetHours` is not complete.
 5. Screen 01 is wrong to show Stay Productive orange at 5 / 8 hrs. Under rule 4 it would be grey. The seed uses 8 / 8 so that the banner is orange.
 6. Hours groups use the existing group log sync. A marker entry is added for today when the group becomes complete and removed when it stops being complete.
-7. The Stay Productive banner number is the group streak (`getGroupStreak`), the same as for the other groups.
+7. The Stay Productive banner number is the group streak (now `getGroupStatus(...).streak`), the same as for the other groups.
 8. The hours logged for a day are stored as one `{date, kind: 'hours', value}` entry in the habit's `recentLog` and `history`. Logging again on the same day replaces it, and logging 0 removes it.
 9. Tapping an Hours pill opens the Hours Entry Modal, which starts at today's logged hours (default 0). Tapping the value field opens the number keyboard. **Done** saves and **×** closes without saving.
 

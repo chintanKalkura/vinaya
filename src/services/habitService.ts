@@ -14,9 +14,9 @@ function loadMarkableHabit(
 ): Habit {
   const habit = habits[habitId];
   if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
-  if (habit.cadence !== 'Day' || habit.type !== 'Checkmark') {
+  if (habit.type !== 'Checkmark') {
     throw new InvalidMarkError(
-      'Only Day-cadence Checkmark habits can be marked or unmarked',
+      'Only Checkmark habits can be marked or unmarked',
     );
   }
   return habit;
@@ -78,8 +78,8 @@ export async function setHabitHours(
   const habits = await loadHabits();
   const habit = habits[habitId];
   if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
-  if (habit.cadence !== 'Day' || habit.type !== 'Hours') {
-    throw new InvalidMarkError('Only Day-cadence Hours habits can log hours');
+  if (habit.type !== 'Hours') {
+    throw new InvalidMarkError('Only Hours habits can log hours');
   }
 
   const value = clampHours(hours);

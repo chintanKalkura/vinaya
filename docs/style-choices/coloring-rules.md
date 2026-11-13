@@ -6,15 +6,20 @@ All rules are implemented in one place: `src/screens/habits/colorRules.ts`. Comp
 
 ## 1. State
 
-Every element has a single state for today: **complete** or **not complete**.
+Every element has two states for today:
+- **Complete** decides the title, the streak number and the banner.
+- **Marked today** decides the icon.
 
-| Element | Complete when |
-|---|---|
-| Checkmark habit | marked today |
-| Hours habit | hours logged today ≥ its daily target hours |
-| Habit group | its group-type rule is met today (Required, Any, All, or Hours total ≥ target) |
+A **marked day** is a day the element was marked by hand (Checkmark), met its daily target hours (Hours), or, for a group, met its group-type rule (Required, Any, All, or Hours total ≥ daily target hours).
 
-The streak is never used to pick a color. A habit or group with an active streak that is not complete today is shown as not complete.
+| Cadence | Complete when | Marked today when |
+|---|---|---|
+| Day | today is a marked day | today is a marked day |
+| Week, Month, Year | the marked days in the rolling window reach the target | today is a marked day |
+
+For Day the two states are always the same. The rolling windows and targets are defined in `docs/feature-development/week-month-year-cadence.md`.
+
+The streak is never used to pick a color. A habit or group with an active streak that is not complete is shown as not complete.
 
 The same rules apply to Checkmark and Hours habits.
 
@@ -33,7 +38,7 @@ Pills appear only in group view. List view shows only banners.
 |---|---|---|
 | Title | orange | grey |
 | Streak number | orange | grey |
-| Check icon | orange fill with a check | grey outline |
+| Check icon | follows marked today: orange fill with a check, or grey outline | |
 | Card | unchanged | unchanged |
 
 Unchanged: the blue border on required habits, the round or square check shape, and the Hours progress bar and its hours label (see `hours-progress.md`).
@@ -45,7 +50,8 @@ Unchanged: the blue border on required habits, the round or square check shape, 
 | Border and background | orange 2px border, orange card background | grey border, grey card background |
 | Title | white | white |
 | Streak number | orange | grey |
-| Icon (group selector, Hours chart icon, list-row check) | orange | grey outline |
+| Icon (group selector, list-row check) | follows marked today: orange fill, or grey outline | |
+| Hours chart icon (group header) | follows marked today: orange, or grey | |
 
 Unchanged in both states:
 - the group name under a list row (muted grey italic)
@@ -54,5 +60,5 @@ Unchanged in both states:
 
 ## 5. Other cases
 
-- A habit that cannot be marked (not Day cadence) shows a grey "–" in place of the streak number.
 - A streak of 0 is grey. It can only happen when the element is not complete.
+- A Week, Month or Year element can be complete without being marked today, for example after reaching its target earlier in the window. It is then orange with an empty icon.

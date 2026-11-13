@@ -21,7 +21,7 @@ All the design elements seen in the screen are in scope.
 - 
 
 ## Decisions
-1. The view toggle switches between group view (default) and list view. Cadence, sort, FAB and bottom menu stay unwired.
+1. The view toggle switches between list view (default) and group view. List view became the default after the Week, Month and Year cadence feature; see 11. Cadence, sort, FAB and bottom menu stay unwired.
 2. List view shows every habit, in `sortOrder`, scrollable. Screen 04 shows the top of the list.
 3. Every Checkmark habit uses the round check icon: orange-filled with a check when marked, grey outline otherwise. Screen 04's square checkbox on Cook is superseded.
 4. Checkmark rows show the name, streak and italic group name. Tapping a row marks or unmarks it. Colors follow `docs/style-choices/coloring-rules.md`.
@@ -36,12 +36,19 @@ All the design elements seen in the screen are in scope.
     - The title is white in both states.
     - For an Hours habit, complete means its `targetHours` is met today.
     - All colors come from `getColorScheme` in `src/screens/habits/colorRules.ts` (see `docs/style-choices/coloring-rules.md`).
+11. List view is the default view when the Habits screen opens. The grid toggle switches to group view.
+12. On a habit banner in list view, the streak number sits at the right end of the title line. This applies only to banners in list view. Habit pills inside a group card keep the streak right after the name.
+13. Every banner shows its cadence in the bottom-right corner: habit banners in list view and group cards in group view. Habit pills inside a group card don't show it. See `docs/style-choices/cadence-label.md`.
 
 ## Fixtures
 Drink Water (Checkmark, no group) has a 4-day streak ending today and is the last habit by `sortOrder`.
 
 ## Tests
-- HabitsHeader: group view is active by default. Pressing list or group calls `onChangeViewMode` with that mode, and the active button follows `viewMode`.
+- HabitsScreen: list view is active by default, with the list toggle selected.
+- HabitListRow: the streak is right-aligned on banners (Checkmark and Hours) and stays beside the name on pills. Banners show the cadence label and pills don't.
+- CadenceLabel: Day/Week/Month/Year show as Daily/Weekly/Monthly/Yearly, with the icon, in the bottom-right corner.
+- GroupCard: shows the group's cadence label. Pills inside it show none.
+- HabitsHeader: the active toggle follows `viewMode`. Pressing list or group calls `onChangeViewMode` with that mode, and the active button follows `viewMode`.
 - HabitListRow: a marked Checkmark row shows the round check. An Hours row shows the streak (not `{n}h`), the bar and the `{hours}/{target}h` label. An Hours row is orange at its target and grey below it, and pressing it calls `onPress`.
 - Hours streak: counts consecutive days the target was met, and is grey when the target was met yesterday but not yet today.
 - HabitListRow banner: a marked row (or an Hours row that met its target) has the orange border, background and number, and an unmarked row stays grey with a grey number. The title is white in both states. As a pill, the row never gets the orange banner.
@@ -54,9 +61,11 @@ Drink Water (Checkmark, no group) has a 4-day streak ending today and is the las
 - Seed: Drink Water has a 4-day streak, has no group and is last by `sortOrder`.
 
 ## Acceptance criteria
-- [ ] Group view is shown by default
+- [ ] List view is shown by default
 - [ ] The list toggle shows the list view and the grid toggle returns to group view
 - [ ] List rows match screen 04, with round checks for Checkmark habits and a progress bar for Hours habits
+- [ ] The streak sits at the right end of the title line on list-view banners, and next to the name on pills
+- [ ] Habit banners and group cards show their cadence label in the bottom-right corner
 - [ ] Marked habits in list view show the orange border, orange background and orange number, like a complete group banner, with a white title
 - [ ] An unmarked habit with an active streak shows a grey streak number in both views
 - [ ] Drink Water is last with a streak of 4 and no group name

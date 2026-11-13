@@ -4,18 +4,18 @@ import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { ChartNoAxesColumnIncreasing } from 'lucide-react-native';
 import { colors } from '../../theme';
-import { getGroupStreak } from '../../services/habitGroupService';
+import { getGroupStatus } from '../../services/habitGroupService';
 import { getHoursToday } from '../../utils/hours';
 import { getColorScheme } from './colorRules';
 import HabitListRow from './HabitListRow';
 import HabitPill from './HabitPill';
 import HoursProgress from './HoursProgress';
+import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 
 interface GroupCardProps {
   group: HabitGroup;
   habits: Habit[];
   todayKey: string;
-  complete: boolean;
   onToggle: (habitId: string) => void;
 }
 
@@ -23,12 +23,12 @@ export default function GroupCard({
   group,
   habits,
   todayKey,
-  complete,
   onToggle,
 }: GroupCardProps): React.JSX.Element {
   const isRequiredGroup = group.groupType === 'Required';
   const isHoursGroup = group.groupType === 'Hours';
-  const scheme = getColorScheme('banner', complete);
+  const status = getGroupStatus(group, todayKey);
+  const scheme = getColorScheme('banner', status.complete, status.markedToday);
   const hoursTotal = habits.reduce(
     (sum, habit) => sum + getHoursToday(habit, todayKey),
     0,
@@ -80,7 +80,7 @@ export default function GroupCard({
           testID={`group-number-${group.id}`}
           style={[styles.number, { color: scheme.numberColor }]}
         >
-          {getGroupStreak(group, todayKey)}
+          {status.streak}
         </Text>
       </View>
       {isHoursGroup ? (
@@ -123,6 +123,10 @@ export default function GroupCard({
           ))}
         </View>
       )}
+      <CadenceLabel
+        cadence={group.cadence}
+        testID={`group-cadence-${group.id}`}
+      />
     </View>
   );
 }
@@ -134,6 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: colors.v2CardBackground,
     padding: 14,
+    paddingBottom: 14 + CADENCE_LABEL_SPACE,
   },
   header: {
     flexDirection: 'row',

@@ -21,16 +21,14 @@ export default function HabitPill({
   required = false,
   shape = 'round',
 }: HabitPillProps): React.JSX.Element {
-  const { interactive, visual } = useHabitVisual(habit, todayKey);
-  const isMarked = visual?.habitColorState === 'marked';
-  const scheme = getColorScheme('pill', isMarked);
+  const { status } = useHabitVisual(habit, todayKey);
+  const scheme = getColorScheme('pill', status.complete, status.markedToday);
 
   return (
     <Pressable
       testID={`habit-pill-${habit.id}`}
-      disabled={!interactive}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: isMarked, disabled: !interactive }}
+      accessibilityState={{ checked: status.markedToday }}
       onPress={() => onPress(habit.id)}
       style={[
         styles.pill,
@@ -54,13 +52,9 @@ export default function HabitPill({
       <Text style={[styles.name, { color: scheme.titleColor }]}>
         {habit.name}
       </Text>
-      {visual ? (
-        <Text style={[styles.streak, { color: scheme.numberColor }]}>
-          {visual.streakValue}
-        </Text>
-      ) : (
-        <Text style={[styles.streak, { color: colors.v2GreyText }]}>–</Text>
-      )}
+      <Text style={[styles.streak, { color: scheme.numberColor }]}>
+        {status.streak}
+      </Text>
     </Pressable>
   );
 }

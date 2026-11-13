@@ -6,11 +6,15 @@ import {
   loadHabits,
   saveHabitGroup,
 } from '../storage/habitStorage';
+import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
 import { isGroupComplete } from '../utils/groupCompletion';
-import { calculateStreak } from '../utils/streak';
 
-export function getGroupStreak(group: HabitGroup, todayKey: string): number {
-  return calculateStreak(group.recentLog, todayKey);
+// The group log holds one marker per day the group-type rule was met
+export function getGroupStatus(
+  group: HabitGroup,
+  todayKey: string,
+): CadenceStatus {
+  return getCadenceStatus(group.history, group.cadence, group.target, todayKey);
 }
 
 export async function syncGroupCompletion(

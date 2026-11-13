@@ -75,4 +75,36 @@ describe('getColorScheme', () => {
       false,
     ]);
   });
+
+  describe('complete status apart from marked today', () => {
+    it('should keep the banner orange with an empty icon when complete but not marked today', () => {
+      const scheme = getColorScheme('banner', true, false);
+
+      expect([
+        scheme.numberColor,
+        scheme.container?.borderColor,
+        scheme.iconFilled,
+        scheme.iconColor,
+      ]).toEqual([
+        colors.v2Orange,
+        colors.v2Orange,
+        false,
+        colors.v2GreyOutline,
+      ]);
+    });
+
+    it('should fill the icon but stay grey when marked today but not yet complete', () => {
+      const scheme = getColorScheme('pill', false, true);
+
+      expect([scheme.titleColor, scheme.iconFilled, scheme.iconColor]).toEqual([
+        colors.v2GreyText,
+        true,
+        colors.v2Orange,
+      ]);
+    });
+
+    it('should treat complete as marked today when markedToday is not given', () => {
+      expect(getColorScheme('pill', true).iconFilled).toBe(true);
+    });
+  });
 });
