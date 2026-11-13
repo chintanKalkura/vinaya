@@ -4,7 +4,6 @@ import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
 import { toDateKey } from '../utils/dates';
-import { isGroupComplete } from '../utils/groupCompletion';
 import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
@@ -17,6 +16,7 @@ import GroupCard from './habits/GroupCard';
 import HoursEntryModal from './habits/HoursEntryModal';
 import HabitListRow from './habits/HabitListRow';
 import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
+import { CadenceFilterValue } from './habits/CadenceFilter';
 import BottomMenu from './habits/BottomMenu';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
@@ -27,7 +27,8 @@ export default function HabitsScreen(): React.JSX.Element {
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<HabitsViewMode>('group');
+  const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
+  const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   useEffect(() => {
@@ -48,7 +49,6 @@ export default function HabitsScreen(): React.JSX.Element {
     async (habitId: string) => {
       const habit = habits[habitId];
       if (!habit) return;
-      if (habit.cadence !== 'Day') return;
       if (habit.type === 'Hours') {
         setHoursHabitId(habitId);
         return;
@@ -78,16 +78,24 @@ export default function HabitsScreen(): React.JSX.Element {
   );
 
   const hoursHabit = hoursHabitId ? habits[hoursHabitId] : undefined;
-  const sortedGroups = bySortOrder(Object.values(groups));
+  const matchesFilter = (item: { cadence: string }) =>
+    cadenceFilter === 'All' || item.cadence === cadenceFilter;
+  const sortedGroups = bySortOrder(Object.values(groups)).filter(matchesFilter);
   const allHabits = bySortOrder(Object.values(habits));
+  const listHabits = allHabits.filter(matchesFilter);
 
   return (
     <View style={styles.screen}>
-      <HabitsHeader viewMode={viewMode} onChangeViewMode={setViewMode} />
+      <HabitsHeader
+        cadenceFilter={cadenceFilter}
+        onChangeCadenceFilter={setCadenceFilter}
+        viewMode={viewMode}
+        onChangeViewMode={setViewMode}
+      />
 
       <ScrollView contentContainerStyle={styles.content}>
         {viewMode === 'list'
-          ? allHabits.map(habit => (
+          ? listHabits.map(habit => (
               <HabitListRow
                 key={habit.id}
                 habit={habit}
@@ -107,7 +115,6 @@ export default function HabitsScreen(): React.JSX.Element {
                   group={group}
                   habits={groupHabits}
                   todayKey={todayKey}
-                  complete={isGroupComplete(group, groupHabits, todayKey)}
                   onToggle={handleToggleHabit}
                 />
               );
