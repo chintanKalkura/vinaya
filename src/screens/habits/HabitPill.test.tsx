@@ -82,64 +82,6 @@ describe('HabitPill', () => {
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
 
-  it('shows hours logged today for an Hours habit', () => {
-    const habit = makeHabit({
-      type: 'Hours',
-      targetHours: 2,
-      recentLog: [{ date: TODAY, kind: 'hours', value: 3 }],
-    });
-    const { getByText } = render(
-      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
-    );
-
-    expect(getByText('3h')).toBeTruthy();
-  });
-
-  it('shows an Hours habit orange when hours today meet its target', () => {
-    const habit = makeHabit({
-      type: 'Hours',
-      targetHours: 2,
-      recentLog: [{ date: TODAY, kind: 'hours', value: 2 }],
-    });
-    const { getByTestId } = render(
-      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
-    );
-
-    expect(
-      StyleSheet.flatten(getByTestId('habit-hours-habit-1').props.style).color,
-    ).toBe(colors.v2Orange);
-  });
-
-  it('shows an Hours habit grey when hours today are below its target', () => {
-    const habit = makeHabit({
-      type: 'Hours',
-      targetHours: 2,
-      recentLog: [{ date: TODAY, kind: 'hours', value: 1 }],
-    });
-    const { getByTestId } = render(
-      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
-    );
-
-    expect(
-      StyleSheet.flatten(getByTestId('habit-hours-habit-1').props.style).color,
-    ).toBe(colors.v2GreyText);
-  });
-
-  it('calls onPress with the habit id when an Hours habit is pressed', () => {
-    const onPress = jest.fn();
-    const { getByTestId } = render(
-      <HabitPill
-        habit={makeHabit({ type: 'Hours', targetHours: 1 })}
-        todayKey={TODAY}
-        onPress={onPress}
-      />,
-    );
-
-    fireEvent.press(getByTestId('habit-pill-habit-1'));
-
-    expect(onPress).toHaveBeenCalledWith('habit-1');
-  });
-
   it('is disabled and shows a dash for a non-Day habit', () => {
     const habit = makeHabit({ cadence: 'Week' });
     const { getByTestId, getByText } = render(
@@ -151,5 +93,40 @@ describe('HabitPill', () => {
       disabled: true,
     });
     expect(getByText('–')).toBeTruthy();
+  });
+
+  it('shows the title and streak number orange when marked today', () => {
+    const habit = makeHabit({
+      recentLog: [
+        { date: TODAY, kind: 'marker', value: 1 },
+        { date: D1, kind: 'marker', value: 1 },
+      ],
+    });
+    const { getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+    const color = (text: string) =>
+      StyleSheet.flatten(getByText(text).props.style).color;
+
+    expect([color('No Killing'), color('2')]).toEqual([
+      colors.v2Orange,
+      colors.v2Orange,
+    ]);
+  });
+
+  it('shows the title and streak number grey when not marked today but the streak is alive', () => {
+    const habit = makeHabit({
+      recentLog: [{ date: D1, kind: 'marker', value: 1 }],
+    });
+    const { getByText } = render(
+      <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+    const color = (text: string) =>
+      StyleSheet.flatten(getByText(text).props.style).color;
+
+    expect([color('No Killing'), color('1')]).toEqual([
+      colors.v2GreyText,
+      colors.v2GreyText,
+    ]);
   });
 });

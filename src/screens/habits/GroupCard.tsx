@@ -6,7 +6,10 @@ import { ChartNoAxesColumnIncreasing } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { getGroupStreak } from '../../services/habitGroupService';
 import { getHoursToday } from '../../utils/hours';
+import { getColorScheme } from './colorRules';
+import HabitListRow from './HabitListRow';
 import HabitPill from './HabitPill';
+import HoursProgress from './HoursProgress';
 
 interface GroupCardProps {
   group: HabitGroup;
@@ -25,18 +28,17 @@ export default function GroupCard({
 }: GroupCardProps): React.JSX.Element {
   const isRequiredGroup = group.groupType === 'Required';
   const isHoursGroup = group.groupType === 'Hours';
-  const accent = complete ? colors.v2Orange : colors.v2GreyText;
+  const scheme = getColorScheme('banner', complete);
   const hoursTotal = habits.reduce(
     (sum, habit) => sum + getHoursToday(habit, todayKey),
     0,
   );
   const hoursTarget = group.targetHours ?? 0;
-  const progress = hoursTarget > 0 ? Math.min(hoursTotal / hoursTarget, 1) : 0;
 
   return (
     <View
       testID={`group-card-${group.id}`}
-      style={[styles.card, complete && styles.cardComplete]}
+      style={[styles.card, scheme.container]}
     >
       <View style={styles.header}>
         {isHoursGroup ? (
@@ -45,7 +47,7 @@ export default function GroupCard({
             style={styles.hoursIcon}
           >
             <ChartNoAxesColumnIncreasing
-              color={complete ? colors.v2Orange : colors.v2White}
+              color={scheme.iconColor}
               size={26}
               strokeWidth={3}
             />
@@ -56,10 +58,10 @@ export default function GroupCard({
             style={[
               styles.selector,
               isRequiredGroup ? styles.selectorRound : styles.selectorSquare,
-              { borderColor: complete ? colors.v2Orange : colors.v2White },
+              { borderColor: scheme.iconColor },
             ]}
           >
-            {complete ? (
+            {scheme.iconFilled ? (
               <View
                 style={[
                   styles.selectorFill,
@@ -71,39 +73,56 @@ export default function GroupCard({
             ) : null}
           </View>
         )}
-        <Text style={styles.title}>{group.name}</Text>
+        <Text style={[styles.title, { color: scheme.titleColor }]}>
+          {group.name}
+        </Text>
         <Text
           testID={`group-number-${group.id}`}
-          style={[styles.number, { color: accent }]}
+          style={[styles.number, { color: scheme.numberColor }]}
         >
           {getGroupStreak(group, todayKey)}
         </Text>
       </View>
       {isHoursGroup ? (
         <View style={styles.hoursProgress}>
-          <View style={styles.progressTrack}>
-            <View
-              testID={`group-progress-${group.id}`}
-              style={[styles.progressFill, { width: `${progress * 100}%` }]}
-            />
-          </View>
-          <Text style={styles.progressCaption}>
-            {`${hoursTotal} / ${hoursTarget} hrs today`}
-          </Text>
+          <HoursProgress
+            total={hoursTotal}
+            target={hoursTarget}
+            testID={`group-progress-${group.id}`}
+          />
         </View>
       ) : null}
-      <View style={styles.pillRow}>
-        {habits.map(habit => (
-          <HabitPill
-            key={habit.id}
-            habit={habit}
-            todayKey={todayKey}
-            onPress={onToggle}
-            required={group.requiredHabitIds?.includes(habit.id) ?? false}
-            shape={isRequiredGroup ? 'round' : 'square'}
-          />
-        ))}
-      </View>
+      {isHoursGroup ? (
+        <View style={styles.hoursGrid}>
+          {habits.map(habit => (
+            <View
+              key={habit.id}
+              testID={`group-hours-cell-${habit.id}`}
+              style={styles.hoursCell}
+            >
+              <HabitListRow
+                habit={habit}
+                todayKey={todayKey}
+                onPress={onToggle}
+                colorKind="pill"
+              />
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.pillRow}>
+          {habits.map(habit => (
+            <HabitPill
+              key={habit.id}
+              habit={habit}
+              todayKey={todayKey}
+              onPress={onToggle}
+              required={group.requiredHabitIds?.includes(habit.id) ?? false}
+              shape={isRequiredGroup ? 'round' : 'square'}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -115,11 +134,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: colors.v2CardBackground,
     padding: 14,
-  },
-  cardComplete: {
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2OrangeCardBackground,
   },
   header: {
     flexDirection: 'row',
@@ -169,21 +183,14 @@ const styles = StyleSheet.create({
   hoursProgress: {
     marginBottom: 12,
   },
-  progressTrack: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.v2Border,
-    overflow: 'hidden',
+  hoursGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 8,
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 5,
-    backgroundColor: colors.v2Orange,
-  },
-  progressCaption: {
-    color: colors.v2GreyText,
-    fontSize: 13,
-    marginTop: 8,
+  hoursCell: {
+    width: '48.5%',
   },
   pillRow: {
     flexDirection: 'row',
