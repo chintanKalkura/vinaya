@@ -1,4 +1,4 @@
-import { clampHours, getHoursToday } from './hours';
+import { clampHours, getHoursToday, targetMetLog } from './hours';
 import { Habit } from '../types/habit';
 
 const TODAY = '2024-06-15';
@@ -58,5 +58,30 @@ describe('getHoursToday', () => {
     });
 
     expect(getHoursToday(habit, TODAY)).toBe(0);
+  });
+});
+
+describe('targetMetLog', () => {
+  it('should keep only days whose hours met the target, as markers', () => {
+    const habit = makeHabit({
+      targetHours: 2,
+      recentLog: [
+        { date: TODAY, kind: 'hours', value: 3 },
+        { date: YESTERDAY, kind: 'hours', value: 1 },
+      ],
+    });
+
+    expect(targetMetLog(habit)).toEqual([
+      { date: TODAY, kind: 'marker', value: 1 },
+    ]);
+  });
+
+  it('should be empty when the habit has no target', () => {
+    const habit = makeHabit({
+      targetHours: 0,
+      recentLog: [{ date: TODAY, kind: 'hours', value: 3 }],
+    });
+
+    expect(targetMetLog(habit)).toEqual([]);
   });
 });
