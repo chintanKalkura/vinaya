@@ -7,7 +7,19 @@ import { colors } from '../../theme';
 const CADENCES: HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
 const SELECTED_CADENCE: HabitCadence = 'Day';
 
-export default function HabitsHeader(): React.JSX.Element {
+export type HabitsViewMode = 'group' | 'list';
+
+interface HabitsHeaderProps {
+  viewMode: HabitsViewMode;
+  onChangeViewMode: (mode: HabitsViewMode) => void;
+}
+
+export default function HabitsHeader({
+  viewMode,
+  onChangeViewMode,
+}: HabitsHeaderProps): React.JSX.Element {
+  const isGroup = viewMode === 'group';
+
   return (
     <View style={styles.row}>
       <View style={styles.cadenceGroup}>
@@ -35,17 +47,27 @@ export default function HabitsHeader(): React.JSX.Element {
       <View style={styles.toggleGroup}>
         <Pressable
           testID="view-mode-toggle-group"
-          onPress={() => {}}
-          style={[styles.toggleButton, styles.toggleButtonActive]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: isGroup }}
+          onPress={() => onChangeViewMode('group')}
+          style={[styles.toggleButton, isGroup && styles.toggleButtonActive]}
         >
-          <LayoutGrid color={colors.v2Background} size={18} />
+          <LayoutGrid
+            color={isGroup ? colors.v2Background : colors.v2GreyText}
+            size={18}
+          />
         </Pressable>
         <Pressable
           testID="view-mode-toggle-list"
-          onPress={() => {}}
-          style={styles.toggleButton}
+          accessibilityRole="button"
+          accessibilityState={{ selected: !isGroup }}
+          onPress={() => onChangeViewMode('list')}
+          style={[styles.toggleButton, !isGroup && styles.toggleButtonActive]}
         >
-          <List color={colors.v2GreyText} size={18} />
+          <List
+            color={isGroup ? colors.v2GreyText : colors.v2Background}
+            size={18}
+          />
         </Pressable>
       </View>
       <Pressable
