@@ -21,8 +21,9 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the marks, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 
@@ -69,7 +70,6 @@ describe('HabitListRow', () => {
 
     expect(getByTestId('habit-row-habit-1').props.accessibilityState).toEqual({
       checked: true,
-      disabled: false,
     });
   });
 
@@ -88,7 +88,6 @@ describe('HabitListRow', () => {
 
     expect(getByTestId('habit-row-habit-1').props.accessibilityState).toEqual({
       checked: false,
-      disabled: false,
     });
     expect(getByText('1')).toBeTruthy();
   });
@@ -109,8 +108,28 @@ describe('HabitListRow', () => {
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
 
-  it('is disabled for a non-Day/non-Checkmark habit', () => {
-    const habit = makeHabit({ cadence: 'Week' });
+  it('can be pressed for a Week habit', () => {
+    const onPress = jest.fn();
+    const { getByTestId } = render(
+      <HabitListRow
+        habit={makeHabit({ cadence: 'Week', target: 2 })}
+        todayKey={TODAY}
+        onPress={onPress}
+        colorKind="banner"
+      />,
+    );
+
+    fireEvent.press(getByTestId('habit-row-habit-1'));
+
+    expect(onPress).toHaveBeenCalledWith('habit-1');
+  });
+
+  it('shows a Week banner orange with an empty check when its window meets the target without a mark today', () => {
+    const habit = makeHabit({
+      cadence: 'Week',
+      target: 1,
+      recentLog: [{ date: D1, kind: 'marker', value: 1 }],
+    });
     const { getByTestId } = render(
       <HabitListRow
         habit={habit}
@@ -119,11 +138,12 @@ describe('HabitListRow', () => {
         colorKind="banner"
       />,
     );
+    const row = getByTestId('habit-row-habit-1');
 
-    expect(getByTestId('habit-row-habit-1').props.accessibilityState).toEqual({
-      checked: false,
-      disabled: true,
-    });
+    expect([
+      row.props.accessibilityState.checked,
+      StyleSheet.flatten(row.props.style).borderColor,
+    ]).toEqual([false, colors.v2Orange]);
   });
 
   it('shows a round orange check icon when marked', () => {
@@ -349,6 +369,59 @@ describe('HabitListRow', () => {
       });
 
       expect(color(renderBanner(habit).getByText('2'))).toBe(colors.v2Orange);
+    });
+  });
+
+  describe('banner layout (list view)', () => {
+    const renderAs = (colorKind: ColorKind, overrides: Partial<Habit> = {}) =>
+      render(
+        <HabitListRow
+          habit={makeHabit({ cadence: 'Week', target: 2, ...overrides })}
+          todayKey={TODAY}
+          onPress={jest.fn()}
+          colorKind={colorKind}
+        />,
+      );
+    const streakMargin = (colorKind: ColorKind, overrides?: Partial<Habit>) =>
+      StyleSheet.flatten(
+        renderAs(colorKind, overrides).getByTestId('habit-row-streak-habit-1')
+          .props.style,
+      ).marginLeft;
+
+    it('right-aligns the streak on a banner', () => {
+      expect(streakMargin('banner')).toBe('auto');
+    });
+
+    it('right-aligns the streak on an Hours banner', () => {
+      expect(streakMargin('banner', { type: 'Hours', targetHours: 1 })).toBe(
+        'auto',
+      );
+    });
+
+    it('keeps the streak beside the name on a pill', () => {
+      expect(streakMargin('pill', { type: 'Hours', targetHours: 1 })).toBe(
+        undefined,
+      );
+    });
+
+    it('shows the cadence label on a banner', () => {
+      expect(renderAs('banner').getByText('Weekly')).toBeTruthy();
+    });
+
+    it('shows the cadence label on an Hours banner', () => {
+      expect(
+        renderAs('banner', { type: 'Hours', targetHours: 1 }).getByText(
+          'Weekly',
+        ),
+      ).toBeTruthy();
+    });
+
+    it('shows no cadence label on a pill', () => {
+      expect(
+        renderAs('pill', { type: 'Hours', targetHours: 1 }).queryByText(
+          'Weekly',
+        ),
+      ).toBeNull();
     });
   });
 });

@@ -1,25 +1,26 @@
 import { Habit } from '../../types/habit';
+import { CadenceStatus, getCadenceStatus } from '../../utils/cadence';
 import { getHoursToday, targetMetLog } from '../../utils/hours';
-import { deriveHabitVisualState, HabitVisualState } from '../../utils/streak';
 
 export interface HoursVisualState {
   hoursToday: number;
 }
 
 export interface HabitVisual {
-  interactive: boolean;
-  visual: HabitVisualState | null;
+  status: CadenceStatus;
   hours: HoursVisualState | null;
 }
 
 export function useHabitVisual(habit: Habit, todayKey: string): HabitVisual {
-  const isDay = habit.cadence === 'Day';
-  const isCheckmark = isDay && habit.type === 'Checkmark';
-  const isHours = isDay && habit.type === 'Hours';
-  const markerLog = isHours ? targetMetLog(habit) : habit.recentLog;
-  const visual =
-    isCheckmark || isHours ? deriveHabitVisualState(markerLog, todayKey) : null;
+  const isHours = habit.type === 'Hours';
+  const markers = isHours ? targetMetLog(habit, habit.history) : habit.history;
+  const status = getCadenceStatus(
+    markers,
+    habit.cadence,
+    habit.target,
+    todayKey,
+  );
   const hours = isHours ? { hoursToday: getHoursToday(habit, todayKey) } : null;
 
-  return { interactive: isCheckmark || isHours, visual, hours };
+  return { status, hours };
 }

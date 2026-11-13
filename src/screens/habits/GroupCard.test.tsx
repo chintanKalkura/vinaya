@@ -20,8 +20,9 @@ function makeGroup(overrides: Partial<HabitGroup> = {}): HabitGroup {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the marks, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 
@@ -41,6 +42,17 @@ function makeHabit(id: string, name: string): Habit {
   };
 }
 
+// A group's state comes from its log: a marker today means complete today
+function completeGroup(
+  complete: boolean,
+  overrides: Partial<HabitGroup> = {},
+): HabitGroup {
+  const log = complete
+    ? [{ date: TODAY, kind: 'marker' as const, value: 1 }]
+    : [];
+  return makeGroup({ recentLog: log, history: log, ...overrides });
+}
+
 describe('GroupCard', () => {
   it('renders the group name and one pill per habit, in order', () => {
     const habits = [
@@ -52,7 +64,6 @@ describe('GroupCard', () => {
         group={makeGroup()}
         habits={habits}
         todayKey={TODAY}
-        complete={false}
         onToggle={jest.fn()}
       />,
     );
@@ -68,7 +79,6 @@ describe('GroupCard', () => {
         group={makeGroup()}
         habits={[]}
         todayKey={TODAY}
-        complete={false}
         onToggle={jest.fn()}
       />,
     );
@@ -87,7 +97,6 @@ describe('GroupCard', () => {
         group={makeGroup({ recentLog: log, history: log })}
         habits={[]}
         todayKey={TODAY}
-        complete={true}
         onToggle={jest.fn()}
       />,
     );
@@ -101,7 +110,6 @@ describe('GroupCard', () => {
         group={makeGroup()}
         habits={[]}
         todayKey={TODAY}
-        complete={false}
         onToggle={jest.fn()}
       />,
     );
@@ -113,10 +121,9 @@ describe('GroupCard', () => {
     const renderCard = (complete: boolean) =>
       render(
         <GroupCard
-          group={makeGroup()}
+          group={completeGroup(complete)}
           habits={[]}
           todayKey={TODAY}
-          complete={complete}
           onToggle={jest.fn()}
         />,
       ).getByTestId('group-card-group-1');
@@ -137,7 +144,6 @@ describe('GroupCard', () => {
             group={makeGroup({ groupType })}
             habits={[]}
             todayKey={TODAY}
-            complete={false}
             onToggle={jest.fn()}
           />,
         ).getByTestId('group-selector-group-1').props.style,
@@ -154,7 +160,6 @@ describe('GroupCard', () => {
         group={makeGroup({ requiredHabitIds: ['h1'] })}
         habits={habits}
         todayKey={TODAY}
-        complete={false}
         onToggle={jest.fn()}
       />,
     );
@@ -170,10 +175,9 @@ describe('GroupCard', () => {
     const renderCard = (complete: boolean, groupType: 'Required' | 'Hours') =>
       render(
         <GroupCard
-          group={makeGroup({ groupType, targetHours: 8 })}
+          group={completeGroup(complete, { groupType, targetHours: 8 })}
           habits={[]}
           todayKey={TODAY}
-          complete={complete}
           onToggle={jest.fn()}
         />,
       );
@@ -238,7 +242,6 @@ describe('GroupCard', () => {
           group={hoursGroup}
           habits={habits}
           todayKey={TODAY}
-          complete={false}
           onToggle={jest.fn()}
         />,
       );
@@ -310,5 +313,94 @@ describe('GroupCard', () => {
           .width,
       ).toBe('100%');
     });
+  });
+
+  describe('Week group', () => {
+    const weekGroup = (days: string[]) => {
+      const log = days.map(date => ({
+        date,
+        kind: 'marker' as const,
+        value: 1,
+      }));
+      return makeGroup({
+        cadence: 'Week',
+        groupType: 'Any',
+        target: 2,
+        recentLog: log,
+        history: log,
+      });
+    };
+    const renderWeek = (days: string[]) =>
+      render(
+        <GroupCard
+          group={weekGroup(days)}
+          habits={[]}
+          todayKey={TODAY}
+          onToggle={jest.fn()}
+        />,
+      );
+
+    it('is orange while its complete days in the window meet the target', () => {
+      expect(
+        StyleSheet.flatten(
+          renderWeek(['2024-06-13', '2024-06-11']).getByTestId(
+            'group-card-group-1',
+          ).props.style,
+        ).borderColor,
+      ).toBe(colors.v2Orange);
+    });
+
+    it('leaves the selector empty when today is not complete', () => {
+      expect(
+        StyleSheet.flatten(
+          renderWeek(['2024-06-13', '2024-06-11']).getByTestId(
+            'group-selector-group-1',
+          ).props.style,
+        ).borderColor,
+      ).toBe(colors.v2GreyOutline);
+    });
+
+    it('is grey below its target', () => {
+      expect(
+        StyleSheet.flatten(
+          renderWeek(['2024-06-13']).getByTestId('group-card-group-1').props
+            .style,
+        ).borderColor,
+      ).toBe(colors.v2Border);
+    });
+
+    it('shows the streak as the complete days in the run', () => {
+      expect(
+        renderWeek(['2024-06-13', '2024-06-11', '2024-06-05']).getByTestId(
+          'group-number-group-1',
+        ).props.children,
+      ).toBe(3);
+    });
+  });
+
+  it('shows the group cadence label in the bottom-right corner', () => {
+    const { getByTestId } = render(
+      <GroupCard
+        group={makeGroup({ cadence: 'Month' })}
+        habits={[]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+      />,
+    );
+
+    expect(getByTestId('group-cadence-group-1')).toHaveTextContent('Monthly');
+  });
+
+  it('shows no cadence label on the habit pills inside the card', () => {
+    const { queryAllByText } = render(
+      <GroupCard
+        group={makeGroup({ cadence: 'Day' })}
+        habits={[makeHabit('h1', 'No Killing')]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+      />,
+    );
+
+    expect(queryAllByText('Daily')).toHaveLength(1);
   });
 });
