@@ -10,7 +10,7 @@ export interface HabitGroup {
   groupType: HabitGroupType;
   habitIds: string[]; // assigned habits, kept in sync by the service layer
   requiredHabitIds?: string[]; // Required type only — subset of habitIds
-  hoursTarget?: number; // Hours type only — aggregate target across assigned habits
+  targetHours?: number; // Hours type only — daily aggregate target across assigned habits, max hoursTargetMax
   status: HabitStatus;
   sortOrder: number;
   createdAt: number;
