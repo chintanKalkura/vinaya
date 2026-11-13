@@ -21,6 +21,8 @@ For Day the two states are always the same. The rolling windows and targets are 
 
 The streak is never used to pick a color. A habit or group with an active streak that is not complete is shown as not complete.
 
+**Frozen today.** On the day a streak freeze is used, an element that is not complete is drawn icy blue instead of grey. The order is: complete (orange), then frozen today (icy), then grey. The full design is in `streak-freeze.md`.
+
 The same rules apply to Checkmark and Hours habits.
 
 ## 2. Element kinds
@@ -62,3 +64,4 @@ Unchanged in both states:
 
 - A streak of 0 is grey. It can only happen when the element is not complete.
 - A Week, Month or Year element can be complete without being marked today, for example after reaching its target earlier in the window. It is then orange with an empty icon.
+- On the day a freeze is used, a not complete element is icy, not grey. Its icon becomes a Snowflake, its bar fill turns icy, and a banner also shows "n freezes left" (`streak-freeze.md`).

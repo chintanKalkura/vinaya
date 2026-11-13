@@ -23,3 +23,4 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/style-choices/hours-progress.md` — Hours progress bar with its `{hours}/{target}h` label on one line, implemented in `src/screens/habits/HoursProgress.tsx`
 - `docs/style-choices/cadence-filter.md` — cadence filter dropdown (All, Day, Week, Month, Year) in the Habits header, implemented in `src/screens/habits/CadenceFilter.tsx`
 - `docs/style-choices/cadence-label.md` — cadence label (repeating calendar + Daily/Weekly/Monthly/Yearly) in the bottom-right corner of habit and group banners, implemented in `src/screens/habits/CadenceLabel.tsx`
+- `docs/style-choices/streak-freeze.md` — frozen look on the day a streak freeze is used (Glacier icy blue, Snowflake icon, icy bar, "n freezes left" on banners), implemented in `src/screens/habits/colorRules.ts` and `src/screens/habits/FreezeLabel.tsx`
