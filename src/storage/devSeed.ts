@@ -116,8 +116,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     // Not marked today; streak still alive through yesterday
     checkmarkHabit('cook', 'Cook', 'eat-healthy', streakLog(today, 3, 1)),
     checkmarkHabit('restaurant', 'Restaurant', 'eat-healthy', []),
-    checkmarkHabit('drink-water', 'Drink Water', undefined, [marker(today)]),
-    // Stay Productive totals 8 / 8 hrs today
+    // Stay Productive totals 8 of 8 hours today
     hoursHabit('job-hunt', 'Job Hunt', 'stay-productive', 4),
     hoursHabit('study', 'Study', 'stay-productive', 2),
     hoursHabit('build', 'Build', 'stay-productive', 0),
@@ -126,6 +125,12 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     hoursHabit('errands', 'Errands', 'stay-productive', 0),
     hoursHabit('read', 'Read', 'stay-productive', 1),
     hoursHabit('create', 'Create', 'stay-productive', 0),
+    checkmarkHabit(
+      'drink-water',
+      'Drink Water',
+      undefined,
+      streakLog(today, 4),
+    ),
   ];
 
   const groups: HabitGroup[] = [
