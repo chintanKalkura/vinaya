@@ -61,12 +61,26 @@ describe('markHabitDone', () => {
     expect(updated.history).toHaveLength(1);
   });
 
-  it('throws InvalidMarkError for a Week-cadence habit', async () => {
-    await saveHabits({ 'habit-1': makeHabit({ cadence: 'Week' }) });
+  it.each(['Week', 'Month', 'Year'] as const)(
+    'marks a %s-cadence habit for today',
+    async cadence => {
+      await saveHabits({ 'habit-1': makeHabit({ cadence, target: 2 }) });
 
-    await expect(markHabitDone('habit-1', TODAY)).rejects.toThrow(
-      InvalidMarkError,
-    );
+      const updated = await markHabitDone('habit-1', TODAY);
+
+      expect(updated.history).toEqual([
+        { date: TODAY, kind: 'marker', value: 1 },
+      ]);
+    },
+  );
+
+  it('unmarks a Week-cadence habit', async () => {
+    await saveHabits({ 'habit-1': makeHabit({ cadence: 'Week', target: 2 }) });
+
+    await markHabitDone('habit-1', TODAY);
+    const updated = await unmarkHabitDone('habit-1', TODAY);
+
+    expect(updated.history).toEqual([]);
   });
 
   it('throws InvalidMarkError for an Hours-type habit', async () => {
@@ -229,6 +243,19 @@ describe('setHabitHours', () => {
       { date: TODAY, kind: 'hours', value: 2 },
     ]);
   });
+
+  it.each(['Week', 'Month', 'Year'] as const)(
+    'should log hours for a %s-cadence Hours habit',
+    async cadence => {
+      await saveHabits({ 'habit-1': hoursHabit({ cadence, target: 2 }) });
+
+      const updated = await setHabitHours('habit-1', 3, TODAY);
+
+      expect(updated.history).toEqual([
+        { date: TODAY, kind: 'hours', value: 3 },
+      ]);
+    },
+  );
 
   it('should throw InvalidMarkError for a Checkmark habit', async () => {
     await saveHabits({ 'habit-1': makeHabit() });
