@@ -15,7 +15,8 @@ import {
 import { getHoursToday } from '../utils/hours';
 import GroupCard from './habits/GroupCard';
 import HoursEntryModal from './habits/HoursEntryModal';
-import HabitsHeader from './habits/HabitsHeader';
+import HabitListRow from './habits/HabitListRow';
+import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
 import BottomMenu from './habits/BottomMenu';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
@@ -26,6 +27,7 @@ export default function HabitsScreen(): React.JSX.Element {
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<HabitsViewMode>('group');
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   useEffect(() => {
@@ -81,22 +83,35 @@ export default function HabitsScreen(): React.JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <HabitsHeader />
+      <HabitsHeader viewMode={viewMode} onChangeViewMode={setViewMode} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {sortedGroups.map(group => {
-          const groupHabits = allHabits.filter(h => h.groupId === group.id);
-          return (
-            <GroupCard
-              key={group.id}
-              group={group}
-              habits={groupHabits}
-              todayKey={todayKey}
-              complete={isGroupComplete(group, groupHabits, todayKey)}
-              onToggle={handleToggleHabit}
-            />
-          );
-        })}
+        {viewMode === 'list'
+          ? allHabits.map(habit => (
+              <HabitListRow
+                key={habit.id}
+                habit={habit}
+                groupName={
+                  habit.groupId ? groups[habit.groupId]?.name : undefined
+                }
+                todayKey={todayKey}
+                onPress={handleToggleHabit}
+                colorKind="banner"
+              />
+            ))
+          : sortedGroups.map(group => {
+              const groupHabits = allHabits.filter(h => h.groupId === group.id);
+              return (
+                <GroupCard
+                  key={group.id}
+                  group={group}
+                  habits={groupHabits}
+                  todayKey={todayKey}
+                  complete={isGroupComplete(group, groupHabits, todayKey)}
+                  onToggle={handleToggleHabit}
+                />
+              );
+            })}
       </ScrollView>
 
       <Pressable testID="fab" onPress={() => {}} style={styles.fab}>
