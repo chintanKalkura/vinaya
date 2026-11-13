@@ -1,7 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { LogEntry } from '../types/log';
 import { addDays, toDateKey } from '../utils/dates';
+import { getAppLastUpdateTime } from './appInfo';
 import { loadHabits, saveHabitGroups, saveHabits } from './habitStorage';
 
 function marker(date: string): LogEntry {
@@ -15,9 +17,19 @@ function streakLog(today: string, days: number, startOffset = 0): LogEntry[] {
   );
 }
 
-export async function seedDevFixturesIfEmpty(): Promise<void> {
-  const existing = await loadHabits();
-  if (Object.keys(existing).length > 0) return;
+const SEEDED_UPDATE_TIME_KEY = 'dev_seed_app_update_time';
+
+// Seeds on a fresh install and reseeds (replacing all habits and groups)
+// whenever the app is updated. Falls back to seeding empty storage only.
+export async function seedDevFixturesIfNeeded(): Promise<void> {
+  const updateTime = await getAppLastUpdateTime();
+  if (updateTime === null) {
+    const existing = await loadHabits();
+    if (Object.keys(existing).length > 0) return;
+  } else {
+    const seededAt = await AsyncStorage.getItem(SEEDED_UPDATE_TIME_KEY);
+    if (seededAt === String(updateTime)) return;
+  }
 
   const today = toDateKey(new Date());
 
@@ -46,20 +58,27 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
     };
   }
 
-  function hoursHabit(id: string, name: string, groupId: string): Habit {
+  function hoursHabit(
+    id: string,
+    name: string,
+    groupId: string,
+    hoursToday: number,
+  ): Habit {
+    const log: LogEntry[] =
+      hoursToday > 0 ? [{ date: today, kind: 'hours', value: hoursToday }] : [];
     return {
       id,
       name,
       cadence: 'Day',
       type: 'Hours',
-      targetHours: 2,
+      targetHours: 1,
       streakFreezeInterval: 7,
       groupId,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
-      recentLog: [],
-      history: [],
+      recentLog: log,
+      history: log,
     };
   }
 
@@ -98,8 +117,15 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
     checkmarkHabit('cook', 'Cook', 'eat-healthy', streakLog(today, 3, 1)),
     checkmarkHabit('restaurant', 'Restaurant', 'eat-healthy', []),
     checkmarkHabit('drink-water', 'Drink Water', undefined, [marker(today)]),
-    hoursHabit('job-hunt', 'Job Hunt', 'stay-productive'),
-    hoursHabit('study', 'Study', 'stay-productive'),
+    // Stay Productive totals 8 / 8 hrs today
+    hoursHabit('job-hunt', 'Job Hunt', 'stay-productive', 4),
+    hoursHabit('study', 'Study', 'stay-productive', 2),
+    hoursHabit('build', 'Build', 'stay-productive', 0),
+    hoursHabit('write', 'Write', 'stay-productive', 0),
+    hoursHabit('sit', 'Sit', 'stay-productive', 1),
+    hoursHabit('errands', 'Errands', 'stay-productive', 0),
+    hoursHabit('read', 'Read', 'stay-productive', 1),
+    hoursHabit('create', 'Create', 'stay-productive', 0),
   ];
 
   const groups: HabitGroup[] = [
@@ -143,15 +169,18 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
       habitIds: habits
         .filter(h => h.groupId === 'stay-productive')
         .map(h => h.id),
-      hoursTarget: 4,
+      targetHours: 8,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
-      recentLog: [],
-      history: [],
+      recentLog: streakLog(today, 5),
+      history: streakLog(today, 5).reverse(),
     },
   ];
 
   await saveHabits(Object.fromEntries(habits.map(h => [h.id, h])));
   await saveHabitGroups(Object.fromEntries(groups.map(g => [g.id, g])));
+  if (updateTime !== null) {
+    await AsyncStorage.setItem(SEEDED_UPDATE_TIME_KEY, String(updateTime));
+  }
 }

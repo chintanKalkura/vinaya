@@ -20,13 +20,35 @@ export default function HabitPill({
   required = false,
   shape = 'round',
 }: HabitPillProps): React.JSX.Element {
-  const { interactive, visual } = useHabitVisual(habit, todayKey);
-  const isMarked = visual?.habitColorState === 'marked';
+  const { interactive, visual, hours } = useHabitVisual(habit, todayKey);
+  const isMarked = hours
+    ? hours.isMarked
+    : visual?.habitColorState === 'marked';
   const nameColor = isMarked ? colors.v2Orange : colors.v2GreyText;
   const streakColor =
     visual?.streakNumberColorState === 'marked'
       ? colors.v2Orange
       : colors.v2GreyText;
+
+  if (hours) {
+    return (
+      <Pressable
+        testID={`habit-pill-${habit.id}`}
+        accessibilityRole="button"
+        accessibilityState={{ checked: isMarked, disabled: false }}
+        onPress={() => onPress(habit.id)}
+        style={[styles.pill, { borderColor: colors.v2Border }]}
+      >
+        <Text style={[styles.name, { color: nameColor }]}>{habit.name}</Text>
+        <Text
+          testID={`habit-hours-${habit.id}`}
+          style={[styles.streak, { color: nameColor }]}
+        >
+          {`${hours.hoursToday}h`}
+        </Text>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable

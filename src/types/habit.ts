@@ -10,7 +10,7 @@ export interface Habit {
   cadence: HabitCadence;
   type: HabitType;
   target?: number; // Checkmark type, Week/Month/Year cadence only
-  targetHours?: number; // Hours type, any cadence
+  targetHours?: number; // Hours type, any cadence — daily target, max hoursTargetMax
   streakFreezeInterval: number; // the "N" in "1 skip per N streaks"
   groupId?: string; // FK -> HabitGroup.id, kept in sync by the service layer
   status: HabitStatus;

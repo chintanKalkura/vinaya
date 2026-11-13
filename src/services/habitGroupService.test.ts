@@ -135,10 +135,35 @@ describe('syncGroupCompletion', () => {
     expect(updated?.recentLog).toEqual([]);
   });
 
-  it('should not sync Hours groups', async () => {
+  it('should add a marker when an Hours group meets its target', async () => {
     await seed(
-      [makeHabit('a', { recentLog: [marker(TODAY)] })],
-      makeGroup('Hours'),
+      [
+        makeHabit('a', {
+          type: 'Hours',
+          recentLog: [{ date: TODAY, kind: 'hours', value: 3 }],
+        }),
+      ],
+      makeGroup('Hours', { targetHours: 3 }),
+    );
+
+    const updated = await syncGroupCompletion('g', TODAY);
+
+    expect(updated?.recentLog).toEqual([marker(TODAY)]);
+  });
+
+  it('should remove the marker when an Hours group drops below its target', async () => {
+    await seed(
+      [
+        makeHabit('a', {
+          type: 'Hours',
+          recentLog: [{ date: TODAY, kind: 'hours', value: 2 }],
+        }),
+      ],
+      makeGroup('Hours', {
+        targetHours: 3,
+        recentLog: [marker(TODAY)],
+        history: [marker(TODAY)],
+      }),
     );
 
     const updated = await syncGroupCompletion('g', TODAY);

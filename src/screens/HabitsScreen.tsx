@@ -6,9 +6,15 @@ import { colors } from '../theme';
 import { toDateKey } from '../utils/dates';
 import { isGroupComplete } from '../utils/groupCompletion';
 import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
-import { seedDevFixturesIfEmpty } from '../storage/devSeed';
-import { markHabitDone, unmarkHabitDone } from '../services/habitService';
+import { seedDevFixturesIfNeeded } from '../storage/devSeed';
+import {
+  markHabitDone,
+  setHabitHours,
+  unmarkHabitDone,
+} from '../services/habitService';
+import { getHoursToday } from '../utils/hours';
 import GroupCard from './habits/GroupCard';
+import HoursEntryModal from './habits/HoursEntryModal';
 import HabitsHeader from './habits/HabitsHeader';
 import BottomMenu from './habits/BottomMenu';
 
@@ -19,11 +25,12 @@ function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
 export default function HabitsScreen(): React.JSX.Element {
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
+  const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   useEffect(() => {
     let mounted = true;
-    seedDevFixturesIfEmpty()
+    seedDevFixturesIfNeeded()
       .then(() => Promise.all([loadHabits(), loadHabitGroups()]))
       .then(([h, g]) => {
         if (!mounted) return;
@@ -39,7 +46,11 @@ export default function HabitsScreen(): React.JSX.Element {
     async (habitId: string) => {
       const habit = habits[habitId];
       if (!habit) return;
-      if (habit.cadence !== 'Day' || habit.type !== 'Checkmark') return;
+      if (habit.cadence !== 'Day') return;
+      if (habit.type === 'Hours') {
+        setHoursHabitId(habitId);
+        return;
+      }
 
       const isMarked = habit.recentLog.some(entry => entry.date === todayKey);
       const updated = isMarked
@@ -52,9 +63,20 @@ export default function HabitsScreen(): React.JSX.Element {
     [habits, todayKey],
   );
 
-  const sortedGroups = bySortOrder(Object.values(groups)).filter(
-    group => group.groupType !== 'Hours',
+  const handleHoursDone = useCallback(
+    async (hours: number) => {
+      if (!hoursHabitId) return;
+      const habitId = hoursHabitId;
+      setHoursHabitId(null);
+      const updated = await setHabitHours(habitId, hours, todayKey);
+      setHabits(prev => ({ ...prev, [habitId]: updated }));
+      setGroups(await loadHabitGroups());
+    },
+    [hoursHabitId, todayKey],
   );
+
+  const hoursHabit = hoursHabitId ? habits[hoursHabitId] : undefined;
+  const sortedGroups = bySortOrder(Object.values(groups));
   const allHabits = bySortOrder(Object.values(habits));
 
   return (
@@ -81,6 +103,13 @@ export default function HabitsScreen(): React.JSX.Element {
         <Text style={styles.fabIcon}>+</Text>
       </Pressable>
       <BottomMenu />
+      <HoursEntryModal
+        visible={hoursHabit !== undefined}
+        habitName={hoursHabit?.name ?? ''}
+        initialHours={hoursHabit ? getHoursToday(hoursHabit, todayKey) : 0}
+        onDone={handleHoursDone}
+        onClose={() => setHoursHabitId(null)}
+      />
     </View>
   );
 }

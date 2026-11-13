@@ -48,6 +48,31 @@ function makeGroup(overrides: Partial<HabitGroup> = {}): HabitGroup {
   };
 }
 
+function hoursFixture(
+  targetHours: number,
+): [Record<string, Habit>, Record<string, HabitGroup>] {
+  return [
+    {
+      study: makeHabit({
+        id: 'study',
+        name: 'Study',
+        type: 'Hours',
+        targetHours: 1,
+        groupId: 'productive',
+      }),
+    },
+    {
+      productive: makeGroup({
+        id: 'productive',
+        name: 'Stay Productive',
+        groupType: 'Hours',
+        habitIds: ['study'],
+        targetHours,
+      }),
+    },
+  ];
+}
+
 async function seed(
   habits: Record<string, Habit>,
   groups: Record<string, HabitGroup> = {},
@@ -106,28 +131,53 @@ describe('HabitsScreen', () => {
     });
   });
 
-  it('does not mark a non-Day/non-Checkmark habit on tap', async () => {
-    await seed(
-      {
-        study: makeHabit({
-          id: 'study',
-          name: 'Study',
-          type: 'Hours',
-          groupId: 'precepts',
-        }),
-      },
-      { precepts: makeGroup({ habitIds: ['study'] }) },
+  it('opens the Hours Entry Modal when an Hours habit is tapped', async () => {
+    await seed(...hoursFixture(4));
+
+    const { findByTestId, queryByTestId } = render(<HabitsScreen />);
+    expect(queryByTestId('hours-modal')).toBeNull();
+
+    fireEvent.press(await findByTestId('habit-pill-study'));
+
+    expect(await findByTestId('hours-modal')).toBeTruthy();
+  });
+
+  it('updates the pill hours when Done is pressed in the modal', async () => {
+    await seed(...hoursFixture(4));
+
+    const { findByTestId, findByText, getByTestId } = render(<HabitsScreen />);
+    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.changeText(await findByTestId('hours-modal-input'), '2');
+    fireEvent.press(getByTestId('hours-modal-done'));
+
+    expect(await findByText('2h')).toBeTruthy();
+  });
+
+  it('turns an Hours group orange when Done brings it to its target', async () => {
+    await seed(...hoursFixture(4));
+
+    const { findByTestId, getByTestId } = render(<HabitsScreen />);
+    const card = await findByTestId('group-card-productive');
+    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
+    fireEvent.press(getByTestId('hours-modal-done'));
+
+    await waitFor(() =>
+      expect(StyleSheet.flatten(card.props.style).borderColor).toBe(
+        colors.v2Orange,
+      ),
     );
+  });
 
-    const { findByTestId } = render(<HabitsScreen />);
-    const pill = await findByTestId('habit-pill-study');
+  it('does not save hours when the modal is closed with ×', async () => {
+    await seed(...hoursFixture(4));
 
-    fireEvent.press(pill);
+    const { findByTestId, getByTestId, getByText } = render(<HabitsScreen />);
+    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
+    fireEvent.press(getByTestId('hours-modal-close'));
 
-    await waitFor(() => {
-      expect(pill.props.accessibilityState.disabled).toBe(true);
-    });
-    expect(pill.props.accessibilityState.checked).toBe(false);
+    await waitFor(() => expect(getByText('0h')).toBeTruthy());
   });
 
   it('does not switch layout when the list toggle is pressed', async () => {
@@ -163,28 +213,12 @@ describe('HabitsScreen', () => {
     expect(queryByTestId('habit-pill-drink-water')).toBeNull();
   });
 
-  it('does not render Hours groups', async () => {
-    await seed(
-      {
-        'no-killing': makeHabit(),
-        study: makeHabit({ id: 'study', type: 'Hours', groupId: 'productive' }),
-      },
-      {
-        precepts: makeGroup(),
-        productive: makeGroup({
-          id: 'productive',
-          name: 'Stay Productive',
-          groupType: 'Hours',
-          habitIds: ['study'],
-          sortOrder: 1,
-        }),
-      },
-    );
+  it('renders Hours groups', async () => {
+    await seed(...hoursFixture(4));
 
-    const { findByTestId, queryByTestId } = render(<HabitsScreen />);
-    await findByTestId('group-card-precepts');
+    const { findByTestId } = render(<HabitsScreen />);
 
-    expect(queryByTestId('group-card-productive')).toBeNull();
+    expect(await findByTestId('group-card-productive')).toBeTruthy();
   });
 
   it('turns a Required group grey when a required habit is unmarked', async () => {

@@ -2,8 +2,10 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
+import { ChartNoAxesColumnIncreasing } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { getGroupStreak } from '../../services/habitGroupService';
+import { getHoursToday } from '../../utils/hours';
 import HabitPill from './HabitPill';
 
 interface GroupCardProps {
@@ -22,7 +24,14 @@ export default function GroupCard({
   onToggle,
 }: GroupCardProps): React.JSX.Element {
   const isRequiredGroup = group.groupType === 'Required';
+  const isHoursGroup = group.groupType === 'Hours';
   const accent = complete ? colors.v2Orange : colors.v2GreyText;
+  const hoursTotal = habits.reduce(
+    (sum, habit) => sum + getHoursToday(habit, todayKey),
+    0,
+  );
+  const hoursTarget = group.targetHours ?? 0;
+  const progress = hoursTarget > 0 ? Math.min(hoursTotal / hoursTarget, 1) : 0;
 
   return (
     <View
@@ -30,25 +39,38 @@ export default function GroupCard({
       style={[styles.card, complete && styles.cardComplete]}
     >
       <View style={styles.header}>
-        <View
-          testID={`group-selector-${group.id}`}
-          style={[
-            styles.selector,
-            isRequiredGroup ? styles.selectorRound : styles.selectorSquare,
-            { borderColor: complete ? colors.v2Orange : colors.v2White },
-          ]}
-        >
-          {complete ? (
-            <View
-              style={[
-                styles.selectorFill,
-                isRequiredGroup
-                  ? styles.selectorFillRound
-                  : styles.selectorFillSquare,
-              ]}
+        {isHoursGroup ? (
+          <View
+            testID={`group-hours-icon-${group.id}`}
+            style={styles.hoursIcon}
+          >
+            <ChartNoAxesColumnIncreasing
+              color={complete ? colors.v2Orange : colors.v2White}
+              size={26}
+              strokeWidth={3}
             />
-          ) : null}
-        </View>
+          </View>
+        ) : (
+          <View
+            testID={`group-selector-${group.id}`}
+            style={[
+              styles.selector,
+              isRequiredGroup ? styles.selectorRound : styles.selectorSquare,
+              { borderColor: complete ? colors.v2Orange : colors.v2White },
+            ]}
+          >
+            {complete ? (
+              <View
+                style={[
+                  styles.selectorFill,
+                  isRequiredGroup
+                    ? styles.selectorFillRound
+                    : styles.selectorFillSquare,
+                ]}
+              />
+            ) : null}
+          </View>
+        )}
         <Text style={styles.title}>{group.name}</Text>
         <Text
           testID={`group-number-${group.id}`}
@@ -57,6 +79,19 @@ export default function GroupCard({
           {getGroupStreak(group, todayKey)}
         </Text>
       </View>
+      {isHoursGroup ? (
+        <View style={styles.hoursProgress}>
+          <View style={styles.progressTrack}>
+            <View
+              testID={`group-progress-${group.id}`}
+              style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            />
+          </View>
+          <Text style={styles.progressCaption}>
+            {`${hoursTotal} / ${hoursTarget} hrs today`}
+          </Text>
+        </View>
+      ) : null}
       <View style={styles.pillRow}>
         {habits.map(habit => (
           <HabitPill
@@ -127,6 +162,28 @@ const styles = StyleSheet.create({
   number: {
     fontWeight: '700',
     fontSize: 32,
+  },
+  hoursIcon: {
+    marginRight: 10,
+  },
+  hoursProgress: {
+    marginBottom: 12,
+  },
+  progressTrack: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.v2Border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 5,
+    backgroundColor: colors.v2Orange,
+  },
+  progressCaption: {
+    color: colors.v2GreyText,
+    fontSize: 13,
+    marginTop: 8,
   },
   pillRow: {
     flexDirection: 'row',

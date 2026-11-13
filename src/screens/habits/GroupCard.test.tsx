@@ -164,4 +164,64 @@ describe('GroupCard', () => {
     expect(border('h1')).toBe(colors.v2Blue);
     expect(border('h2')).toBe(colors.v2Border);
   });
+
+  describe('Hours group', () => {
+    const hoursGroup = makeGroup({
+      groupType: 'Hours',
+      name: 'Stay Productive',
+      targetHours: 8,
+    });
+    const hoursHabit = (id: string, hours: number): Habit => ({
+      ...makeHabit(id, id),
+      type: 'Hours',
+      targetHours: 1,
+      recentLog: [{ date: TODAY, kind: 'hours', value: hours }],
+    });
+    const renderHours = (habits: Habit[]) =>
+      render(
+        <GroupCard
+          group={hoursGroup}
+          habits={habits}
+          todayKey={TODAY}
+          complete={false}
+          onToggle={jest.fn()}
+        />,
+      );
+
+    it('should show the hours icon instead of a selector', () => {
+      const { getByTestId, queryByTestId } = renderHours([]);
+
+      expect([
+        !!getByTestId('group-hours-icon-group-1'),
+        queryByTestId('group-selector-group-1'),
+      ]).toEqual([true, null]);
+    });
+
+    it('should show total hours today against the target', () => {
+      const { getByText } = renderHours([
+        hoursHabit('h1', 3),
+        hoursHabit('h2', 2),
+      ]);
+
+      expect(getByText('5 / 8 hrs today')).toBeTruthy();
+    });
+
+    it('should fill the progress bar in proportion to the target', () => {
+      const { getByTestId } = renderHours([hoursHabit('h1', 2)]);
+
+      expect(
+        StyleSheet.flatten(getByTestId('group-progress-group-1').props.style)
+          .width,
+      ).toBe('25%');
+    });
+
+    it('should cap the progress bar at full', () => {
+      const { getByTestId } = renderHours([hoursHabit('h1', 12)]);
+
+      expect(
+        StyleSheet.flatten(getByTestId('group-progress-group-1').props.style)
+          .width,
+      ).toBe('100%');
+    });
+  });
 });
