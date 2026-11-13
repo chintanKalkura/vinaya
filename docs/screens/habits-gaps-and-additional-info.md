@@ -76,17 +76,53 @@ Screen 04 draws Job Hunt and Study with a checkbox. That is superseded.
 - Its colors follow 1.3. An Hours habit is complete when hours today ≥ the daily target hours.
 - Every Checkmark habit in list view uses the round check icon, including habits in Any and All groups. The square checkbox on Cook in screen 04 is superseded.
 
+### 1.5 Cadence filter dropdown (screens 01 and 04)
+
+Screens 01 and 04 draw four cadence pills (Day, Week, Month, Year) with Day selected. That is superseded.
+
+- One dropdown pill shows the selected value with a chevron. It opens a menu of All, Day, Week, Month and Year, with the selected value orange and checked.
+- The default is All.
+- In group view it filters groups by group cadence. In list view it filters habits by habit cadence.
+- Full design: `docs/style-choices/cadence-filter.md`.
+
+### 1.6 Week, Month and Year tracking
+
+Week, Month and Year use rolling windows that end today, not calendar periods:
+- Week is 7 days.
+- Month is the number of days in today's month.
+- Year is 365 or 366 days.
+
+Further rules:
+- **Complete:** a habit or group is complete while its marked days in the window reach its target.
+- **Streak:** the number of marked days in the current run.
+- **Icon:** shows only whether today is marked.
+- **Groups:** a group's days are complete by its group-type rule, and its target counts those days. Member habits' cadences don't affect this.
+
+Full rules: `docs/feature-development/week-month-year-cadence.md`.
+
+### 1.7 Default view, list-view streak and cadence label (screens 01 and 04)
+
+Screens 01 and 04 are superseded on three points:
+
+- **Default view.** The Habits screen opens in list view (screen 04), not group view (screen 01).
+- **Streak position in list view.** On a habit banner in list view, the streak number sits at the right end of the title line, not right after the name. Habit pills inside a group card (group view) keep it right after the name.
+- **Cadence label.** Every banner shows its cadence in the bottom-right corner: a repeating-calendar icon with Daily, Weekly, Monthly or Yearly.
+  - It appears on habit banners in list view and group cards in group view.
+  - Habit pills inside a group card don't show it.
+  - On Hours banners it sits below the progress bar.
+  - Full design: `docs/style-choices/cadence-label.md`.
+
 ---
 
 ## 2. Gaps in the screens
 
 1. **Hours-type habit creation for Week, Month, Year**: not drawn. Specified in 1.1.
 2. **Group creation for Week, Month, Year**: not drawn. Specified in 1.2.
-3. **Group Target semantics**: the Target field is specified (1.2) but how a group's target relates to its sub-habits' own cadence and targets is not defined.
+3. **Group Target semantics**: resolved by 1.6. A group's target counts its complete days in the rolling window. Its sub-habits' cadences and targets don't affect it.
 4. **Group type All**: no dedicated screen. It has no secondary sheet, so it is assumed to match Any visually.
 5. **Any / All group with habits assigned**: only the empty state (screen 11) is drawn. Required (13) and Hours (15) show assigned habits; Any and All do not.
 6. **Paused and Archived appearance on screens 01 and 04**: the treatment (grey icon, greyed lettering) was decided but never drawn on habit or group items. Screen 03 only shows the filter toggles.
-7. **Cadence filter on screens 01 and 04**: only Day is drawn. Week, Month and Year filtered states are not drawn.
+7. **Cadence filter on screens 01 and 04**: resolved by 1.5. The filter is a dropdown (All, Day, Week, Month, Year) and its filtered states follow `docs/style-choices/cadence-filter.md`.
 8. **Edit, pause and archive flows**: no screen exists for editing a habit or group, or for pausing and archiving one. Paused and Archived exist as filter values, but how an item enters those states is not designed.
 
 ---
