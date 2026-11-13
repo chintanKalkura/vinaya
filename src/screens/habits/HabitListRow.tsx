@@ -1,11 +1,12 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Check, Snowflake } from 'lucide-react-native';
 import { Habit } from '../../types/habit';
 import { colors } from '../../theme';
 import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
+import FreezeLabel from './FreezeLabel';
 import { ColorKind, getColorScheme } from './colorRules';
 
 interface HabitListRowProps {
@@ -24,7 +25,12 @@ export default function HabitListRow({
   colorKind,
 }: HabitListRowProps): React.JSX.Element {
   const { status, hours } = useHabitVisual(habit, todayKey);
-  const scheme = getColorScheme(colorKind, status.complete, status.markedToday);
+  const scheme = getColorScheme(
+    colorKind,
+    status.complete,
+    status.markedToday,
+    status.frozenToday,
+  );
   // Banners (list view) right-align the streak and show the cadence label;
   // pills (Hours habits inside a group card) keep the streak beside the name
   const isBanner = colorKind === 'banner';
@@ -34,11 +40,20 @@ export default function HabitListRow({
     isBanner && styles.streakRight,
     { color: scheme.numberColor },
   ];
+  // Pills never show the freeze label
   const cadenceLabel = isBanner ? (
-    <CadenceLabel
-      cadence={habit.cadence}
-      testID={`habit-row-cadence-${habit.id}`}
-    />
+    <>
+      {scheme.frozen ? (
+        <FreezeLabel
+          freezesLeft={status.freezesLeft}
+          testID={`habit-row-freeze-${habit.id}`}
+        />
+      ) : null}
+      <CadenceLabel
+        cadence={habit.cadence}
+        testID={`habit-row-cadence-${habit.id}`}
+      />
+    </>
   ) : null;
   const groupLabel = groupName ? (
     <Text style={styles.groupName}>{groupName}</Text>
@@ -68,6 +83,7 @@ export default function HabitListRow({
               total={hours.hoursToday}
               target={habit.targetHours ?? 0}
               testID={`habit-row-progress-${habit.id}`}
+              color={scheme.barColor}
             />
           </View>
         </View>
@@ -84,20 +100,30 @@ export default function HabitListRow({
       onPress={() => onPress(habit.id)}
       style={rowStyle}
     >
-      <View
-        testID={`habit-row-icon-${habit.id}`}
-        style={[
-          styles.icon,
-          {
-            borderColor: scheme.iconColor,
-            backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
-          },
-        ]}
-      >
-        {scheme.iconFilled ? (
-          <Check color={colors.v2Background} size={13} strokeWidth={3.5} />
-        ) : null}
-      </View>
+      {scheme.iconFrozen ? (
+        <Snowflake
+          testID={`habit-row-frozen-${habit.id}`}
+          style={styles.frozenIcon}
+          color={scheme.iconColor}
+          size={20}
+          strokeWidth={2}
+        />
+      ) : (
+        <View
+          testID={`habit-row-icon-${habit.id}`}
+          style={[
+            styles.icon,
+            {
+              borderColor: scheme.iconColor,
+              backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
+            },
+          ]}
+        >
+          {scheme.iconFilled ? (
+            <Check color={colors.v2Background} size={13} strokeWidth={3.5} />
+          ) : null}
+        </View>
+      )}
       <View style={styles.textColumn}>
         <View style={styles.nameRow}>
           <Text style={[styles.name, { color: scheme.titleColor }]}>
@@ -135,6 +161,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
+  },
+  frozenIcon: {
     marginRight: 10,
   },
   textColumn: {

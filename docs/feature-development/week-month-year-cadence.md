@@ -49,7 +49,9 @@ User should be able to track and record habits and groups with week, month and y
    - Example: target 4 per week, marked on days 1–4. It is complete on days 4, 5, 6 and 7, and incomplete on day 8, when day 1 leaves the window.
 5. **Streak.** The streak is the number of marked days in the current run.
    - The run continues while each mark is no more than one window length after the previous one.
-   - The run is alive while the latest mark is inside today's window. Once a full window passes with no mark, the streak is 0.
+   - The run stays alive through the day one window length after the latest mark, the last day a mark can still continue it. It drops to 0 the day after, once that day has ended with no mark. This matches Day cadence, where a mark keeps the streak alive until the end of the next day.
+   - Example: Week, latest mark on 1 June. The streak is alive through the end of 8 June (counting back 7 days from 8 June reaches 1 June) and is 0 on 9 June.
+   - Amended by `streak-freeze.md` decision 9; the run used to end one day earlier, on the last day it could still be marked.
    - Example: target 4 per week, marked on days 1–4 and 9–12, today is day 12. The streak is 8. The habit is complete on days 4–7 and on day 12, and incomplete on days 8–11 while the streak stays alive.
 6. **Day cadence is unchanged.** A Day habit is complete when marked today. Its streak is the run of consecutive marked days ending today, or ending yesterday if today is not marked yet.
 7. **Groups.** Each day, a group is complete or not by its group-type rule (Required, Any, All, or Hours total ≥ daily target hours). This is recorded in the group log as today. A Week/Month/Year group is complete while its complete days in the window are at least the group's `target`. Its streak follows decision 5. The cadences of its member habits don't affect this.
@@ -88,7 +90,7 @@ Group logs are worked out from the member habits' logs, so they match the marks.
 - Window lengths for 28-, 29-, 30- and 31-day months, and 365- and 366-day years.
 - Target is clamped to each cadence's maximum. Day has no target.
 - Complete status across the window edge: the target-4 example is complete on days 4–7 and incomplete on days 8–11.
-- Streak: 8 for marks on days 1–4 and 9–12; 0 after a full window with no mark; still alive while the latest mark is in the window.
+- Streak: 8 for marks on days 1–4 and 9–12; alive through the day one window after the latest mark (1 June → 8 June for Week) and 0 the day after.
 - Day status and streak are unchanged.
 - An Hours habit's marked days come from days that met the daily target.
 - Week, Month and Year Checkmark habits can be marked and unmarked, and Hours habits of any cadence can log hours.

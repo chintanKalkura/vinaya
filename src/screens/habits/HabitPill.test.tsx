@@ -150,3 +150,36 @@ describe('HabitPill', () => {
     ]);
   });
 });
+
+describe('HabitPill streak freeze', () => {
+  const frozen = makeHabit({
+    recentLog: [{ date: D2, kind: 'marker', value: 1 }],
+    streakFreeze: {
+      available: 0,
+      earnedAtStreak: 0,
+      frozenDates: [D1],
+      lastUsedOn: TODAY,
+    },
+  });
+
+  it('shows the Snowflake and an icy streak when frozen today', () => {
+    const { getByTestId, getByText } = render(
+      <HabitPill habit={frozen} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect([
+      !!getByTestId('habit-pill-frozen-habit-1', {
+        includeHiddenElements: true,
+      }),
+      StyleSheet.flatten(getByText('1').props.style).color,
+    ]).toEqual([true, colors.v2Ice]);
+  });
+
+  it('never shows the freeze label', () => {
+    const { queryByText } = render(
+      <HabitPill habit={frozen} todayKey={TODAY} onPress={jest.fn()} />,
+    );
+
+    expect(queryByText(/freeze/)).toBeNull();
+  });
+});

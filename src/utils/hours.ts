@@ -29,3 +29,10 @@ export function targetMetLog(
     .filter(entry => entry.kind === 'hours' && entry.value >= target)
     .map(entry => ({ date: entry.date, kind: 'marker', value: 1 }));
 }
+
+// One marker per marked day: Checkmark marks, or Hours days that met the target
+export function habitMarkers(habit: Habit): LogEntry[] {
+  return habit.type === 'Hours'
+    ? targetMetLog(habit, habit.history)
+    : habit.history;
+}

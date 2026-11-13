@@ -49,6 +49,7 @@ function makeGroup(
     cadence: 'Day',
     groupType,
     habitIds: ['a', 'b'],
+    streakFreezeInterval: 7,
     status: 'active',
     sortOrder: 0,
     createdAt: 0,

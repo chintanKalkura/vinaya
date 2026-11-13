@@ -97,8 +97,19 @@ describe('getCadenceStatus', () => {
       expect(weekStatus([1, 2, 3, 4], 10).streak).toBe(4);
     });
 
-    it('should be 0 once a full window passes with no mark', () => {
-      expect(weekStatus([1, 2, 3, 4], 11).streak).toBe(0);
+    it('should stay alive through the day one window after the latest mark', () => {
+      expect(weekStatus([1, 2, 3, 4], 11).streak).toBe(4);
+    });
+
+    it('should be 0 the day after that, once a full window passes with no mark', () => {
+      expect(weekStatus([1, 2, 3, 4], 12).streak).toBe(0);
+    });
+
+    it('should keep a run marked on 1 June alive until 8 June ends', () => {
+      const status = (today: string) =>
+        getCadenceStatus(markers(1), 'Week', 1, today).streak;
+
+      expect([status('2024-06-08'), status('2024-06-09')]).toEqual([1, 0]);
     });
 
     it('should break the run at a gap longer than the window', () => {
@@ -156,5 +167,101 @@ describe('getCadenceStatus', () => {
         getCadenceStatus(markers(3, 4), 'Day', undefined, day(5)).streak,
       ).toBe(2);
     });
+  });
+});
+
+describe('getCadenceStatus with streak freezes', () => {
+  const frozen = (dates: string[], lastUsedOn?: string) => ({
+    available: 1,
+    earnedAtStreak: 0,
+    frozenDates: dates,
+    lastUsedOn,
+  });
+
+  it('should bridge a frozen Day without adding it to the streak', () => {
+    const status = getCadenceStatus(
+      markers(1, 2, 3, 5),
+      'Day',
+      undefined,
+      day(5),
+      frozen([day(4)]),
+    );
+
+    expect(status.streak).toBe(4);
+  });
+
+  it('should keep a Day streak alive through a frozen yesterday', () => {
+    const status = getCadenceStatus(
+      markers(1, 2, 3),
+      'Day',
+      undefined,
+      day(5),
+      frozen([day(4)]),
+    );
+
+    expect(status.streak).toBe(3);
+  });
+
+  it('should give a Week run one more day for each frozen day', () => {
+    const marked = markers(1, 2, 3, 4);
+
+    expect([
+      getCadenceStatus(marked, 'Week', 4, day(12)).streak,
+      getCadenceStatus(marked, 'Week', 4, day(12), frozen([day(11)])).streak,
+      getCadenceStatus(marked, 'Week', 4, day(13), frozen([day(11)])).streak,
+    ]).toEqual([0, 4, 0]);
+  });
+
+  it('should bridge a Week gap one day longer than the window', () => {
+    const status = getCadenceStatus(
+      markers(1, 9),
+      'Week',
+      4,
+      day(9),
+      frozen([day(8)]),
+    );
+
+    expect(status.streak).toBe(2);
+  });
+
+  it('should not count frozen days toward the target', () => {
+    const status = getCadenceStatus(
+      markers(1, 2, 3),
+      'Week',
+      4,
+      day(5),
+      frozen([day(4)]),
+    );
+
+    expect(status.complete).toBe(false);
+  });
+
+  it('should be frozen today only on the day a freeze was used', () => {
+    const state = frozen([day(4)], day(5));
+
+    expect([
+      getCadenceStatus(markers(1, 2, 3), 'Day', undefined, day(5), state)
+        .frozenToday,
+      getCadenceStatus(markers(1, 2, 3, 5), 'Day', undefined, day(6), state)
+        .frozenToday,
+    ]).toEqual([true, false]);
+  });
+
+  it('should not be frozen today when the streak still broke', () => {
+    const status = getCadenceStatus(
+      markers(1, 2),
+      'Day',
+      undefined,
+      day(5),
+      frozen([day(3)], day(5)),
+    );
+
+    expect(status.frozenToday).toBe(false);
+  });
+
+  it('should report the freezes held', () => {
+    expect(
+      getCadenceStatus([], 'Day', undefined, day(1), frozen([])).freezesLeft,
+    ).toBe(1);
   });
 });

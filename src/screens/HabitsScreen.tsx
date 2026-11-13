@@ -11,6 +11,7 @@ import {
   setHabitHours,
   unmarkHabitDone,
 } from '../services/habitService';
+import { applyStreakFreezes } from '../services/habitGroupService';
 import { getHoursToday } from '../utils/hours';
 import GroupCard from './habits/GroupCard';
 import HoursEntryModal from './habits/HoursEntryModal';
@@ -34,6 +35,7 @@ export default function HabitsScreen(): React.JSX.Element {
   useEffect(() => {
     let mounted = true;
     seedDevFixturesIfNeeded()
+      .then(() => applyStreakFreezes(todayKey))
       .then(() => Promise.all([loadHabits(), loadHabitGroups()]))
       .then(([h, g]) => {
         if (!mounted) return;
@@ -43,7 +45,7 @@ export default function HabitsScreen(): React.JSX.Element {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [todayKey]);
 
   const handleToggleHabit = useCallback(
     async (habitId: string) => {

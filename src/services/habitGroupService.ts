@@ -5,16 +5,26 @@ import {
   loadHabitGroups,
   loadHabits,
   saveHabitGroup,
+  saveHabitGroups,
+  saveHabits,
 } from '../storage/habitStorage';
 import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
 import { isGroupComplete } from '../utils/groupCompletion';
+import { habitMarkers } from '../utils/hours';
+import { withAppliedFreezes, withEarnedFreezes } from '../utils/streakFreeze';
 
 // The group log holds one marker per day the group-type rule was met
 export function getGroupStatus(
   group: HabitGroup,
   todayKey: string,
 ): CadenceStatus {
-  return getCadenceStatus(group.history, group.cadence, group.target, todayKey);
+  return getCadenceStatus(
+    group.history,
+    group.cadence,
+    group.target,
+    todayKey,
+    group.streakFreeze,
+  );
 }
 
 export async function syncGroupCompletion(
@@ -50,6 +60,33 @@ export async function syncGroupCompletion(
     };
   }
 
+  updated = withEarnedFreezes(updated, updated.history, todayKey);
   await saveHabitGroup(updated);
   return updated;
+}
+
+// Uses freezes on every habit and group whose streak would break today.
+// Runs once when the Habits screen loads; saves only what changed.
+export async function applyStreakFreezes(todayKey: string): Promise<void> {
+  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
+  let habitsChanged = false;
+  let groupsChanged = false;
+
+  for (const habit of Object.values(habits)) {
+    const next = withAppliedFreezes(habit, habitMarkers(habit), todayKey);
+    if (next !== habit) {
+      habits[habit.id] = next;
+      habitsChanged = true;
+    }
+  }
+  for (const group of Object.values(groups)) {
+    const next = withAppliedFreezes(group, group.history, todayKey);
+    if (next !== group) {
+      groups[group.id] = next;
+      groupsChanged = true;
+    }
+  }
+
+  if (habitsChanged) await saveHabits(habits);
+  if (groupsChanged) await saveHabitGroups(groups);
 }

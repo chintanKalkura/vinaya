@@ -94,7 +94,7 @@ Week, Month and Year use rolling windows that end today, not calendar periods:
 
 Further rules:
 - **Complete:** a habit or group is complete while its marked days in the window reach its target.
-- **Streak:** the number of marked days in the current run.
+- **Streak:** the number of marked days in the current run. Like Day, a run stays alive through the day one window after its latest mark and drops to 0 the day after (Week: marked 1 June, alive through 8 June).
 - **Icon:** shows only whether today is marked.
 - **Groups:** a group's days are complete by its group-type rule, and its target counts those days. Member habits' cadences don't affect this.
 
@@ -111,6 +111,17 @@ Screens 01 and 04 are superseded on three points:
   - Habit pills inside a group card don't show it.
   - On Hours banners it sits below the progress bar.
   - Full design: `docs/style-choices/cadence-label.md`.
+
+### 1.8 Streak freeze (screens 01, 04 and 06-11)
+
+- **Configuration.** Habits keep "1 skip per N streaks" (screens 06-10), with N from 1 to 100 and a default of 7. Groups get the same setting (`streakFreezeInterval`). It is not drawn on screen 11, and the create forms are not built yet.
+- **Rules.**
+  - One freeze is earned each time the streak reaches a new multiple of N.
+  - A freeze is used on the first day the streak would break, and covers one day.
+  - Freezes keep the streak intact but never add to it.
+  - The number of freezes held is stored on the habit or group.
+- **Look on screens 01 and 04.** On the day a freeze is used, a not complete habit or group is icy blue, with a Snowflake icon and an icy bar. Banners also show "n freezes left" at the bottom centre; pills don't.
+- Full rules: `docs/feature-development/streak-freeze.md`. Design: `docs/style-choices/streak-freeze.md`.
 
 ---
 

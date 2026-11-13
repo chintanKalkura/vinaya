@@ -3,9 +3,12 @@ import { seedDevFixturesIfNeeded } from './devSeed';
 import { loadHabits, loadHabitGroups, saveHabits } from './habitStorage';
 import { calculateStreak } from '../utils/streak';
 import { toDateKey } from '../utils/dates';
-import { getGroupStatus } from '../services/habitGroupService';
+import {
+  applyStreakFreezes,
+  getGroupStatus,
+} from '../services/habitGroupService';
 import { getCadenceStatus } from '../utils/cadence';
-import { targetMetLog } from '../utils/hours';
+import { habitMarkers, targetMetLog } from '../utils/hours';
 import { isGroupComplete, isHabitMarkedToday } from '../utils/groupCompletion';
 import { getAppLastUpdateTime } from './appInfo';
 import { Habit } from '../types/habit';
@@ -256,6 +259,93 @@ describe('seedDevFixturesIfNeeded', () => {
       );
 
       expect([expected, group.history.length]).toEqual([true, 8]);
+    });
+  });
+
+  describe('streak freeze fixtures', () => {
+    const today = toDateKey(new Date());
+    const habitStatus = async (id: string) => {
+      const habit = (await loadHabits())[id];
+      return getCadenceStatus(
+        habitMarkers(habit),
+        habit.cadence,
+        habit.target,
+        today,
+        habit.streakFreeze,
+      );
+    };
+    const pick = (status: {
+      complete: boolean;
+      streak: number;
+      frozenToday: boolean;
+      freezesLeft: number;
+    }) => [
+      status.complete,
+      status.streak,
+      status.frozenToday,
+      status.freezesLeft,
+    ];
+
+    beforeEach(async () => {
+      await seedDevFixturesIfNeeded();
+      await applyStreakFreezes(today);
+    });
+
+    it.each([
+      ['meditate', false, 9, true, 0],
+      ['stretch', true, 7, false, 2],
+      ['swim', false, 3, true, 0],
+      ['read-fiction', false, 8, true, 0],
+      ['guitar', false, 8, true, 0],
+      ['sketch', false, 8, true, 0],
+      ['code', false, 8, true, 0],
+    ])(
+      'seeds %s as complete=%s, streak %i, frozen=%s, %i left',
+      async (id, complete, streak, frozen, left) => {
+        expect(pick(await habitStatus(id))).toEqual([
+          complete,
+          streak,
+          frozen,
+          left,
+        ]);
+      },
+    );
+
+    it('seeds the Wind-down group frozen with 1 freeze left', async () => {
+      const group = (await loadHabitGroups())['wind-down'];
+
+      expect(pick(getGroupStatus(group, today))).toEqual([false, 8, true, 1]);
+    });
+
+    it('seeds the Side Projects Hours group frozen with 0 freezes left', async () => {
+      const group = (await loadHabitGroups())['side-projects'];
+
+      expect([
+        group.groupType,
+        group.history.length,
+        ...pick(getGroupStatus(group, today)),
+      ]).toEqual(['Hours', 8, false, 8, true, 0]);
+    });
+
+    it('gives other fixtures the freezes their streak earned and uses none', async () => {
+      const habits = await loadHabits();
+      const groups = await loadHabitGroups();
+
+      expect([
+        habits['no-killing'].streakFreeze,
+        groups.precepts.streakFreeze,
+        habits['drink-water'].streakFreeze,
+      ]).toEqual([
+        { available: 1, earnedAtStreak: 7, frozenDates: [] },
+        { available: 1, earnedAtStreak: 7, frozenDates: [] },
+        undefined,
+      ]);
+    });
+
+    it('gives every group a streak freeze interval of 7', async () => {
+      const groups = Object.values(await loadHabitGroups());
+
+      expect(groups.every(g => g.streakFreezeInterval === 7)).toBe(true);
     });
   });
 });

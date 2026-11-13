@@ -16,6 +16,7 @@ function makeGroup(overrides: Partial<HabitGroup> = {}): HabitGroup {
     cadence: 'Day',
     groupType: 'Required',
     habitIds: [],
+    streakFreezeInterval: 7,
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
@@ -402,5 +403,76 @@ describe('GroupCard', () => {
     );
 
     expect(queryAllByText('Daily')).toHaveLength(1);
+  });
+});
+
+describe('GroupCard streak freeze', () => {
+  const frozenGroup = (overrides: Partial<HabitGroup> = {}) =>
+    makeGroup({
+      recentLog: [{ date: '2024-06-13', kind: 'marker', value: 1 }],
+      streakFreeze: {
+        available: 1,
+        earnedAtStreak: 0,
+        frozenDates: ['2024-06-14'],
+        lastUsedOn: TODAY,
+      },
+      ...overrides,
+    });
+
+  const renderCard = (group: HabitGroup) =>
+    render(
+      <GroupCard
+        group={group}
+        habits={[]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+      />,
+    );
+
+  it('shows "1 freeze left" and keeps the streak when frozen today', () => {
+    const { getByTestId } = renderCard(frozenGroup());
+
+    expect([
+      getByTestId('group-freeze-group-1').props.children,
+      getByTestId('group-number-group-1').props.children,
+    ]).toEqual(['1 freeze left', 1]);
+  });
+
+  it('swaps the selector for the Snowflake and turns the card icy', () => {
+    const { getByTestId, queryByTestId } = renderCard(frozenGroup());
+
+    expect([
+      !!getByTestId('group-frozen-group-1', { includeHiddenElements: true }),
+      queryByTestId('group-selector-group-1'),
+      StyleSheet.flatten(getByTestId('group-card-group-1').props.style)
+        .borderColor,
+    ]).toEqual([true, null, colors.v2Ice]);
+  });
+
+  it('swaps the Hours chart icon for the Snowflake and turns the bar icy', () => {
+    const { getByTestId, queryByTestId } = renderCard(
+      frozenGroup({ groupType: 'Hours', targetHours: 2 }),
+    );
+
+    expect([
+      !!getByTestId('group-frozen-group-1', { includeHiddenElements: true }),
+      queryByTestId('group-hours-icon-group-1'),
+      StyleSheet.flatten(getByTestId('group-progress-group-1').props.style)
+        .backgroundColor,
+    ]).toEqual([true, null, colors.v2Ice]);
+  });
+
+  it('shows no freeze label when not frozen today', () => {
+    const { queryByTestId } = renderCard(
+      frozenGroup({
+        streakFreeze: {
+          available: 1,
+          earnedAtStreak: 0,
+          frozenDates: [],
+        },
+      }),
+    );
+
+    expect(queryByTestId('group-freeze-group-1')).toBeNull();
   });
 });

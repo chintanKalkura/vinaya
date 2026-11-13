@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
-import { Check } from 'lucide-react-native';
+import { Check, Snowflake } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { useHabitVisual } from './useHabitVisual';
 import { getColorScheme } from './colorRules';
@@ -22,7 +22,12 @@ export default function HabitPill({
   shape = 'round',
 }: HabitPillProps): React.JSX.Element {
   const { status } = useHabitVisual(habit, todayKey);
-  const scheme = getColorScheme('pill', status.complete, status.markedToday);
+  const scheme = getColorScheme(
+    'pill',
+    status.complete,
+    status.markedToday,
+    status.frozenToday,
+  );
 
   return (
     <Pressable
@@ -35,20 +40,30 @@ export default function HabitPill({
         { borderColor: required ? colors.v2Blue : colors.v2Border },
       ]}
     >
-      <View
-        style={[
-          styles.icon,
-          shape === 'square' && styles.iconSquare,
-          {
-            borderColor: scheme.iconColor,
-            backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
-          },
-        ]}
-      >
-        {scheme.iconFilled ? (
-          <Check color={colors.v2Background} size={12} strokeWidth={3.5} />
-        ) : null}
-      </View>
+      {scheme.iconFrozen ? (
+        <Snowflake
+          testID={`habit-pill-frozen-${habit.id}`}
+          style={styles.frozenIcon}
+          color={scheme.iconColor}
+          size={18}
+          strokeWidth={2}
+        />
+      ) : (
+        <View
+          style={[
+            styles.icon,
+            shape === 'square' && styles.iconSquare,
+            {
+              borderColor: scheme.iconColor,
+              backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
+            },
+          ]}
+        >
+          {scheme.iconFilled ? (
+            <Check color={colors.v2Background} size={12} strokeWidth={3.5} />
+          ) : null}
+        </View>
+      )}
       <Text style={[styles.name, { color: scheme.titleColor }]}>
         {habit.name}
       </Text>
@@ -76,6 +91,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 6,
+  },
+  frozenIcon: {
     marginRight: 6,
   },
   iconSquare: {
