@@ -5,6 +5,8 @@ import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { addDays, toDateKey } from '../utils/dates';
 import { isGroupComplete } from '../utils/groupCompletion';
+import { habitMarkers } from '../utils/hours';
+import { withEarnedFreezes } from '../utils/streakFreeze';
 import { getAppLastUpdateTime } from './appInfo';
 import { loadHabits, saveHabitGroups, saveHabits } from './habitStorage';
 
@@ -242,6 +244,75 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       2,
       marks([1, 5]),
     ),
+    // Streak freeze: used on load by applyStreakFreezes (missed yesterday)
+    {
+      ...checkmarkHabit(
+        'meditate',
+        'Meditate',
+        undefined,
+        streakLog(today, 9, 2),
+      ),
+      streakFreeze: { available: 1, earnedAtStreak: 7, frozenDates: [] },
+    },
+    // Two freezes held, none needed
+    {
+      ...checkmarkHabit('stretch', 'Stretch', undefined, streakLog(today, 7)),
+      streakFreezeInterval: 3,
+    },
+    // Week run of 3: day −1 was its last chance and passed without a mark
+    {
+      ...periodHabit(
+        'swim',
+        'Swim',
+        'Week',
+        'Checkmark',
+        undefined,
+        2,
+        marks([8, 11, 14]),
+      ),
+      streakFreezeInterval: 3,
+      streakFreeze: { available: 1, earnedAtStreak: 3, frozenDates: [] },
+    },
+    {
+      ...checkmarkHabit(
+        'read-fiction',
+        'Read Fiction',
+        'wind-down',
+        streakLog(today, 8, 2),
+      ),
+      streakFreeze: { available: 1, earnedAtStreak: 7, frozenDates: [] },
+    },
+    // Hours: target met −9…−2, nothing logged yesterday. Guitar has 1 of 2h
+    // logged today, so its bar shows the icy fill
+    {
+      ...periodHabit(
+        'guitar',
+        'Practice Guitar',
+        'Day',
+        'Hours',
+        undefined,
+        1,
+        [...hours(range(2, 9, 1), 2), [0, 1]],
+        2,
+      ),
+      streakFreeze: { available: 1, earnedAtStreak: 7, frozenDates: [] },
+    },
+    ...[
+      ['sketch', 'Sketch'],
+      ['code', 'Code'],
+    ].map(([id, name]) => ({
+      ...periodHabit(
+        id,
+        name,
+        'Day',
+        'Hours',
+        'side-projects',
+        1,
+        hours(range(2, 9, 1), 1),
+        1,
+      ),
+      streakFreeze: { available: 1, earnedAtStreak: 7, frozenDates: [] },
+    })),
     checkmarkHabit(
       'drink-water',
       'Drink Water',
@@ -270,6 +341,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       target,
       targetHours,
       habitIds: members.map(h => h.id),
+      streakFreezeInterval: 7,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -305,6 +377,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
         'no-dinner',
         'sleep-on-floor',
       ],
+      streakFreezeInterval: 7,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -317,6 +390,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       cadence: 'Day',
       groupType: 'Any',
       habitIds: habits.filter(h => h.groupId === 'eat-healthy').map(h => h.id),
+      streakFreezeInterval: 7,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -332,6 +406,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
         .filter(h => h.groupId === 'stay-productive')
         .map(h => h.id),
       targetHours: 8,
+      streakFreezeInterval: 7,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -341,10 +416,38 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     periodGroup('fitness', 'Fitness', 'Week', 'Any', 3),
     periodGroup('deep-work', 'Deep Work', 'Month', 'Hours', 12, 3),
     periodGroup('yearly-goals', 'Yearly Goals', 'Year', 'All', 40),
+    // Missed yesterday; holds 2 freezes (one kept from an earlier run)
+    {
+      id: 'wind-down',
+      name: 'Wind-down',
+      cadence: 'Day',
+      groupType: 'Any',
+      habitIds: ['read-fiction'],
+      streakFreezeInterval: 7,
+      streakFreeze: { available: 2, earnedAtStreak: 7, frozenDates: [] },
+      status: 'active',
+      sortOrder: nextSortOrder(),
+      createdAt,
+      recentLog: streakLog(today, 8, 2),
+      history: streakLog(today, 8, 2).reverse(),
+    },
+    // Hours group, 2h a day across Sketch and Code; missed yesterday
+    {
+      ...periodGroup('side-projects', 'Side Projects', 'Day', 'Hours', 1, 2),
+      streakFreeze: { available: 1, earnedAtStreak: 7, frozenDates: [] },
+    },
   ];
 
-  await saveHabits(Object.fromEntries(habits.map(h => [h.id, h])));
-  await saveHabitGroups(Object.fromEntries(groups.map(g => [g.id, g])));
+  // Fixtures without an explicit freeze state hold what their streak earned
+  const seededHabits = habits.map(h =>
+    h.streakFreeze ? h : withEarnedFreezes(h, habitMarkers(h), today),
+  );
+  const seededGroups = groups.map(g =>
+    g.streakFreeze ? g : withEarnedFreezes(g, g.history, today),
+  );
+
+  await saveHabits(Object.fromEntries(seededHabits.map(h => [h.id, h])));
+  await saveHabitGroups(Object.fromEntries(seededGroups.map(g => [g.id, g])));
   if (updateTime !== null) {
     await AsyncStorage.setItem(SEEDED_UPDATE_TIME_KEY, String(updateTime));
   }
