@@ -7,12 +7,14 @@ interface HoursProgressProps {
   total: number;
   target: number;
   testID: string;
+  color?: string; // fill colour; icy blue on the day a freeze is used
 }
 
 export default function HoursProgress({
   total,
   target,
   testID,
+  color = colors.v2Orange,
 }: HoursProgressProps): React.JSX.Element {
   const progress = target > 0 ? Math.min(total / target, 1) : 0;
 
@@ -21,7 +23,10 @@ export default function HoursProgress({
       <View style={styles.track}>
         <View
           testID={testID}
-          style={[styles.fill, { width: `${progress * 100}%` }]}
+          style={[
+            styles.fill,
+            { width: `${progress * 100}%`, backgroundColor: color },
+          ]}
         />
       </View>
       <Text style={styles.label}>{`${total}/${target}h`}</Text>
@@ -44,7 +49,6 @@ const styles = StyleSheet.create({
   fill: {
     height: '100%',
     borderRadius: 5,
-    backgroundColor: colors.v2Orange,
   },
   label: {
     color: colors.v2GreyText,

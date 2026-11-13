@@ -1,6 +1,6 @@
 import { Habit } from '../../types/habit';
 import { CadenceStatus, getCadenceStatus } from '../../utils/cadence';
-import { getHoursToday, targetMetLog } from '../../utils/hours';
+import { getHoursToday, habitMarkers } from '../../utils/hours';
 
 export interface HoursVisualState {
   hoursToday: number;
@@ -13,12 +13,12 @@ export interface HabitVisual {
 
 export function useHabitVisual(habit: Habit, todayKey: string): HabitVisual {
   const isHours = habit.type === 'Hours';
-  const markers = isHours ? targetMetLog(habit, habit.history) : habit.history;
   const status = getCadenceStatus(
-    markers,
+    habitMarkers(habit),
     habit.cadence,
     habit.target,
     todayKey,
+    habit.streakFreeze,
   );
   const hours = isHours ? { hoursToday: getHoursToday(habit, todayKey) } : null;
 

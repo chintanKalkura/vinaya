@@ -425,3 +425,121 @@ describe('HabitListRow', () => {
     });
   });
 });
+
+describe('HabitListRow streak freeze', () => {
+  // Marked the 3 days before yesterday; a freeze covered yesterday today
+  const frozenHabit = (overrides: Partial<Habit> = {}) =>
+    makeHabit({
+      recentLog: ['2024-06-13', '2024-06-12', '2024-06-11'].map(date => ({
+        date,
+        kind: 'marker' as const,
+        value: 1,
+      })),
+      streakFreeze: {
+        available: 2,
+        earnedAtStreak: 0,
+        frozenDates: [D1],
+        lastUsedOn: TODAY,
+      },
+      ...overrides,
+    });
+
+  const renderRow = (habit: Habit, colorKind: ColorKind) =>
+    render(
+      <HabitListRow
+        habit={habit}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind={colorKind}
+      />,
+    );
+
+  it('shows "n freezes left" on a banner frozen today', () => {
+    const { getByTestId } = renderRow(frozenHabit(), 'banner');
+
+    expect(getByTestId('habit-row-freeze-habit-1').props.children).toBe(
+      '2 freezes left',
+    );
+  });
+
+  it('keeps the streak and shows the Snowflake on a frozen banner', () => {
+    const { getByTestId, queryByTestId } = renderRow(frozenHabit(), 'banner');
+
+    expect([
+      getByTestId('habit-row-streak-habit-1').props.children,
+      !!getByTestId('habit-row-frozen-habit-1', {
+        includeHiddenElements: true,
+      }),
+      queryByTestId('habit-row-icon-habit-1'),
+    ]).toEqual([3, true, null]);
+  });
+
+  it('gives a frozen banner the icy border and background', () => {
+    const { getByTestId } = renderRow(frozenHabit(), 'banner');
+
+    expect(
+      StyleSheet.flatten(getByTestId('habit-row-habit-1').props.style),
+    ).toMatchObject({
+      borderColor: colors.v2Ice,
+      backgroundColor: colors.v2IceCardBackground,
+    });
+  });
+
+  it('never shows the freeze label on a pill', () => {
+    const { queryByTestId } = renderRow(frozenHabit(), 'pill');
+
+    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+  });
+
+  it('hides the freeze label once marked today', () => {
+    const habit = frozenHabit();
+    const { queryByTestId } = renderRow(
+      {
+        ...habit,
+        history: [...habit.history, { date: TODAY, kind: 'marker', value: 1 }],
+      },
+      'banner',
+    );
+
+    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+  });
+
+  it('hides the freeze label on later days', () => {
+    const { queryByTestId } = renderRow(
+      frozenHabit({
+        streakFreeze: {
+          available: 2,
+          earnedAtStreak: 0,
+          frozenDates: [D1],
+          lastUsedOn: D1,
+        },
+      }),
+      'banner',
+    );
+
+    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+  });
+
+  it('turns the Hours bar icy when frozen', () => {
+    const { getByTestId } = renderRow(
+      frozenHabit({
+        type: 'Hours',
+        targetHours: 1,
+        recentLog: [
+          { date: TODAY, kind: 'hours', value: 0 },
+          ...['2024-06-13', '2024-06-12'].map(date => ({
+            date,
+            kind: 'hours' as const,
+            value: 1,
+          })),
+        ],
+      }),
+      'banner',
+    );
+
+    expect(
+      StyleSheet.flatten(getByTestId('habit-row-progress-habit-1').props.style)
+        .backgroundColor,
+    ).toBe(colors.v2Ice);
+  });
+});

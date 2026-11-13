@@ -108,3 +108,69 @@ describe('getColorScheme', () => {
     });
   });
 });
+
+describe('getColorScheme frozen today', () => {
+  it('should show the pill title, number and icon icy when frozen', () => {
+    const scheme = getColorScheme('pill', false, false, true);
+
+    expect([scheme.titleColor, scheme.numberColor, scheme.iconColor]).toEqual([
+      colors.v2Ice,
+      colors.v2Ice,
+      colors.v2Ice,
+    ]);
+  });
+
+  it('should keep the banner title white and give it the icy container', () => {
+    const scheme = getColorScheme('banner', false, false, true);
+
+    expect([
+      scheme.titleColor,
+      scheme.numberColor,
+      scheme.container?.borderColor,
+      scheme.container?.backgroundColor,
+    ]).toEqual([
+      colors.v2White,
+      colors.v2Ice,
+      colors.v2Ice,
+      colors.v2IceCardBackground,
+    ]);
+  });
+
+  it('should swap the icon for the Snowflake and turn the bar icy', () => {
+    const scheme = getColorScheme('banner', false, false, true);
+
+    expect([scheme.iconFrozen, scheme.barColor, scheme.frozen]).toEqual([
+      true,
+      colors.v2Ice,
+      true,
+    ]);
+  });
+
+  it('should let complete beat frozen', () => {
+    const scheme = getColorScheme('banner', true, true, true);
+
+    expect([
+      scheme.numberColor,
+      scheme.iconFrozen,
+      scheme.barColor,
+      scheme.frozen,
+      scheme.container?.borderColor,
+    ]).toEqual([
+      colors.v2Orange,
+      false,
+      colors.v2Orange,
+      false,
+      colors.v2Orange,
+    ]);
+  });
+
+  it('should stay grey and orange-barred when not frozen', () => {
+    const scheme = getColorScheme('pill', false, false, false);
+
+    expect([scheme.numberColor, scheme.iconFrozen, scheme.barColor]).toEqual([
+      colors.v2GreyText,
+      false,
+      colors.v2Orange,
+    ]);
+  });
+});

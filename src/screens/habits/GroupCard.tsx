@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
-import { ChartNoAxesColumnIncreasing } from 'lucide-react-native';
+import { ChartNoAxesColumnIncreasing, Snowflake } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { getGroupStatus } from '../../services/habitGroupService';
 import { getHoursToday } from '../../utils/hours';
@@ -11,6 +11,7 @@ import HabitListRow from './HabitListRow';
 import HabitPill from './HabitPill';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
+import FreezeLabel from './FreezeLabel';
 
 interface GroupCardProps {
   group: HabitGroup;
@@ -28,7 +29,12 @@ export default function GroupCard({
   const isRequiredGroup = group.groupType === 'Required';
   const isHoursGroup = group.groupType === 'Hours';
   const status = getGroupStatus(group, todayKey);
-  const scheme = getColorScheme('banner', status.complete, status.markedToday);
+  const scheme = getColorScheme(
+    'banner',
+    status.complete,
+    status.markedToday,
+    status.frozenToday,
+  );
   const hoursTotal = habits.reduce(
     (sum, habit) => sum + getHoursToday(habit, todayKey),
     0,
@@ -41,7 +47,15 @@ export default function GroupCard({
       style={[styles.card, scheme.container]}
     >
       <View style={styles.header}>
-        {isHoursGroup ? (
+        {scheme.iconFrozen ? (
+          <Snowflake
+            testID={`group-frozen-${group.id}`}
+            style={styles.frozenIcon}
+            color={scheme.iconColor}
+            size={isHoursGroup ? 26 : 22}
+            strokeWidth={2.5}
+          />
+        ) : isHoursGroup ? (
           <View
             testID={`group-hours-icon-${group.id}`}
             style={styles.hoursIcon}
@@ -89,6 +103,7 @@ export default function GroupCard({
             total={hoursTotal}
             target={hoursTarget}
             testID={`group-progress-${group.id}`}
+            color={scheme.barColor}
           />
         </View>
       ) : null}
@@ -123,6 +138,12 @@ export default function GroupCard({
           ))}
         </View>
       )}
+      {scheme.frozen ? (
+        <FreezeLabel
+          freezesLeft={status.freezesLeft}
+          testID={`group-freeze-${group.id}`}
+        />
+      ) : null}
       <CadenceLabel
         cadence={group.cadence}
         testID={`group-cadence-${group.id}`}
@@ -181,6 +202,9 @@ const styles = StyleSheet.create({
   number: {
     fontWeight: '700',
     fontSize: 32,
+  },
+  frozenIcon: {
+    marginRight: 10,
   },
   hoursIcon: {
     marginRight: 10,
