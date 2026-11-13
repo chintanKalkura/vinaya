@@ -1,20 +1,21 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { HabitCadence } from '../../types/habit';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LayoutGrid, List, ListFilter } from 'lucide-react-native';
 import { colors } from '../../theme';
-
-const CADENCES: HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
-const SELECTED_CADENCE: HabitCadence = 'Day';
+import CadenceFilter, { CadenceFilterValue } from './CadenceFilter';
 
 export type HabitsViewMode = 'group' | 'list';
 
 interface HabitsHeaderProps {
+  cadenceFilter: CadenceFilterValue;
+  onChangeCadenceFilter: (value: CadenceFilterValue) => void;
   viewMode: HabitsViewMode;
   onChangeViewMode: (mode: HabitsViewMode) => void;
 }
 
 export default function HabitsHeader({
+  cadenceFilter,
+  onChangeCadenceFilter,
   viewMode,
   onChangeViewMode,
 }: HabitsHeaderProps): React.JSX.Element {
@@ -22,27 +23,8 @@ export default function HabitsHeader({
 
   return (
     <View style={styles.row}>
-      <View style={styles.cadenceGroup}>
-        {CADENCES.map(cadence => (
-          <Pressable
-            key={cadence}
-            testID={`cadence-pill-${cadence}`}
-            onPress={() => {}}
-            style={[
-              styles.cadencePill,
-              cadence === SELECTED_CADENCE && styles.cadencePillActive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.cadenceLabel,
-                cadence === SELECTED_CADENCE && styles.cadenceLabelActive,
-              ]}
-            >
-              {cadence}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={styles.cadenceSlot}>
+        <CadenceFilter value={cadenceFilter} onChange={onChangeCadenceFilter} />
       </View>
       <View style={styles.toggleGroup}>
         <Pressable
@@ -90,29 +72,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 8,
   },
-  cadenceGroup: {
+  cadenceSlot: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: colors.v2CardBackground,
-    borderRadius: 18,
-    padding: 3,
-  },
-  cadencePill: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  cadencePillActive: {
-    backgroundColor: colors.v2Orange,
-  },
-  cadenceLabel: {
-    color: colors.v2GreyText,
-    fontWeight: '600',
-  },
-  cadenceLabelActive: {
-    color: colors.v2Background,
   },
   toggleGroup: {
     flexDirection: 'row',

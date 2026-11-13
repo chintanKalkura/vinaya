@@ -7,17 +7,20 @@ function renderHeader(
   onChangeViewMode = jest.fn(),
 ) {
   return render(
-    <HabitsHeader viewMode={viewMode} onChangeViewMode={onChangeViewMode} />,
+    <HabitsHeader
+      cadenceFilter="All"
+      onChangeCadenceFilter={jest.fn()}
+      viewMode={viewMode}
+      onChangeViewMode={onChangeViewMode}
+    />,
   );
 }
 
 describe('HabitsHeader', () => {
-  it('should show the four cadence values', () => {
-    const { getByText } = renderHeader();
+  it('should show the cadence filter with the selected value', () => {
+    const { getByTestId } = renderHeader();
 
-    ['Day', 'Week', 'Month', 'Year'].forEach(label => {
-      expect(getByText(label)).toBeTruthy();
-    });
+    expect(getByTestId('cadence-filter')).toHaveTextContent('All');
   });
 
   it('should show the view toggle and sort button', () => {
@@ -26,15 +29,6 @@ describe('HabitsHeader', () => {
     expect(getByTestId('view-mode-toggle-group')).toBeTruthy();
     expect(getByTestId('view-mode-toggle-list')).toBeTruthy();
     expect(getByTestId('sort-button')).toBeTruthy();
-  });
-
-  it('should not change anything when a cadence is pressed', () => {
-    const { getByTestId, toJSON } = renderHeader();
-    const before = JSON.stringify(toJSON());
-
-    fireEvent.press(getByTestId('cadence-pill-Week'));
-
-    expect(JSON.stringify(toJSON())).toBe(before);
   });
 
   it('should show group view as selected in group mode', () => {
