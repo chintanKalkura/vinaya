@@ -2,9 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   InvalidMarkError,
   markHabitDone,
+  setHabitHours,
   unmarkHabitDone,
 } from './habitService';
-import { saveHabits, loadHabits } from '../storage/habitStorage';
+import {
+  saveHabits,
+  loadHabits,
+  loadHabitGroups,
+  saveHabitGroups,
+} from '../storage/habitStorage';
 import { Habit } from '../types/habit';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { addDays } from '../utils/dates';
@@ -153,5 +159,111 @@ describe('unmarkHabitDone', () => {
 
     expect(final.recentLog).toEqual([D1, D2]);
     expect(final.history).toEqual([D2, D1]);
+  });
+});
+
+describe('setHabitHours', () => {
+  const hoursHabit = (overrides: Partial<Habit> = {}) =>
+    makeHabit({ type: 'Hours', targetHours: 1, ...overrides });
+
+  it("should add today's hours entry to recentLog and history", async () => {
+    await saveHabits({ 'habit-1': hoursHabit() });
+
+    const updated = await setHabitHours('habit-1', 3, TODAY);
+
+    expect(updated.history).toEqual([{ date: TODAY, kind: 'hours', value: 3 }]);
+  });
+
+  it("should replace today's entry when hours are logged again", async () => {
+    await saveHabits({ 'habit-1': hoursHabit() });
+
+    await setHabitHours('habit-1', 3, TODAY);
+    const updated = await setHabitHours('habit-1', 5, TODAY);
+
+    expect(updated.recentLog).toEqual([
+      { date: TODAY, kind: 'hours', value: 5 },
+    ]);
+  });
+
+  it("should remove today's entry when 0 hours are logged", async () => {
+    await saveHabits({ 'habit-1': hoursHabit() });
+
+    await setHabitHours('habit-1', 3, TODAY);
+    const updated = await setHabitHours('habit-1', 0, TODAY);
+
+    expect(updated.history).toEqual([]);
+  });
+
+  it('should keep earlier days when logging today', async () => {
+    const earlier = {
+      date: addDays(TODAY, -1),
+      kind: 'hours' as const,
+      value: 2,
+    };
+    await saveHabits({
+      'habit-1': hoursHabit({ recentLog: [earlier], history: [earlier] }),
+    });
+
+    const updated = await setHabitHours('habit-1', 1, TODAY);
+
+    expect(updated.recentLog).toEqual([
+      { date: TODAY, kind: 'hours', value: 1 },
+      earlier,
+    ]);
+  });
+
+  it('should cap logged hours at 24', async () => {
+    await saveHabits({ 'habit-1': hoursHabit() });
+
+    const updated = await setHabitHours('habit-1', 30, TODAY);
+
+    expect(updated.recentLog[0].value).toBe(24);
+  });
+
+  it('should persist the updated habit', async () => {
+    await saveHabits({ 'habit-1': hoursHabit() });
+
+    await setHabitHours('habit-1', 2, TODAY);
+
+    expect((await loadHabits())['habit-1'].recentLog).toEqual([
+      { date: TODAY, kind: 'hours', value: 2 },
+    ]);
+  });
+
+  it('should throw InvalidMarkError for a Checkmark habit', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await expect(setHabitHours('habit-1', 2, TODAY)).rejects.toBeInstanceOf(
+      InvalidMarkError,
+    );
+  });
+
+  it('should sync the group log when the group target is reached and lost', async () => {
+    await saveHabits({ 'habit-1': hoursHabit({ groupId: 'g' }) });
+    await saveHabitGroups({
+      g: {
+        id: 'g',
+        name: 'Stay Productive',
+        cadence: 'Day',
+        groupType: 'Hours',
+        habitIds: ['habit-1'],
+        targetHours: 3,
+        status: 'active',
+        sortOrder: 0,
+        createdAt: 0,
+        recentLog: [],
+        history: [],
+      },
+    });
+
+    await setHabitHours('habit-1', 3, TODAY);
+    const reached = (await loadHabitGroups()).g.recentLog;
+    await setHabitHours('habit-1', 2, TODAY);
+    const lost = (await loadHabitGroups()).g.recentLog;
+
+    expect([reached, lost]).toEqual([
+      [{ date: TODAY, kind: 'marker', value: 1 }],
+      [],
+    ]);
   });
 });

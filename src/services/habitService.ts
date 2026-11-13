@@ -2,6 +2,7 @@ import { Habit } from '../types/habit';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
+import { clampHours } from '../utils/hours';
 import { loadHabits, saveHabit } from '../storage/habitStorage';
 import { syncGroupCompletion } from './habitGroupService';
 
@@ -63,6 +64,42 @@ export async function unmarkHabitDone(
     recentLog: habit.recentLog.filter(entry => entry.date !== todayKey),
     history: habit.history.filter(entry => entry.date !== todayKey),
   };
+
+  await saveHabit(updated);
+  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
+  return updated;
+}
+
+export async function setHabitHours(
+  habitId: string,
+  hours: number,
+  todayKey: string = toDateKey(new Date()),
+): Promise<Habit> {
+  const habits = await loadHabits();
+  const habit = habits[habitId];
+  if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
+  if (habit.cadence !== 'Day' || habit.type !== 'Hours') {
+    throw new InvalidMarkError('Only Day-cadence Hours habits can log hours');
+  }
+
+  const value = clampHours(hours);
+  const recentLog = habit.recentLog.filter(entry => entry.date !== todayKey);
+  const history = habit.history.filter(entry => entry.date !== todayKey);
+
+  let updated: Habit;
+  if (value > 0) {
+    const entry: LogEntry = { date: todayKey, kind: 'hours', value };
+    updated = {
+      ...habit,
+      recentLog: [entry, ...recentLog].slice(
+        0,
+        DEFAULT_HABIT_LIMITS.recentLogSize,
+      ),
+      history: [...history, entry],
+    };
+  } else {
+    updated = { ...habit, recentLog, history };
+  }
 
   await saveHabit(updated);
   if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
