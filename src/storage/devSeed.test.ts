@@ -4,8 +4,7 @@ import { loadHabits, loadHabitGroups, saveHabits } from './habitStorage';
 import { calculateStreak } from '../utils/streak';
 import { toDateKey } from '../utils/dates';
 import { getGroupStreak } from '../services/habitGroupService';
-import { isGroupComplete } from '../utils/groupCompletion';
-
+import { isGroupComplete, isHabitMarkedToday } from '../utils/groupCompletion';
 beforeEach(async () => {
   await AsyncStorage.clear();
 });
@@ -83,13 +82,40 @@ describe('seedDevFixturesIfEmpty', () => {
     expect(getGroupStreak(groups['eat-healthy'], today)).toBe(0);
   });
 
-  it('seeds Hours-type habits that carry no marker log entries', async () => {
+  it('seeds Stay Productive as a complete Hours group at 8 / 8 hrs', async () => {
     await seedDevFixturesIfEmpty();
 
     const habits = await loadHabits();
+    const groups = await loadHabitGroups();
+    const today = toDateKey(new Date());
+    const members = Object.values(habits).filter(
+      h => h.groupId === 'stay-productive',
+    );
 
-    expect(habits['job-hunt'].type).toBe('Hours');
-    expect(habits['job-hunt'].recentLog).toEqual([]);
-    expect(habits.study.type).toBe('Hours');
+    expect(isGroupComplete(groups['stay-productive'], members, today)).toBe(
+      true,
+    );
+  });
+
+  it('seeds Stay Productive with a 5-day group streak', async () => {
+    await seedDevFixturesIfEmpty();
+
+    const groups = await loadHabitGroups();
+    const today = toDateKey(new Date());
+
+    expect(getGroupStreak(groups['stay-productive'], today)).toBe(5);
+  });
+
+  it('seeds Stay Productive hours so only logged habits are marked', async () => {
+    await seedDevFixturesIfEmpty();
+
+    const habits = await loadHabits();
+    const today = toDateKey(new Date());
+    const marked = Object.values(habits)
+      .filter(h => h.groupId === 'stay-productive')
+      .filter(h => isHabitMarkedToday(h, today))
+      .map(h => h.id);
+
+    expect(marked).toEqual(['job-hunt', 'study', 'sit', 'read']);
   });
 });

@@ -46,20 +46,27 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
     };
   }
 
-  function hoursHabit(id: string, name: string, groupId: string): Habit {
+  function hoursHabit(
+    id: string,
+    name: string,
+    groupId: string,
+    hoursToday: number,
+  ): Habit {
+    const log: LogEntry[] =
+      hoursToday > 0 ? [{ date: today, kind: 'hours', value: hoursToday }] : [];
     return {
       id,
       name,
       cadence: 'Day',
       type: 'Hours',
-      targetHours: 2,
+      targetHours: 1,
       streakFreezeInterval: 7,
       groupId,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
-      recentLog: [],
-      history: [],
+      recentLog: log,
+      history: log,
     };
   }
 
@@ -98,8 +105,15 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
     checkmarkHabit('cook', 'Cook', 'eat-healthy', streakLog(today, 3, 1)),
     checkmarkHabit('restaurant', 'Restaurant', 'eat-healthy', []),
     checkmarkHabit('drink-water', 'Drink Water', undefined, [marker(today)]),
-    hoursHabit('job-hunt', 'Job Hunt', 'stay-productive'),
-    hoursHabit('study', 'Study', 'stay-productive'),
+    // Stay Productive totals 8 / 8 hrs today
+    hoursHabit('job-hunt', 'Job Hunt', 'stay-productive', 4),
+    hoursHabit('study', 'Study', 'stay-productive', 2),
+    hoursHabit('build', 'Build', 'stay-productive', 0),
+    hoursHabit('write', 'Write', 'stay-productive', 0),
+    hoursHabit('sit', 'Sit', 'stay-productive', 1),
+    hoursHabit('errands', 'Errands', 'stay-productive', 0),
+    hoursHabit('read', 'Read', 'stay-productive', 1),
+    hoursHabit('create', 'Create', 'stay-productive', 0),
   ];
 
   const groups: HabitGroup[] = [
@@ -143,12 +157,12 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
       habitIds: habits
         .filter(h => h.groupId === 'stay-productive')
         .map(h => h.id),
-      hoursTarget: 4,
+      targetHours: 8,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
-      recentLog: [],
-      history: [],
+      recentLog: streakLog(today, 5),
+      history: streakLog(today, 5).reverse(),
     },
   ];
 
