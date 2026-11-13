@@ -3,7 +3,9 @@ import { seedDevFixturesIfNeeded } from './devSeed';
 import { loadHabits, loadHabitGroups, saveHabits } from './habitStorage';
 import { calculateStreak } from '../utils/streak';
 import { toDateKey } from '../utils/dates';
-import { getGroupStreak } from '../services/habitGroupService';
+import { getGroupStatus } from '../services/habitGroupService';
+import { getCadenceStatus } from '../utils/cadence';
+import { targetMetLog } from '../utils/hours';
 import { isGroupComplete, isHabitMarkedToday } from '../utils/groupCompletion';
 import { getAppLastUpdateTime } from './appInfo';
 import { Habit } from '../types/habit';
@@ -127,8 +129,8 @@ describe('seedDevFixturesIfNeeded', () => {
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
 
-    expect(getGroupStreak(groups.precepts, today)).toBe(12);
-    expect(getGroupStreak(groups['eat-healthy'], today)).toBe(0);
+    expect(getGroupStatus(groups.precepts, today).streak).toBe(12);
+    expect(getGroupStatus(groups['eat-healthy'], today).streak).toBe(0);
   });
 
   it('seeds Stay Productive as a complete Hours group at 8 / 8 hrs', async () => {
@@ -152,7 +154,7 @@ describe('seedDevFixturesIfNeeded', () => {
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
 
-    expect(getGroupStreak(groups['stay-productive'], today)).toBe(5);
+    expect(getGroupStatus(groups['stay-productive'], today).streak).toBe(5);
   });
 
   it('seeds Stay Productive hours so only logged habits are marked', async () => {
@@ -187,5 +189,73 @@ describe('seedDevFixturesIfNeeded', () => {
     const last = habits.reduce((a, b) => (b.sortOrder > a.sortOrder ? b : a));
 
     expect(last.id).toBe('drink-water');
+  });
+
+  describe('Week, Month and Year fixtures', () => {
+    const today = toDateKey(new Date());
+    const habitStatus = async (id: string) => {
+      const habit = (await loadHabits())[id];
+      const markers =
+        habit.type === 'Hours'
+          ? targetMetLog(habit, habit.history)
+          : habit.history;
+      return getCadenceStatus(markers, habit.cadence, habit.target, today);
+    };
+    const groupStatus = async (id: string) =>
+      getGroupStatus((await loadHabitGroups())[id], today);
+
+    beforeEach(async () => {
+      await seedDevFixturesIfNeeded();
+    });
+
+    it.each([
+      ['run', true, 6],
+      ['gym', false, 2],
+      ['write-book', true, 15],
+      ['piano', false, 6],
+      ['read-paper', true, 60],
+      ['volunteer', false, 15],
+      ['call-family', true, 2],
+    ])(
+      'seeds %s as complete=%s with streak %i',
+      async (id, complete, streak) => {
+        const status = await habitStatus(id);
+
+        expect([status.complete, status.streak]).toEqual([complete, streak]);
+      },
+    );
+
+    it('seeds Call Family complete but not marked today', async () => {
+      expect((await habitStatus('call-family')).markedToday).toBe(false);
+    });
+
+    it.each([
+      ['fitness', true],
+      ['deep-work', false],
+      ['yearly-goals', false],
+    ])('seeds the %s group as complete=%s', async (id, complete) => {
+      expect((await groupStatus(id)).complete).toBe(complete);
+    });
+
+    it('seeds one group per cadence for Week, Month and Year', async () => {
+      const groups = await loadHabitGroups();
+
+      expect(
+        ['fitness', 'deep-work', 'yearly-goals'].map(id => groups[id].cadence),
+      ).toEqual(['Week', 'Month', 'Year']);
+    });
+
+    it('derives group logs that match the member marks', async () => {
+      const habits = await loadHabits();
+      const group = (await loadHabitGroups()).fitness;
+      const members = Object.values(habits)
+        .filter(h => h.groupId === 'fitness')
+        .map(h => ({ ...h, recentLog: h.history }));
+      const expected = group.history.every(entry =>
+        isGroupComplete(group, members, entry.date),
+      );
+
+      expect([expected, group.history.length]).toEqual([true, 8]);
+    });
   });
 });
