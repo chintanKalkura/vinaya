@@ -84,4 +84,13 @@ describe('targetMetLog', () => {
 
     expect(targetMetLog(habit)).toEqual([]);
   });
+
+  it('should read the given log instead of recentLog', () => {
+    const habit = makeHabit({ targetHours: 1, recentLog: [] });
+    const history = [{ date: YESTERDAY, kind: 'hours' as const, value: 2 }];
+
+    expect(targetMetLog(habit, history)).toEqual([
+      { date: YESTERDAY, kind: 'marker', value: 1 },
+    ]);
+  });
 });

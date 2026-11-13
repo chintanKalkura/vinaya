@@ -19,10 +19,13 @@ export function getHoursToday(habit: Habit, todayKey: string): number {
 
 // Days whose logged hours met the target, as marker entries, so the
 // Checkmark streak and colour rules apply unchanged to Hours habits
-export function targetMetLog(habit: Habit): LogEntry[] {
+export function targetMetLog(
+  habit: Habit,
+  log: LogEntry[] = habit.recentLog,
+): LogEntry[] {
   const target = habit.targetHours ?? 0;
   if (target <= 0) return [];
-  return habit.recentLog
+  return log
     .filter(entry => entry.kind === 'hours' && entry.value >= target)
     .map(entry => ({ date: entry.date, kind: 'marker', value: 1 }));
 }

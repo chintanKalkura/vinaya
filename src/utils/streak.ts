@@ -20,25 +20,3 @@ export function calculateStreak(
   }
   return streak;
 }
-
-export type MarkColorState = 'marked' | 'unmarked';
-
-export interface HabitVisualState {
-  habitColorState: MarkColorState;
-  streakValue: number;
-}
-
-export function deriveHabitVisualState(
-  recentLog: LogEntry[],
-  todayKey: string,
-): HabitVisualState {
-  const streakValue = calculateStreak(recentLog, todayKey);
-  const isTodayMarked = recentLog.some(
-    entry => entry.kind === 'marker' && entry.date === todayKey,
-  );
-
-  return {
-    habitColorState: isTodayMarked ? 'marked' : 'unmarked',
-    streakValue,
-  };
-}
