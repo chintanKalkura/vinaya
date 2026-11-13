@@ -45,6 +45,7 @@ function makeGroup(overrides: Partial<HabitGroup> = {}): HabitGroup {
     cadence: 'Day',
     groupType: 'Required',
     habitIds: ['no-killing'],
+    streakFreezeInterval: 7,
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
@@ -551,5 +552,27 @@ describe('HabitsScreen', () => {
         expect(pill.props.accessibilityState.checked).toBe(true),
       );
     });
+  });
+});
+
+describe('HabitsScreen streak freeze', () => {
+  it('uses a freeze on load for a habit that missed yesterday', async () => {
+    await seed({
+      'no-killing': makeHabit({
+        groupId: undefined,
+        recentLog: ['2024-06-13', '2024-06-12'].map(date => ({
+          date,
+          kind: 'marker' as const,
+          value: 1,
+        })),
+        streakFreeze: { available: 1, earnedAtStreak: 0, frozenDates: [] },
+      }),
+    });
+
+    const { findByTestId } = render(<HabitsScreen />);
+
+    expect(
+      (await findByTestId('habit-row-freeze-no-killing')).props.children,
+    ).toBe('0 freezes left');
   });
 });
