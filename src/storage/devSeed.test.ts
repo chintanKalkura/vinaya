@@ -1,17 +1,88 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { seedDevFixturesIfEmpty } from './devSeed';
+import { seedDevFixturesIfNeeded } from './devSeed';
 import { loadHabits, loadHabitGroups, saveHabits } from './habitStorage';
 import { calculateStreak } from '../utils/streak';
 import { toDateKey } from '../utils/dates';
 import { getGroupStreak } from '../services/habitGroupService';
 import { isGroupComplete, isHabitMarkedToday } from '../utils/groupCompletion';
+import { getAppLastUpdateTime } from './appInfo';
+import { Habit } from '../types/habit';
+
+jest.mock('./appInfo', () => ({ getAppLastUpdateTime: jest.fn() }));
+
+const mockLastUpdateTime = getAppLastUpdateTime as jest.MockedFunction<
+  typeof getAppLastUpdateTime
+>;
+
+const customHabit: Habit = {
+  id: 'custom',
+  name: 'Custom Habit',
+  cadence: 'Day',
+  type: 'Checkmark',
+  streakFreezeInterval: 7,
+  status: 'active',
+  sortOrder: 0,
+  createdAt: 0,
+  recentLog: [],
+  history: [],
+};
+
 beforeEach(async () => {
   await AsyncStorage.clear();
+  mockLastUpdateTime.mockResolvedValue(1000);
 });
 
-describe('seedDevFixturesIfEmpty', () => {
+describe('seedDevFixturesIfNeeded install and update', () => {
+  it('should reseed over existing data when the app has been updated', async () => {
+    await seedDevFixturesIfNeeded();
+    await saveHabits({ custom: customHabit });
+    mockLastUpdateTime.mockResolvedValue(2000);
+
+    await seedDevFixturesIfNeeded();
+
+    expect(Object.keys(await loadHabits())).toContain('job-hunt');
+  });
+
+  it('should replace stale habits and groups when the app has been updated', async () => {
+    await seedDevFixturesIfNeeded();
+    await saveHabits({ custom: customHabit });
+    mockLastUpdateTime.mockResolvedValue(2000);
+
+    await seedDevFixturesIfNeeded();
+
+    expect((await loadHabits()).custom).toBeUndefined();
+  });
+
+  it('should reseed data saved before install tracking existed', async () => {
+    await saveHabits({ custom: customHabit });
+
+    await seedDevFixturesIfNeeded();
+
+    expect((await loadHabits()).custom).toBeUndefined();
+  });
+
+  it('should not reseed when the app has not been updated', async () => {
+    await seedDevFixturesIfNeeded();
+    await saveHabits({ custom: customHabit });
+
+    await seedDevFixturesIfNeeded();
+
+    expect(Object.keys(await loadHabits())).toEqual(['custom']);
+  });
+
+  it('should only seed empty storage when the install time is unavailable', async () => {
+    mockLastUpdateTime.mockResolvedValue(null);
+    await saveHabits({ custom: customHabit });
+
+    await seedDevFixturesIfNeeded();
+
+    expect(Object.keys(await loadHabits())).toEqual(['custom']);
+  });
+});
+
+describe('seedDevFixturesIfNeeded', () => {
   it('seeds habits and groups when storage is empty', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const habits = await loadHabits();
     const groups = await loadHabitGroups();
@@ -22,30 +93,8 @@ describe('seedDevFixturesIfEmpty', () => {
     );
   });
 
-  it('does not overwrite existing habits', async () => {
-    await saveHabits({
-      custom: {
-        id: 'custom',
-        name: 'Custom Habit',
-        cadence: 'Day',
-        type: 'Checkmark',
-        streakFreezeInterval: 7,
-        status: 'active',
-        sortOrder: 0,
-        createdAt: 0,
-        recentLog: [],
-        history: [],
-      },
-    });
-
-    await seedDevFixturesIfEmpty();
-
-    const habits = await loadHabits();
-    expect(Object.keys(habits)).toEqual(['custom']);
-  });
-
   it('seeded Day/Checkmark habits produce sane streak values', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const habits = await loadHabits();
     const today = toDateKey(new Date());
@@ -56,7 +105,7 @@ describe('seedDevFixturesIfEmpty', () => {
   });
 
   it('seeds 8 Precepts as a complete Required group and Eat Healthy as incomplete', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const habits = await loadHabits();
     const groups = await loadHabitGroups();
@@ -73,7 +122,7 @@ describe('seedDevFixturesIfEmpty', () => {
   });
 
   it('seeds group logs so 8 Precepts has a 12-day streak and Eat Healthy has none', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
@@ -83,7 +132,7 @@ describe('seedDevFixturesIfEmpty', () => {
   });
 
   it('seeds Stay Productive as a complete Hours group at 8 / 8 hrs', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const habits = await loadHabits();
     const groups = await loadHabitGroups();
@@ -98,7 +147,7 @@ describe('seedDevFixturesIfEmpty', () => {
   });
 
   it('seeds Stay Productive with a 5-day group streak', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
@@ -107,7 +156,7 @@ describe('seedDevFixturesIfEmpty', () => {
   });
 
   it('seeds Stay Productive hours so only logged habits are marked', async () => {
-    await seedDevFixturesIfEmpty();
+    await seedDevFixturesIfNeeded();
 
     const habits = await loadHabits();
     const today = toDateKey(new Date());

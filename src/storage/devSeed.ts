@@ -1,7 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { LogEntry } from '../types/log';
 import { addDays, toDateKey } from '../utils/dates';
+import { getAppLastUpdateTime } from './appInfo';
 import { loadHabits, saveHabitGroups, saveHabits } from './habitStorage';
 
 function marker(date: string): LogEntry {
@@ -15,9 +17,19 @@ function streakLog(today: string, days: number, startOffset = 0): LogEntry[] {
   );
 }
 
-export async function seedDevFixturesIfEmpty(): Promise<void> {
-  const existing = await loadHabits();
-  if (Object.keys(existing).length > 0) return;
+const SEEDED_UPDATE_TIME_KEY = 'dev_seed_app_update_time';
+
+// Seeds on a fresh install and reseeds (replacing all habits and groups)
+// whenever the app is updated. Falls back to seeding empty storage only.
+export async function seedDevFixturesIfNeeded(): Promise<void> {
+  const updateTime = await getAppLastUpdateTime();
+  if (updateTime === null) {
+    const existing = await loadHabits();
+    if (Object.keys(existing).length > 0) return;
+  } else {
+    const seededAt = await AsyncStorage.getItem(SEEDED_UPDATE_TIME_KEY);
+    if (seededAt === String(updateTime)) return;
+  }
 
   const today = toDateKey(new Date());
 
@@ -168,4 +180,7 @@ export async function seedDevFixturesIfEmpty(): Promise<void> {
 
   await saveHabits(Object.fromEntries(habits.map(h => [h.id, h])));
   await saveHabitGroups(Object.fromEntries(groups.map(g => [g.id, g])));
+  if (updateTime !== null) {
+    await AsyncStorage.setItem(SEEDED_UPDATE_TIME_KEY, String(updateTime));
+  }
 }

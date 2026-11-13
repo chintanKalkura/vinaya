@@ -6,7 +6,7 @@ import { colors } from '../theme';
 import { toDateKey } from '../utils/dates';
 import { isGroupComplete } from '../utils/groupCompletion';
 import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
-import { seedDevFixturesIfEmpty } from '../storage/devSeed';
+import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
   markHabitDone,
   setHabitHours,
@@ -30,7 +30,7 @@ export default function HabitsScreen(): React.JSX.Element {
 
   useEffect(() => {
     let mounted = true;
-    seedDevFixturesIfEmpty()
+    seedDevFixturesIfNeeded()
       .then(() => Promise.all([loadHabits(), loadHabitGroups()]))
       .then(([h, g]) => {
         if (!mounted) return;
