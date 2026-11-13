@@ -1,8 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getGroupStatus, syncGroupCompletion } from './habitGroupService';
+import {
+  applyStreakFreezes,
+  getGroupStatus,
+  syncGroupCompletion,
+} from './habitGroupService';
 import { markHabitDone, unmarkHabitDone } from './habitService';
 import {
   loadHabitGroups,
+  loadHabits,
   saveHabitGroups,
   saveHabits,
 } from '../storage/habitStorage';
@@ -44,6 +49,7 @@ function makeGroup(
     cadence: 'Day',
     groupType,
     habitIds: ['a', 'b'],
+    streakFreezeInterval: 7,
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
@@ -275,5 +281,96 @@ describe('getGroupStatus', () => {
 
   it('should count every complete day in the run as the Week group streak', () => {
     expect(getGroupStatus(weekGroup([1, 5, 9]), TODAY).streak).toBe(3);
+  });
+});
+
+// Marked on the `days` days ending `endOffset` days before TODAY, oldest first
+function runBefore(days: number, endOffset = 1): LogEntry[] {
+  return Array.from({ length: days }, (_, i) =>
+    marker(addDays(TODAY, -(endOffset + days - 1 - i))),
+  );
+}
+
+describe('group streak freezes', () => {
+  it('earns a group freeze when syncing reaches a multiple of N', async () => {
+    const log = runBefore(6);
+    await seed(
+      [
+        makeHabit('a', {
+          recentLog: [marker(TODAY)],
+          history: [marker(TODAY)],
+        }),
+      ],
+      makeGroup('Any', { habitIds: ['a'], recentLog: log, history: log }),
+    );
+
+    const updated = await syncGroupCompletion('g', TODAY);
+
+    expect(updated?.streakFreeze).toEqual({
+      available: 1,
+      earnedAtStreak: 7,
+      frozenDates: [],
+    });
+  });
+
+  it('earns group freezes on the group streak, not the members', async () => {
+    const log = runBefore(20);
+    await seed(
+      [
+        makeHabit('a', {
+          streakFreezeInterval: 100,
+          recentLog: [marker(TODAY)],
+          history: [...log, marker(TODAY)],
+        }),
+      ],
+      makeGroup('Any', {
+        habitIds: ['a'],
+        streakFreezeInterval: 3,
+        recentLog: [],
+        history: [],
+      }),
+    );
+
+    const updated = await syncGroupCompletion('g', TODAY);
+
+    expect(updated?.streakFreeze).toBeUndefined();
+  });
+});
+
+describe('applyStreakFreezes', () => {
+  const held = { available: 1, earnedAtStreak: 7, frozenDates: [] };
+
+  it('uses a freeze on a habit and a group that missed yesterday', async () => {
+    const log = runBefore(9, 2);
+    await seed(
+      [makeHabit('a', { history: log, streakFreeze: held })],
+      makeGroup('Any', { habitIds: ['a'], history: log, streakFreeze: held }),
+    );
+
+    await applyStreakFreezes(TODAY);
+
+    const yesterday = addDays(TODAY, -1);
+    expect([
+      (await loadHabits()).a.streakFreeze?.frozenDates,
+      (await loadHabitGroups()).g.streakFreeze?.frozenDates,
+    ]).toEqual([[yesterday], [yesterday]]);
+  });
+
+  it('leaves alive habits and groups unchanged', async () => {
+    const log = runBefore(9);
+    const habit = makeHabit('a', { history: log, streakFreeze: held });
+    const group = makeGroup('Any', {
+      habitIds: ['a'],
+      history: log,
+      streakFreeze: held,
+    });
+    await seed([habit], group);
+
+    await applyStreakFreezes(TODAY);
+
+    expect([(await loadHabits()).a, (await loadHabitGroups()).g]).toEqual([
+      habit,
+      group,
+    ]);
   });
 });

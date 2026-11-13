@@ -2,7 +2,8 @@ import { Habit } from '../types/habit';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
-import { clampHours } from '../utils/hours';
+import { clampHours, habitMarkers } from '../utils/hours';
+import { withEarnedFreezes } from '../utils/streakFreeze';
 import { loadHabits, saveHabit } from '../storage/habitStorage';
 import { syncGroupCompletion } from './habitGroupService';
 
@@ -20,6 +21,14 @@ function loadMarkableHabit(
     );
   }
   return habit;
+}
+
+// Earns any freeze the new streak reached, then updates the habit's group
+async function saveAndSync(habit: Habit, todayKey: string): Promise<Habit> {
+  const updated = withEarnedFreezes(habit, habitMarkers(habit), todayKey);
+  await saveHabit(updated);
+  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
+  return updated;
 }
 
 export async function markHabitDone(
@@ -43,9 +52,7 @@ export async function markHabitDone(
     history: [...habit.history, entry],
   };
 
-  await saveHabit(updated);
-  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
-  return updated;
+  return saveAndSync(updated, todayKey);
 }
 
 export async function unmarkHabitDone(
@@ -65,9 +72,7 @@ export async function unmarkHabitDone(
     history: habit.history.filter(entry => entry.date !== todayKey),
   };
 
-  await saveHabit(updated);
-  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
-  return updated;
+  return saveAndSync(updated, todayKey);
 }
 
 export async function setHabitHours(
@@ -101,9 +106,7 @@ export async function setHabitHours(
     updated = { ...habit, recentLog, history };
   }
 
-  await saveHabit(updated);
-  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
-  return updated;
+  return saveAndSync(updated, todayKey);
 }
 
 export async function assignHabitToGroup(

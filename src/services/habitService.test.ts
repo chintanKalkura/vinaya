@@ -275,6 +275,7 @@ describe('setHabitHours', () => {
         groupType: 'Hours',
         habitIds: ['habit-1'],
         targetHours: 3,
+        streakFreezeInterval: 7,
         status: 'active',
         sortOrder: 0,
         createdAt: 0,
@@ -292,5 +293,74 @@ describe('setHabitHours', () => {
       [{ date: TODAY, kind: 'marker', value: 1 }],
       [],
     ]);
+  });
+});
+
+describe('streak freezes on marking', () => {
+  // Marked on the `days` days before TODAY
+  const daysBefore = (days: number) =>
+    Array.from({ length: days }, (_, i) => ({
+      date: addDays(TODAY, -(i + 1)),
+      kind: 'marker' as const,
+      value: 1,
+    }));
+
+  it('earns a freeze when marking reaches a multiple of N', async () => {
+    const log = daysBefore(6);
+    await saveHabits({
+      'habit-1': makeHabit({ recentLog: log, history: [...log].reverse() }),
+    });
+
+    const updated = await markHabitDone('habit-1', TODAY);
+
+    expect(updated.streakFreeze).toEqual({
+      available: 1,
+      earnedAtStreak: 7,
+      frozenDates: [],
+    });
+  });
+
+  it('undoes the freeze earned today when today is unmarked', async () => {
+    const log = daysBefore(6);
+    await saveHabits({
+      'habit-1': makeHabit({ recentLog: log, history: [...log].reverse() }),
+    });
+    await markHabitDone('habit-1', TODAY);
+
+    const updated = await unmarkHabitDone('habit-1', TODAY);
+
+    expect(updated.streakFreeze?.available).toBe(0);
+  });
+
+  it('earns a freeze when logged hours reach a multiple of N', async () => {
+    const log = Array.from({ length: 2 }, (_, i) => ({
+      date: addDays(TODAY, -(i + 1)),
+      kind: 'hours' as const,
+      value: 2,
+    }));
+    await saveHabits({
+      'habit-1': makeHabit({
+        type: 'Hours',
+        targetHours: 2,
+        streakFreezeInterval: 3,
+        recentLog: log,
+        history: [...log].reverse(),
+      }),
+    });
+
+    const updated = await setHabitHours('habit-1', 2, TODAY);
+
+    expect(updated.streakFreeze?.available).toBe(1);
+  });
+
+  it('saves the earned freeze', async () => {
+    const log = daysBefore(6);
+    await saveHabits({
+      'habit-1': makeHabit({ recentLog: log, history: [...log].reverse() }),
+    });
+
+    await markHabitDone('habit-1', TODAY);
+
+    expect((await loadHabits())['habit-1'].streakFreeze?.available).toBe(1);
   });
 });
