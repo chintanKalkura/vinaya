@@ -5,6 +5,7 @@ import GroupCard from './GroupCard';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { colors } from '../../theme';
+import { ReactTestInstance } from 'react-test-renderer';
 
 const TODAY = '2024-06-15';
 
@@ -165,6 +166,60 @@ describe('GroupCard', () => {
     expect(border('h2')).toBe(colors.v2Border);
   });
 
+  describe('banner coloring', () => {
+    const renderCard = (complete: boolean, groupType: 'Required' | 'Hours') =>
+      render(
+        <GroupCard
+          group={makeGroup({ groupType, targetHours: 8 })}
+          habits={[]}
+          todayKey={TODAY}
+          complete={complete}
+          onToggle={jest.fn()}
+        />,
+      );
+
+    it('keeps the title white when complete', () => {
+      expect(
+        StyleSheet.flatten(
+          renderCard(true, 'Required').getByText('8 Precepts').props.style,
+        ).color,
+      ).toBe(colors.v2White);
+    });
+
+    it('keeps the title white when not complete', () => {
+      expect(
+        StyleSheet.flatten(
+          renderCard(false, 'Required').getByText('8 Precepts').props.style,
+        ).color,
+      ).toBe(colors.v2White);
+    });
+
+    it('shows the selector as a grey outline when not complete', () => {
+      expect(
+        StyleSheet.flatten(
+          renderCard(false, 'Required').getByTestId('group-selector-group-1')
+            .props.style,
+        ).borderColor,
+      ).toBe(colors.v2GreyOutline);
+    });
+
+    it('shows the Hours chart icon grey when not complete', () => {
+      const icon = renderCard(false, 'Hours').getByTestId(
+        'group-hours-icon-group-1',
+      ).children[0] as ReactTestInstance;
+
+      expect(icon.props.color).toBe(colors.v2GreyOutline);
+    });
+
+    it('shows the Hours chart icon orange when complete', () => {
+      const icon = renderCard(true, 'Hours').getByTestId(
+        'group-hours-icon-group-1',
+      ).children[0] as ReactTestInstance;
+
+      expect(icon.props.color).toBe(colors.v2Orange);
+    });
+  });
+
   describe('Hours group', () => {
     const hoursGroup = makeGroup({
       groupType: 'Hours',
@@ -203,7 +258,7 @@ describe('GroupCard', () => {
         hoursHabit('h2', 2),
       ]);
 
-      expect(getByText('5 / 8 hrs today')).toBeTruthy();
+      expect(getByText('5/8h')).toBeTruthy();
     });
 
     it('should fill the progress bar in proportion to the target', () => {
@@ -213,6 +268,38 @@ describe('GroupCard', () => {
         StyleSheet.flatten(getByTestId('group-progress-group-1').props.style)
           .width,
       ).toBe('25%');
+    });
+
+    it('should render Hours habits as list rows instead of pills', () => {
+      const { getByTestId, queryByTestId } = renderHours([hoursHabit('h1', 3)]);
+
+      expect([
+        !!getByTestId('habit-row-h1'),
+        queryByTestId('habit-pill-h1'),
+      ]).toEqual([true, null]);
+    });
+
+    it('should not repeat the group name under each Hours habit', () => {
+      const { getAllByText } = renderHours([hoursHabit('h1', 3)]);
+
+      expect(getAllByText('Stay Productive')).toHaveLength(1);
+    });
+
+    it('should lay Hours habits out two per row', () => {
+      const { getByTestId } = renderHours([hoursHabit('h1', 3)]);
+
+      expect(
+        StyleSheet.flatten(getByTestId('group-hours-cell-h1').props.style)
+          .width,
+      ).toBe('48.5%');
+    });
+
+    it('should keep Hours habits as pills without the orange banner when their target is met', () => {
+      const { getByTestId } = renderHours([hoursHabit('h1', 3)]);
+
+      expect(
+        StyleSheet.flatten(getByTestId('habit-row-h1').props.style).borderColor,
+      ).toBe(colors.v2Border);
     });
 
     it('should cap the progress bar at full', () => {

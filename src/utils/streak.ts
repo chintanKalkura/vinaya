@@ -25,7 +25,6 @@ export type MarkColorState = 'marked' | 'unmarked';
 
 export interface HabitVisualState {
   habitColorState: MarkColorState;
-  streakNumberColorState: MarkColorState;
   streakValue: number;
 }
 
@@ -40,7 +39,6 @@ export function deriveHabitVisualState(
 
   return {
     habitColorState: isTodayMarked ? 'marked' : 'unmarked',
-    streakNumberColorState: streakValue > 0 ? 'marked' : 'unmarked',
     streakValue,
   };
 }

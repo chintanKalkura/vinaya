@@ -56,26 +56,23 @@ describe('calculateStreak', () => {
 });
 
 describe('deriveHabitVisualState', () => {
-  it('today marked: habit and streak number both orange (marked)', () => {
+  it('today marked: habit marked with its streak', () => {
     expect(deriveHabitVisualState([marker(TODAY), marker(D1)], TODAY)).toEqual({
       habitColorState: 'marked',
-      streakNumberColorState: 'marked',
       streakValue: 2,
     });
   });
 
-  it('today unmarked, yesterday marked: habit grey, streak number orange', () => {
+  it('today unmarked, yesterday marked: habit unmarked, streak kept', () => {
     expect(deriveHabitVisualState([marker(D1), marker(D2)], TODAY)).toEqual({
       habitColorState: 'unmarked',
-      streakNumberColorState: 'marked',
       streakValue: 2,
     });
   });
 
-  it('today and yesterday both unmarked: habit grey, streak number grey', () => {
+  it('today and yesterday both unmarked: habit unmarked, streak broken', () => {
     expect(deriveHabitVisualState([marker(D2)], TODAY)).toEqual({
       habitColorState: 'unmarked',
-      streakNumberColorState: 'unmarked',
       streakValue: 0,
     });
   });

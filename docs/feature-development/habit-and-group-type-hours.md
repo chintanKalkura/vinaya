@@ -60,13 +60,13 @@ Total 8 / 8, so the banner is orange.
 - `setHabitHours` sets, replaces and clears (at 0) today's hours entry, clamps to 24, rejects Checkmark habits, and syncs the group log.
 - Hours groups are synced by `syncGroupCompletion`.
 - The seed makes Stay Productive complete (8 / 8) with a streak of 5. The four logged habits are marked and the four 0h habits are not.
-- GroupCard renders the Hours header icon, progress bar and the "{total} / {target} hrs today" caption.
+- GroupCard renders the Hours header icon and the progress bar with its hours label (originally a "{total} / {target} hrs today" caption; now a `{total}/{target}h` label, see `docs/style-choices/hours-progress.md`).
 - HabitPill renders `{hours}h` for Hours habits, orange when marked and grey otherwise.
 - HoursEntryModal: − and + stop at 0 and 24, typing sets the value, Done calls `onDone` with the value, and × does not.
 - HabitsScreen renders Stay Productive. Tapping an Hours pill opens the modal, and Done updates the pill and the banner.
 
 ## Acceptance criteria
-- [ ] Stay Productive renders as in screen 01, orange, with a streak of 5 and 8 / 8 hrs today
+- [ ] Stay Productive renders as in screen 01, orange, with a streak of 5 and 8 of 8 hours today (shown as `8/8h`, see `docs/style-choices/hours-progress.md`)
 - [ ] The Hours Entry Modal matches screen 02, and tapping the field opens the keyboard
 - [ ] Logging hours below a habit's target turns its pill grey, and at or above the target turns it orange
 - [ ] Dropping the group total below 8 turns the banner grey and the streak drops to 4. Restoring it returns to orange and 5

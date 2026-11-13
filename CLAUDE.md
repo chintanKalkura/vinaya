@@ -19,3 +19,5 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/testing.md` — testing libraries, coverage, conventions
 - `docs/bug-fixes.md` — bug fix process
 - `docs/feature-development/` — feature development (empty)
+- `docs/style-choices/coloring-rules.md` — Habits coloring rules for pills and banners (complete vs not complete), implemented in `src/screens/habits/colorRules.ts`
+- `docs/style-choices/hours-progress.md` — Hours progress bar with its `{hours}/{target}h` label on one line, implemented in `src/screens/habits/HoursProgress.tsx`

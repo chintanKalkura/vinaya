@@ -1,7 +1,12 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
 import HabitsScreen from './HabitsScreen';
 import { saveHabitGroups, saveHabits } from '../storage/habitStorage';
 import { Habit } from '../types/habit';
@@ -137,20 +142,20 @@ describe('HabitsScreen', () => {
     const { findByTestId, queryByTestId } = render(<HabitsScreen />);
     expect(queryByTestId('hours-modal')).toBeNull();
 
-    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.press(await findByTestId('habit-row-study'));
 
     expect(await findByTestId('hours-modal')).toBeTruthy();
   });
 
-  it('updates the pill hours when Done is pressed in the modal', async () => {
+  it('updates the habit hours when Done is pressed in the modal', async () => {
     await seed(...hoursFixture(4));
 
     const { findByTestId, findByText, getByTestId } = render(<HabitsScreen />);
-    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '2');
     fireEvent.press(getByTestId('hours-modal-done'));
 
-    expect(await findByText('2h')).toBeTruthy();
+    expect(await findByText('2/1h')).toBeTruthy();
   });
 
   it('turns an Hours group orange when Done brings it to its target', async () => {
@@ -158,7 +163,7 @@ describe('HabitsScreen', () => {
 
     const { findByTestId, getByTestId } = render(<HabitsScreen />);
     const card = await findByTestId('group-card-productive');
-    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
     fireEvent.press(getByTestId('hours-modal-done'));
 
@@ -173,14 +178,14 @@ describe('HabitsScreen', () => {
     await seed(...hoursFixture(4));
 
     const { findByTestId, getByTestId, getByText } = render(<HabitsScreen />);
-    fireEvent.press(await findByTestId('habit-pill-study'));
+    fireEvent.press(await findByTestId('habit-row-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
     fireEvent.press(getByTestId('hours-modal-close'));
 
-    await waitFor(() => expect(getByText('0h')).toBeTruthy());
+    await waitFor(() => expect(getByText('0/1h')).toBeTruthy());
   });
 
-  it('does not switch layout when the list toggle is pressed', async () => {
+  it('switches to list view when the list toggle is pressed', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { findByTestId, getByTestId, queryByTestId } = render(
@@ -190,8 +195,101 @@ describe('HabitsScreen', () => {
 
     fireEvent.press(getByTestId('view-mode-toggle-list'));
 
-    expect(queryByTestId('group-card-precepts')).toBeTruthy();
-    expect(queryByTestId('habit-row-no-killing')).toBeNull();
+    expect([
+      !!queryByTestId('habit-row-no-killing'),
+      queryByTestId('group-card-precepts'),
+    ]).toEqual([true, null]);
+  });
+
+  it('switches back to group view when the group toggle is pressed', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId, getByTestId, queryByTestId } = render(
+      <HabitsScreen />,
+    );
+    await findByTestId('habit-pill-no-killing');
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+
+    fireEvent.press(getByTestId('view-mode-toggle-group'));
+
+    expect([
+      !!queryByTestId('group-card-precepts'),
+      queryByTestId('habit-row-no-killing'),
+    ]).toEqual([true, null]);
+  });
+
+  it('shows the group name under a habit in list view', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId, getByTestId, findByText } = render(<HabitsScreen />);
+    await findByTestId('habit-pill-no-killing');
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+
+    expect(await findByText('8 Precepts')).toBeTruthy();
+  });
+
+  it('shows ungrouped habits in list view with no group name', async () => {
+    await seed(
+      {
+        'drink-water': makeHabit({
+          id: 'drink-water',
+          name: 'Drink Water',
+          groupId: undefined,
+        }),
+      },
+      {},
+    );
+
+    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+    const row = await findByTestId('habit-row-drink-water');
+
+    const texts = within(row)
+      .getAllByText(/.+/)
+      .map(node => node.props.children);
+
+    expect(texts).toEqual(['Drink Water', 0]);
+  });
+
+  it('marks a habit when its list row is tapped', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+    const row = await findByTestId('habit-row-no-killing');
+
+    fireEvent.press(row);
+
+    await waitFor(() =>
+      expect(row.props.accessibilityState.checked).toBe(true),
+    );
+  });
+
+  it('turns a list row orange when its habit is marked', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+    const row = await findByTestId('habit-row-no-killing');
+
+    fireEvent.press(row);
+
+    await waitFor(() =>
+      expect(StyleSheet.flatten(row.props.style).backgroundColor).toBe(
+        colors.v2OrangeCardBackground,
+      ),
+    );
+  });
+
+  it('opens the Hours Entry Modal when an Hours row is tapped', async () => {
+    await seed(...hoursFixture(4));
+
+    const { getByTestId, findByTestId } = render(<HabitsScreen />);
+    fireEvent.press(getByTestId('view-mode-toggle-list'));
+
+    fireEvent.press(await findByTestId('habit-row-study'));
+
+    expect(await findByTestId('hours-modal')).toBeTruthy();
   });
 
   it('does not render habits that belong to no group', async () => {

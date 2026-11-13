@@ -1,11 +1,10 @@
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
-import { getHoursToday } from './hours';
+import { getHoursToday, targetMetLog } from './hours';
 
 export function isHabitMarkedToday(habit: Habit, todayKey: string): boolean {
   if (habit.type === 'Hours') {
-    const target = habit.targetHours ?? 0;
-    return target > 0 && getHoursToday(habit, todayKey) >= target;
+    return targetMetLog(habit).some(entry => entry.date === todayKey);
   }
   return habit.recentLog.some(
     entry => entry.kind === 'marker' && entry.date === todayKey,

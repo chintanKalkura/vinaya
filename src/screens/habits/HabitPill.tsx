@@ -4,6 +4,7 @@ import { Habit } from '../../types/habit';
 import { Check } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { useHabitVisual } from './useHabitVisual';
+import { getColorScheme } from './colorRules';
 
 interface HabitPillProps {
   habit: Habit;
@@ -20,35 +21,9 @@ export default function HabitPill({
   required = false,
   shape = 'round',
 }: HabitPillProps): React.JSX.Element {
-  const { interactive, visual, hours } = useHabitVisual(habit, todayKey);
-  const isMarked = hours
-    ? hours.isMarked
-    : visual?.habitColorState === 'marked';
-  const nameColor = isMarked ? colors.v2Orange : colors.v2GreyText;
-  const streakColor =
-    visual?.streakNumberColorState === 'marked'
-      ? colors.v2Orange
-      : colors.v2GreyText;
-
-  if (hours) {
-    return (
-      <Pressable
-        testID={`habit-pill-${habit.id}`}
-        accessibilityRole="button"
-        accessibilityState={{ checked: isMarked, disabled: false }}
-        onPress={() => onPress(habit.id)}
-        style={[styles.pill, { borderColor: colors.v2Border }]}
-      >
-        <Text style={[styles.name, { color: nameColor }]}>{habit.name}</Text>
-        <Text
-          testID={`habit-hours-${habit.id}`}
-          style={[styles.streak, { color: nameColor }]}
-        >
-          {`${hours.hoursToday}h`}
-        </Text>
-      </Pressable>
-    );
-  }
+  const { interactive, visual } = useHabitVisual(habit, todayKey);
+  const isMarked = visual?.habitColorState === 'marked';
+  const scheme = getColorScheme('pill', isMarked);
 
   return (
     <Pressable
@@ -66,21 +41,21 @@ export default function HabitPill({
         style={[
           styles.icon,
           shape === 'square' && styles.iconSquare,
-          isMarked
-            ? {
-                borderColor: colors.v2Orange,
-                backgroundColor: colors.v2Orange,
-              }
-            : { borderColor: colors.v2GreyOutline },
+          {
+            borderColor: scheme.iconColor,
+            backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
+          },
         ]}
       >
-        {isMarked ? (
+        {scheme.iconFilled ? (
           <Check color={colors.v2Background} size={12} strokeWidth={3.5} />
         ) : null}
       </View>
-      <Text style={[styles.name, { color: nameColor }]}>{habit.name}</Text>
+      <Text style={[styles.name, { color: scheme.titleColor }]}>
+        {habit.name}
+      </Text>
       {visual ? (
-        <Text style={[styles.streak, { color: streakColor }]}>
+        <Text style={[styles.streak, { color: scheme.numberColor }]}>
           {visual.streakValue}
         </Text>
       ) : (

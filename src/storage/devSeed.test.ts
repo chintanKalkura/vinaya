@@ -167,4 +167,25 @@ describe('seedDevFixturesIfNeeded', () => {
 
     expect(marked).toEqual(['job-hunt', 'study', 'sit', 'read']);
   });
+
+  it('seeds Drink Water ungrouped with a 4-day streak', async () => {
+    await seedDevFixturesIfNeeded();
+
+    const habits = await loadHabits();
+    const today = toDateKey(new Date());
+
+    expect([
+      habits['drink-water'].groupId,
+      calculateStreak(habits['drink-water'].recentLog, today),
+    ]).toEqual([undefined, 4]);
+  });
+
+  it('seeds Drink Water as the last habit', async () => {
+    await seedDevFixturesIfNeeded();
+
+    const habits = Object.values(await loadHabits());
+    const last = habits.reduce((a, b) => (b.sortOrder > a.sortOrder ? b : a));
+
+    expect(last.id).toBe('drink-water');
+  });
 });
