@@ -123,6 +123,16 @@ Screens 01 and 04 are superseded on three points:
 - **Look on screens 01 and 04.** On the day a freeze is used, a not complete habit or group is icy blue, with a Snowflake icon and an icy bar. Banners also show "n freezes left" at the bottom centre; pills don't.
 - Full rules: `docs/feature-development/streak-freeze.md`. Design: `docs/style-choices/streak-freeze.md`.
 
+### 1.9 Create Habit (screens 05-10)
+
+- **Back arrow.** Every New Habit variant has the back arrow, including screen 06, where the PNG leaves it out.
+- **Habit Group row.**
+  - No group is selected by default; tapping the selected chip again clears it.
+  - Groups the habit's type can't join are greyed out: Checkmark habits join Required, Any or All groups, and Hours habits join Hours groups.
+  - Until group creation is built, "+ Create Group" and the Choice sheet's "New Habit Group" do nothing.
+- **Defaults.** Target 1, streak freeze 7, daily target hours 1. The name is required, at most 40 characters.
+- Full rules: `docs/feature-development/create-habit.md`.
+
 ---
 
 ## 2. Gaps in the screens
@@ -143,6 +153,7 @@ Screens 01 and 04 are superseded on three points:
 1. **`01-main-views.md` only covers screen 01 for sort and hours.** Screen 04 also has a sort button and (hours-type) habit rows. Missing edges: 04 to 03 (sort) and 04 to 02 (hours modal).
 2. **Return destinations are hard-coded.** Sheets and modals return to the screen that opened them, but the diagrams show fixed targets.
    - 02 Done and 03 Apply return to 01 in the diagram; they should return to 01 or 04, whichever opened them.
+   - Create Habit (06-10) goes to 01 in `02-habit-creation.md`; it returns to 01 or 04, whichever the + was tapped from. Implemented by `docs/feature-development/create-habit.md`.
    - 12 Done goes to 13 in the diagram; it should return to the group screen that opened it (11, 13 or 15).
    - 14 Done goes to 13. This one is correct, since 14 is only opened from 13.
 3. **State changes are drawn as navigation.**

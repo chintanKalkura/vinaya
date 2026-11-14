@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  InvalidHabitError,
   InvalidMarkError,
+  createHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -12,6 +14,8 @@ import {
   saveHabitGroups,
 } from '../storage/habitStorage';
 import { Habit } from '../types/habit';
+import { HabitGroup } from '../types/habitGroup';
+import { DEFAULT_DRAFT, NewHabitDraft } from '../utils/newHabit';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { addDays } from '../utils/dates';
 
@@ -362,5 +366,88 @@ describe('streak freezes on marking', () => {
     await markHabitDone('habit-1', TODAY);
 
     expect((await loadHabits())['habit-1'].streakFreeze?.available).toBe(1);
+  });
+});
+
+describe('createHabit', () => {
+  const draft = (overrides: Partial<NewHabitDraft> = {}): NewHabitDraft => ({
+    ...DEFAULT_DRAFT,
+    name: 'Morning run',
+    ...overrides,
+  });
+  const group = (overrides: Partial<HabitGroup> = {}): HabitGroup => ({
+    id: 'g',
+    name: 'Fitness',
+    cadence: 'Day',
+    groupType: 'All',
+    habitIds: ['habit-1'],
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+    ...overrides,
+  });
+
+  it('saves the habit with the defaults', async () => {
+    const created = await createHabit(draft(), TODAY);
+
+    expect((await loadHabits())[created.id]).toMatchObject({
+      name: 'Morning run',
+      cadence: 'Day',
+      type: 'Checkmark',
+      streakFreezeInterval: 7,
+      status: 'active',
+    });
+  });
+
+  it('adds the habit last in sort order', async () => {
+    await saveHabits({ 'habit-1': makeHabit({ sortOrder: 4 }) });
+
+    expect((await createHabit(draft(), TODAY)).sortOrder).toBe(5);
+  });
+
+  it('gives each habit its own id', async () => {
+    const a = await createHabit(draft(), TODAY);
+    const b = await createHabit(draft(), TODAY);
+
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('joins the group and syncs its log', async () => {
+    const today = { date: TODAY, kind: 'marker' as const, value: 1 };
+    await saveHabits({
+      'habit-1': makeHabit({
+        groupId: 'g',
+        recentLog: [today],
+        history: [today],
+      }),
+    });
+    await saveHabitGroups({
+      g: group({ recentLog: [today], history: [today] }),
+    });
+
+    const created = await createHabit(draft({ groupId: 'g' }), TODAY);
+
+    const saved = (await loadHabitGroups()).g;
+    expect([saved.habitIds, saved.history]).toEqual([
+      ['habit-1', created.id],
+      [],
+    ]);
+  });
+
+  it('rejects an empty name', async () => {
+    await expect(
+      createHabit(draft({ name: '  ' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitError);
+  });
+
+  it('rejects a group the habit type cannot join', async () => {
+    await saveHabitGroups({ g: group() });
+
+    await expect(
+      createHabit(draft({ type: 'Hours', groupId: 'g' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitError);
   });
 });

@@ -22,6 +22,6 @@ The v1 implementation (`components/`, `screens/`, `config/`, `styles/`) has been
 - **Group view** (default, habits nested under group cards) and **List view** (flat, each habit shows its parent group inline), toggled by an icon.
 - **Sort & Filter** bottom sheet: sort by Streak/A-Z/Manual/Recent; filter by Marked/Active/Paused/Archived.
 - FAB (＋) → **Choice sheet** → *New Habit* or *New Habit Group*.
-- **New Habit flow**: Name → Cadence → Target (Day: read-only text block) → Streak Freeze → Type (Checkmark/Hours) → Daily Target Hours (Hours only) → optional Habit Group (single scrollable row: "+ Create Group" first, then existing groups; no "No Group" option).
+- **New Habit flow**: Name → Cadence → Target (Day: read-only text block) → Streak Freeze → Type (Checkmark/Hours) → Daily Target Hours (Hours only) → optional Habit Group (single scrollable row: "+ Create Group" first, then existing groups; no "No Group" option: no group is selected by default and tapping the selected chip clears it; groups the habit type can't join are greyed out). See `docs/feature-development/create-habit.md`.
 - **New Habit Group flow**: Name → Cadence → Target (Day: read-only text block) → Group Type → Assign Habits (multi-select sheet) → type-specific step (`Required`: pick the required subset via a sheet; `Hours`: set the aggregate hours target; `Any`/`All`: no extra step) → optional "Create Habit" cross-link.
 - **Hours Entry Modal**: logs hours against an Hours-type habit (stepper, tap-to-type, default 0).
