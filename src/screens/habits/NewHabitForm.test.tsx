@@ -118,12 +118,61 @@ describe('NewHabitForm', () => {
     ]);
   });
 
-  it('should do nothing for + Create Group', () => {
-    const { getByTestId, onBack, onCreate } = renderForm();
+  it('should open + Create Group with the draft', () => {
+    const onCreateGroup = jest.fn();
+    const { getByTestId } = render(
+      <NewHabitForm
+        visible
+        groups={GROUPS}
+        onBack={jest.fn()}
+        onCreate={jest.fn()}
+        onCreateGroup={onCreateGroup}
+      />,
+    );
+    fireEvent.changeText(getByTestId('new-habit-name'), 'Run');
 
     fireEvent.press(getByTestId('new-habit-create-group'));
 
-    expect([onBack, onCreate].map(f => f.mock.calls.length)).toEqual([0, 0]);
+    expect(onCreateGroup.mock.calls[0][0]).toMatchObject({
+      name: 'Run',
+      type: 'Checkmark',
+    });
+  });
+
+  it('should select a group made with + Create Group when it returns', () => {
+    const props = {
+      visible: true,
+      groups: GROUPS,
+      onBack: jest.fn(),
+      onCreate: jest.fn(),
+    };
+    const { getByTestId, rerender } = render(<NewHabitForm {...props} />);
+
+    rerender(
+      <NewHabitForm
+        {...props}
+        pendingGroup={{ name: 'Mornings', groupType: 'Any' }}
+      />,
+    );
+
+    expect(
+      getByTestId('new-habit-group-pending-group').props.accessibilityState
+        .selected,
+    ).toBe(true);
+  });
+
+  it('should hide the group row when opened from the group form', () => {
+    const { queryByText } = render(
+      <NewHabitForm
+        visible
+        groups={GROUPS}
+        hideGroupRow
+        onBack={jest.fn()}
+        onCreate={jest.fn()}
+      />,
+    );
+
+    expect(queryByText('HABIT GROUP')).toBeNull();
   });
 
   it('should disable Create Habit while the name is empty', () => {

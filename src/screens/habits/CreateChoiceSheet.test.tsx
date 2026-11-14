@@ -4,11 +4,17 @@ import CreateChoiceSheet from './CreateChoiceSheet';
 
 function renderSheet() {
   const onNewHabit = jest.fn();
+  const onNewGroup = jest.fn();
   const onClose = jest.fn();
   const utils = render(
-    <CreateChoiceSheet visible onNewHabit={onNewHabit} onClose={onClose} />,
+    <CreateChoiceSheet
+      visible
+      onNewHabit={onNewHabit}
+      onNewGroup={onNewGroup}
+      onClose={onClose}
+    />,
   );
-  return { ...utils, onNewHabit, onClose };
+  return { ...utils, onNewHabit, onNewGroup, onClose };
 }
 
 describe('CreateChoiceSheet', () => {
@@ -30,12 +36,12 @@ describe('CreateChoiceSheet', () => {
     expect(onNewHabit).toHaveBeenCalled();
   });
 
-  it('should do nothing for New Habit Group', () => {
-    const { getByTestId, onNewHabit, onClose } = renderSheet();
+  it('should open the New Habit Group form', () => {
+    const { getByTestId, onNewGroup } = renderSheet();
 
     fireEvent.press(getByTestId('choice-sheet-group'));
 
-    expect([onNewHabit, onClose].map(f => f.mock.calls.length)).toEqual([0, 0]);
+    expect(onNewGroup).toHaveBeenCalled();
   });
 
   it('should close when the backdrop is tapped', () => {

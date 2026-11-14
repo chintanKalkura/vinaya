@@ -34,7 +34,6 @@ function makeHabit(id: string, name: string): Habit {
     cadence: 'Day',
     type: 'Checkmark',
     streakFreezeInterval: 7,
-    groupId: 'group-1',
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
