@@ -11,43 +11,55 @@ function renderMenu(kind: 'habit' | 'group' = 'habit') {
 }
 
 describe('BannerMenu', () => {
-  it('should open a menu with Delete habit and Cancel', () => {
+  it('should open a dropdown with Edit and Delete', () => {
     const { getByTestId, getByText } = renderMenu();
 
     fireEvent.press(getByTestId('m'));
 
-    expect([!!getByText('Delete habit'), !!getByText('Cancel')]).toEqual([
+    expect([
+      !!getByTestId('m-dropdown'),
+      !!getByText('Edit'),
+      !!getByText('Delete'),
+    ]).toEqual([true, true, true]);
+  });
+
+  it('should keep Edit disabled for now', () => {
+    const { getByTestId } = renderMenu();
+
+    fireEvent.press(getByTestId('m'));
+
+    expect(getByTestId('m-edit').props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('should offer the same options on a group', () => {
+    const { getByTestId } = renderMenu('group');
+
+    fireEvent.press(getByTestId('m'));
+
+    expect([!!getByTestId('m-edit'), !!getByTestId('m-delete')]).toEqual([
       true,
       true,
     ]);
   });
 
-  it('should say Delete group for a group', () => {
-    const { getByTestId, getByText } = renderMenu('group');
-
-    fireEvent.press(getByTestId('m'));
-
-    expect(!!getByText('Delete group')).toBe(true);
-  });
-
   it('should ask for confirmation, then delete', () => {
-    const { getByTestId, getByText, onDelete } = renderMenu();
+    const { getByTestId, getByText, queryByTestId, onDelete } = renderMenu();
     fireEvent.press(getByTestId('m'));
     fireEvent.press(getByTestId('m-delete'));
-    const asked = !!getByText('Are you sure?');
+    const asked = [!!getByText('Are you sure?'), queryByTestId('m-dropdown')];
 
     fireEvent.press(getByTestId('m-confirm-delete'));
 
-    expect([asked, onDelete.mock.calls.length]).toEqual([true, 1]);
+    expect([asked, onDelete.mock.calls.length]).toEqual([[true, null], 1]);
   });
 
-  it('should not delete when cancelled from the menu', () => {
+  it('should close the dropdown without deleting when tapped outside', () => {
     const { getByTestId, queryByTestId, onDelete } = renderMenu();
     fireEvent.press(getByTestId('m'));
 
-    fireEvent.press(getByTestId('m-cancel'));
+    fireEvent.press(getByTestId('m-backdrop'));
 
-    expect([queryByTestId('m-delete'), onDelete.mock.calls.length]).toEqual([
+    expect([queryByTestId('m-dropdown'), onDelete.mock.calls.length]).toEqual([
       null,
       0,
     ]);
