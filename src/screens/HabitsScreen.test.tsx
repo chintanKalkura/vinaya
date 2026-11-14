@@ -922,3 +922,19 @@ describe('HabitsScreen safe area', () => {
     spy.mockRestore();
   });
 });
+
+describe('HabitsScreen bottom menu', () => {
+  it('keeps the + button above the flush menu and its inset', async () => {
+    const safeArea = require('react-native-safe-area-context');
+    const spy = jest
+      .spyOn(safeArea, 'useSafeAreaInsets')
+      .mockReturnValue({ top: 0, right: 0, bottom: 24, left: 0 });
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId } = render(<HabitsScreen />);
+
+    const fab = await findByTestId('fab');
+    expect(StyleSheet.flatten(fab.props.style).bottom).toBe(60 + 16 + 24);
+    spy.mockRestore();
+  });
+});

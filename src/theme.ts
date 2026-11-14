@@ -16,6 +16,8 @@ export const colors = {
   v2Blue: '#3d9be9',
   v2Ice: '#5ec8e5',
   v2Red: '#ef5b5b',
+  v2MenuBackground: '#1e1510', // espresso: bottom menu bar
+  v2MenuBorder: '#130d09', // bitter coffee: bottom menu top edge
   v2IceCardBackground: '#1f2c43',
   v2GreyText: '#8a8aa3',
   v2GreyOutline: '#4a4a6a',
