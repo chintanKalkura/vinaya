@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
@@ -69,6 +70,8 @@ export default function HabitsScreen(): React.JSX.Element {
     undefined,
   );
   const todayKey = useMemo(() => toDateKey(new Date()), []);
+  // The app draws edge-to-edge, so the header clears the status bar here
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     let mounted = true;
@@ -254,7 +257,10 @@ export default function HabitsScreen(): React.JSX.Element {
   const assignableHabits = allHabits.filter(habit => habit.status === 'active');
 
   return (
-    <View style={styles.screen}>
+    <View
+      testID="habits-screen"
+      style={[styles.screen, { paddingTop: insets.top }]}
+    >
       <HabitsHeader
         cadenceFilter={cadenceFilter}
         onChangeCadenceFilter={setCadenceFilter}

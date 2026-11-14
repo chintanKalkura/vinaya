@@ -906,3 +906,19 @@ describe('HabitsScreen delete', () => {
     expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
   });
 });
+
+describe('HabitsScreen safe area', () => {
+  it('pads the top of the screen by the status bar inset', async () => {
+    const safeArea = require('react-native-safe-area-context');
+    const spy = jest
+      .spyOn(safeArea, 'useSafeAreaInsets')
+      .mockReturnValue({ top: 40, right: 0, bottom: 0, left: 0 });
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+
+    const { findByTestId } = render(<HabitsScreen />);
+
+    const screen = await findByTestId('habits-screen');
+    expect(StyleSheet.flatten(screen.props.style).paddingTop).toBe(40);
+    spy.mockRestore();
+  });
+});
