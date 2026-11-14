@@ -7,6 +7,7 @@ import { toDateKey } from '../utils/dates';
 import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
+  createHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -19,6 +20,12 @@ import HabitListRow from './habits/HabitListRow';
 import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
 import { CadenceFilterValue } from './habits/CadenceFilter';
 import BottomMenu from './habits/BottomMenu';
+import CreateChoiceSheet from './habits/CreateChoiceSheet';
+import NewHabitForm from './habits/NewHabitForm';
+import { NewHabitDraft } from '../utils/newHabit';
+
+// The + flow from docs/navigation/02-habit-creation.md
+type CreateStep = 'none' | 'choice' | 'habit';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -30,6 +37,7 @@ export default function HabitsScreen(): React.JSX.Element {
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
+  const [createStep, setCreateStep] = useState<CreateStep>('none');
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   useEffect(() => {
@@ -79,12 +87,27 @@ export default function HabitsScreen(): React.JSX.Element {
     [hoursHabitId, todayKey],
   );
 
+  // Returns to the view the + was tapped from; viewMode is left unchanged
+  const handleCreateHabit = useCallback(
+    async (draft: NewHabitDraft) => {
+      await createHabit(draft, todayKey);
+      const [h, g] = await Promise.all([loadHabits(), loadHabitGroups()]);
+      setHabits(h);
+      setGroups(g);
+      setCreateStep('none');
+    },
+    [todayKey],
+  );
+
   const hoursHabit = hoursHabitId ? habits[hoursHabitId] : undefined;
   const matchesFilter = (item: { cadence: string }) =>
     cadenceFilter === 'All' || item.cadence === cadenceFilter;
   const sortedGroups = bySortOrder(Object.values(groups)).filter(matchesFilter);
   const allHabits = bySortOrder(Object.values(habits));
   const listHabits = allHabits.filter(matchesFilter);
+  const joinableGroups = bySortOrder(Object.values(groups)).filter(
+    group => group.status === 'active',
+  );
 
   return (
     <View style={styles.screen}>
@@ -123,7 +146,11 @@ export default function HabitsScreen(): React.JSX.Element {
             })}
       </ScrollView>
 
-      <Pressable testID="fab" onPress={() => {}} style={styles.fab}>
+      <Pressable
+        testID="fab"
+        onPress={() => setCreateStep('choice')}
+        style={styles.fab}
+      >
         <Text style={styles.fabIcon}>+</Text>
       </Pressable>
       <BottomMenu />
@@ -133,6 +160,17 @@ export default function HabitsScreen(): React.JSX.Element {
         initialHours={hoursHabit ? getHoursToday(hoursHabit, todayKey) : 0}
         onDone={handleHoursDone}
         onClose={() => setHoursHabitId(null)}
+      />
+      <CreateChoiceSheet
+        visible={createStep === 'choice'}
+        onNewHabit={() => setCreateStep('habit')}
+        onClose={() => setCreateStep('none')}
+      />
+      <NewHabitForm
+        visible={createStep === 'habit'}
+        groups={joinableGroups}
+        onBack={() => setCreateStep('choice')}
+        onCreate={handleCreateHabit}
       />
     </View>
   );

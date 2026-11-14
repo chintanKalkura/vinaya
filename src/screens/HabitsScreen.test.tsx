@@ -576,3 +576,66 @@ describe('HabitsScreen streak freeze', () => {
     ).toBe('0 freezes left');
   });
 });
+
+describe('HabitsScreen create habit', () => {
+  async function openForm(utils: ReturnType<typeof render>) {
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('fab'));
+    fireEvent.press(await utils.findByTestId('choice-sheet-habit'));
+    return utils.findByTestId('new-habit-form');
+  }
+
+  it('opens the choice sheet from +, and the form from New Habit', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+
+    expect(!!(await openForm(utils))).toBe(true);
+  });
+
+  it('goes back from the form to the choice sheet', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+    await openForm(utils);
+
+    fireEvent.press(utils.getByTestId('new-habit-back'));
+
+    expect([
+      !!(await utils.findByTestId('choice-sheet')),
+      utils.queryByTestId('new-habit-form'),
+    ]).toEqual([true, null]);
+  });
+
+  it('creates a Week habit and shows it in list view', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+    await openForm(utils);
+
+    fireEvent.changeText(utils.getByTestId('new-habit-name'), 'Morning run');
+    fireEvent.press(utils.getByTestId('new-habit-cadence-Week'));
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    expect([
+      !!(await utils.findByText('Morning run')),
+      utils.queryByTestId('new-habit-form'),
+      utils.getByTestId('view-mode-toggle-list').props.accessibilityState
+        .selected,
+    ]).toEqual([true, null, true]);
+  });
+
+  it('stays in group view and shows the habit in its chosen group', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = renderInGroupView();
+    await openForm(utils);
+
+    fireEvent.changeText(utils.getByTestId('new-habit-name'), 'Meditate');
+    fireEvent.press(utils.getByTestId('new-habit-group-precepts'));
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    const card = await utils.findByTestId('group-card-precepts');
+    expect([
+      !!within(card).getByText('Meditate'),
+      utils.getByTestId('view-mode-toggle-group').props.accessibilityState
+        .selected,
+    ]).toEqual([true, true]);
+  });
+});
