@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { HabitCadence, HabitType } from '../../types/habit';
+import { Habit, HabitCadence, HabitType } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
 import { colors } from '../../theme';
@@ -18,6 +18,8 @@ import {
   HABIT_NAME_MAX,
   NewHabitDraft,
   PENDING_GROUP_ID,
+  draftFromHabit,
+  isDraftChanged,
   isDraftValid,
 } from '../../utils/newHabit';
 import { canTakeHabit } from '../../utils/newHabitGroup';
@@ -45,6 +47,7 @@ interface NewHabitFormProps {
   onCreateGroup?: (draft: NewHabitDraft) => void;
   pendingGroup?: PendingGroup; // made with "+ Create Group", saved with the habit
   hideGroupRow?: boolean; // opened from the group form
+  editing?: Habit; // Edit Habit: docs/feature-development/edit-habit-group.md
 }
 
 export default function NewHabitForm({
@@ -55,12 +58,15 @@ export default function NewHabitForm({
   onCreateGroup,
   pendingGroup,
   hideGroupRow = false,
+  editing,
 }: NewHabitFormProps): React.JSX.Element {
   const [draft, setDraft] = useState<NewHabitDraft>(DEFAULT_DRAFT);
 
-  // Every opening starts from a fresh draft
+  // Every opening starts fresh, or from the habit being edited
   useEffect(() => {
-    if (visible) setDraft(DEFAULT_DRAFT);
+    if (visible) setDraft(editing ? draftFromHabit(editing) : DEFAULT_DRAFT);
+    // Only reset when the form opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   // A group made with "+ Create Group" comes back selected
@@ -114,12 +120,16 @@ export default function NewHabitForm({
       : []),
     ...groups,
   ];
-  const valid = isDraftValid(draft);
+  // Editing: the type is locked, and Save needs a change
+  const lockedTypes = editing ? TYPES.filter(t => t !== editing.type) : [];
+  const valid =
+    isDraftValid(draft) &&
+    (!editing || isDraftChanged(draftFromHabit(editing), draft));
 
   return (
     <FormScreen
       visible={visible}
-      title="New Habit"
+      title={editing ? 'Edit Habit' : 'New Habit'}
       testID="new-habit-form"
       backTestID="new-habit-back"
       onBack={onBack}
@@ -163,6 +173,7 @@ export default function NewHabitForm({
         options={TYPES}
         value={draft.type}
         onChange={changeType}
+        disabledOptions={lockedTypes}
         testID="new-habit-type"
       />
 
@@ -181,7 +192,7 @@ export default function NewHabitForm({
         </>
       ) : null}
 
-      {hideGroupRow ? null : (
+      {hideGroupRow || editing ? null : (
         <>
           <Text style={formStyles.label}>HABIT GROUP</Text>
           <View style={styles.groupRow}>
@@ -240,7 +251,9 @@ export default function NewHabitForm({
         onPress={() => onCreate(draft)}
         style={[formStyles.createButton, !valid && formStyles.createDisabled]}
       >
-        <Text style={formStyles.createLabel}>Create Habit</Text>
+        <Text style={formStyles.createLabel}>
+          {editing ? 'Save' : 'Create Habit'}
+        </Text>
       </Pressable>
     </FormScreen>
   );

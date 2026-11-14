@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import NewHabitGroupForm, { PendingHabit } from './NewHabitGroupForm';
 import { Habit, HabitType } from '../../types/habit';
+import { HabitGroup } from '../../types/habitGroup';
 import { colors } from '../../theme';
 
 function habit(id: string, type: HabitType = 'Checkmark'): Habit {
@@ -260,5 +261,70 @@ describe('NewHabitGroupForm', () => {
         !!utils.getByText('This habit'),
       ]).toEqual([true, true]);
     });
+  });
+});
+
+describe('NewHabitGroupForm editing', () => {
+  const group: HabitGroup = {
+    id: 'g',
+    name: 'Mornings',
+    cadence: 'Day',
+    groupType: 'Required',
+    habitIds: ['run', 'read'],
+    requiredHabitIds: ['run'],
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+  };
+
+  const renderEdit = () => renderForm({ editing: group });
+  const saveDisabled = (utils: ReturnType<typeof renderForm>) =>
+    utils.getByTestId('new-group-create').props.accessibilityState.disabled;
+
+  it('should show Edit Habit Group with the saved values and a Save button', () => {
+    const utils = renderEdit();
+
+    expect([
+      !!utils.getByText('Edit Habit Group'),
+      !!utils.getByText('Save'),
+      utils.getByTestId('new-group-name').props.value,
+      !!utils.getByTestId('new-group-assigned-run'),
+      utils.getByTestId('new-group-assigned-run').props.accessibilityState
+        .selected,
+      utils.getByTestId('new-group-assigned-read').props.accessibilityState
+        .selected,
+    ]).toEqual([true, true, 'Mornings', true, true, false]);
+  });
+
+  it('should lock the group type', () => {
+    const utils = renderEdit();
+
+    expect(
+      ['Any', 'All', 'Hours'].map(
+        t =>
+          utils.getByTestId(`new-group-type-${t}`).props.accessibilityState
+            .disabled,
+      ),
+    ).toEqual([true, true, true]);
+  });
+
+  it('should enable Save once a habit is removed, and save the edit', () => {
+    const utils = renderEdit();
+    const before = saveDisabled(utils);
+    fireEvent.press(utils.getByTestId('new-group-assign'));
+    fireEvent.press(utils.getByTestId('assign-sheet-item-read'));
+    fireEvent.press(utils.getByTestId('assign-sheet-done'));
+    const after = saveDisabled(utils);
+
+    fireEvent.press(utils.getByTestId('new-group-create'));
+
+    expect([before, after, utils.onCreate.mock.calls[0][0].habitIds]).toEqual([
+      true,
+      false,
+      ['run'],
+    ]);
   });
 });
