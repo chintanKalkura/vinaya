@@ -24,4 +24,4 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/style-choices/cadence-filter.md` — cadence filter dropdown (All, Day, Week, Month, Year) in the Habits header, implemented in `src/screens/habits/CadenceFilter.tsx`
 - `docs/style-choices/cadence-label.md` — cadence label (repeating calendar + Daily/Weekly/Monthly/Yearly) in the bottom-right corner of habit and group banners, implemented in `src/screens/habits/CadenceLabel.tsx`
 - `docs/style-choices/streak-freeze.md` — frozen look on the day a streak freeze is used (Glacier icy blue, Snowflake icon, icy bar, "n freezes left" on banners), implemented in `src/screens/habits/colorRules.ts` and `src/screens/habits/FreezeLabel.tsx`
-- `docs/style-choices/banner-menu.md` — ⋮ delete menu right of the streak number on habit banners and group cards, with its menu and confirm modals, implemented in `src/screens/habits/BannerMenu.tsx`
+- `docs/style-choices/banner-menu.md` — ⋮ right of the streak number on habit banners and group cards, opening an Edit/Delete dropdown and a delete confirm modal, implemented in `src/screens/habits/BannerMenu.tsx`
