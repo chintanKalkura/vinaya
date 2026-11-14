@@ -23,7 +23,7 @@ Closed                       Open
 
 | Part | Style |
 |---|---|
-| Trigger | orange pill (like the selected pill before) with the selected value and a chevron, both in the dark background color. It sits where the four pills were, left of the view toggle and sort button |
+| Trigger | orange pill (like the selected pill before) with the selected value and a chevron, both in the dark background color. It sits just left of the view toggle and sort button, to the right of the "Vinaya - Habits" title (see `header-and-bottom-menu.md`) |
 | Dropdown cue | a chevron after the value: down (`ChevronDown`) when closed, up (`ChevronUp`) when open |
 | Menu | a card in the card background with a border and rounded corners, dropped just below the trigger. It lists All, Day, Week, Month and Year |
 | Selected option | orange text with a check before it |

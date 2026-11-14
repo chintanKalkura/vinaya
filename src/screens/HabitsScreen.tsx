@@ -35,7 +35,7 @@ import HoursEntryModal from './habits/HoursEntryModal';
 import HabitListRow from './habits/HabitListRow';
 import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
 import { CadenceFilterValue } from './habits/CadenceFilter';
-import BottomMenu from './habits/BottomMenu';
+import BottomMenu, { BOTTOM_MENU_HEIGHT } from './habits/BottomMenu';
 import CreateChoiceSheet from './habits/CreateChoiceSheet';
 import NewHabitForm, { PendingGroup } from './habits/NewHabitForm';
 import NewHabitGroupForm, { PendingHabit } from './habits/NewHabitGroupForm';
@@ -302,7 +302,10 @@ export default function HabitsScreen(): React.JSX.Element {
       <Pressable
         testID="fab"
         onPress={() => setCreateStep('choice')}
-        style={styles.fab}
+        style={[
+          styles.fab,
+          { bottom: BOTTOM_MENU_HEIGHT + 16 + insets.bottom },
+        ]}
       >
         <Text style={styles.fabIcon}>+</Text>
       </Pressable>
@@ -387,7 +390,6 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 88,
     width: 56,
     height: 56,
     borderRadius: 28,

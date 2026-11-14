@@ -6,6 +6,7 @@ import {
   TrendingUp,
   CircleUser,
 } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 
 const ITEMS = [
@@ -16,9 +17,18 @@ const ITEMS = [
 ];
 const SELECTED = 'Habits';
 
+// Flush with the screen's bottom edge, padded by the bottom inset so it clears
+// the gesture or 3-button bar: docs/style-choices/header-and-bottom-menu.md
+export const BOTTOM_MENU_HEIGHT = 60;
+
 export default function BottomMenu(): React.JSX.Element {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.bar}>
+    <View
+      testID="bottom-menu"
+      style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}
+    >
       {ITEMS.map(item => {
         const color =
           item.label === SELECTED ? colors.v2Orange : colors.v2White;
@@ -41,13 +51,10 @@ export default function BottomMenu(): React.JSX.Element {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingVertical: 10,
-    backgroundColor: colors.v2CardBackground,
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    borderRadius: 16,
+    paddingTop: 10,
+    backgroundColor: colors.v2MenuBackground,
+    borderTopWidth: 1,
+    borderTopColor: colors.v2MenuBorder,
   },
   item: {
     flex: 1,

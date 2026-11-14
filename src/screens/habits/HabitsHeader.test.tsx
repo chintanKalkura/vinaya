@@ -1,6 +1,9 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { ReactTestInstance } from 'react-test-renderer';
 import HabitsHeader, { HabitsViewMode } from './HabitsHeader';
+import { colors } from '../../theme';
 
 function renderHeader(
   viewMode: HabitsViewMode = 'group',
@@ -74,5 +77,38 @@ describe('HabitsHeader', () => {
     fireEvent.press(getByTestId('sort-button'));
 
     expect(onOpenSort).toHaveBeenCalled();
+  });
+
+  it('should show the title in white serif italics', () => {
+    const { getByTestId } = renderHeader();
+    const title = getByTestId('habits-title');
+
+    expect([
+      title.props.children,
+      StyleSheet.flatten(title.props.style),
+    ]).toEqual([
+      'Vinaya - Habits',
+      expect.objectContaining({
+        color: colors.v2White,
+        fontFamily: 'serif',
+        fontStyle: 'italic',
+      }),
+    ]);
+  });
+
+  it('should put the title first, then the cadence filter left of the toggle and sort', () => {
+    const { UNSAFE_root } = renderHeader();
+    const wanted = [
+      'habits-title',
+      'cadence-filter',
+      'view-mode-toggle-group',
+      'sort-button',
+    ];
+    const order = UNSAFE_root.findAll(
+      (node: ReactTestInstance) =>
+        typeof node.type === 'string' && wanted.includes(node.props.testID),
+    ).map((node: ReactTestInstance) => node.props.testID);
+
+    expect([...new Set(order)]).toEqual(wanted);
   });
 });
