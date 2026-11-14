@@ -129,9 +129,19 @@ Screens 01 and 04 are superseded on three points:
 - **Habit Group row.**
   - No group is selected by default; tapping the selected chip again clears it.
   - Groups the habit's type can't join are greyed out: Checkmark habits join Required, Any or All groups, and Hours habits join Hours groups.
-  - Until group creation is built, "+ Create Group" and the Choice sheet's "New Habit Group" do nothing.
+  - "+ Create Group" and the Choice sheet's "New Habit Group" open the group form (1.10).
 - **Defaults.** Target 1, streak freeze 7, daily target hours 1. The name is required, at most 40 characters.
 - Full rules: `docs/feature-development/create-habit.md`.
+
+### 1.10 Create Habit Group (screens 11-15)
+
+- **Streak Freeze field.** Added after Target on every group form: "1 skip per [7] streaks", 1-100. Not drawn on screens 11, 13 and 15.
+- **Habits in several groups.** A habit can be assigned to any number of groups; assigning never moves it. In list view its subtext names every group, comma-joined. Screen 04 shows one group name per habit.
+- **All type.** Looks like Any; description "Every habit must be done to complete the group".
+- **Sheets.** The Assign (12) and Required (14) sheets apply on Done and discard on the backdrop or back.
+- **Hours Target.** 1-24, default 1. Screen 15 shows 8.
+- **Cross-links.** Create Habit on the group form returns with the new habit assigned. "+ Create Group" on the New Habit form returns with the new group selected, and both are saved together on Create Habit.
+- Full rules: `docs/feature-development/create-habit-group.md`.
 
 ---
 
@@ -140,8 +150,8 @@ Screens 01 and 04 are superseded on three points:
 1. **Hours-type habit creation for Week, Month, Year**: not drawn. Specified in 1.1.
 2. **Group creation for Week, Month, Year**: not drawn. Specified in 1.2.
 3. **Group Target semantics**: resolved by 1.6. A group's target counts its complete days in the rolling window. Its sub-habits' cadences and targets don't affect it.
-4. **Group type All**: no dedicated screen. It has no secondary sheet, so it is assumed to match Any visually.
-5. **Any / All group with habits assigned**: only the empty state (screen 11) is drawn. Required (13) and Hours (15) show assigned habits; Any and All do not.
+4. **Group type All**: resolved by 1.10. It looks like Any, with the description "Every habit must be done to complete the group".
+5. **Any / All group with habits assigned**: resolved by 1.10. Every type uses the same Assigned Habits chip box as screens 13 and 15.
 6. **Paused and Archived appearance on screens 01 and 04**: the treatment (grey icon, greyed lettering) was decided but never drawn on habit or group items. Screen 03 only shows the filter toggles.
 7. **Cadence filter on screens 01 and 04**: resolved by 1.5. The filter is a dropdown (All, Day, Week, Month, Year) and its filtered states follow `docs/style-choices/cadence-filter.md`.
 8. **Edit, pause and archive flows**: no screen exists for editing a habit or group, or for pausing and archiving one. Paused and Archived exist as filter values, but how an item enters those states is not designed.
