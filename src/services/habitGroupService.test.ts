@@ -3,6 +3,7 @@ import {
   InvalidHabitGroupError,
   applyStreakFreezes,
   createHabitGroup,
+  deleteHabitGroup,
   getGroupStatus,
   syncGroupCompletion,
 } from './habitGroupService';
@@ -456,5 +457,18 @@ describe('createHabitGroup', () => {
     await expect(
       createHabitGroup(draft({ groupType: 'Hours' }), TODAY),
     ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+  });
+});
+
+describe('deleteHabitGroup', () => {
+  it('removes only the group and keeps its habits', async () => {
+    await seed([makeHabit('a'), makeHabit('b')], makeGroup('Any'));
+
+    await deleteHabitGroup('g');
+
+    expect([
+      await loadHabitGroups(),
+      Object.keys(await loadHabits()).sort(),
+    ]).toEqual([{}, ['a', 'b']]);
   });
 });

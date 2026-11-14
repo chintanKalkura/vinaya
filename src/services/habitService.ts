@@ -11,6 +11,8 @@ import {
   loadHabits,
   saveHabit,
   saveHabitGroup,
+  saveHabitGroups,
+  saveHabits,
 } from '../storage/habitStorage';
 import {
   NewHabitDraft,
@@ -165,6 +167,38 @@ export async function setHabitHours(
   }
 
   return saveAndSync(updated, todayKey);
+}
+
+// Removes the habit and every assignment of it, then re-checks those groups.
+// Groups left with no habits stay; they can't complete until habits are added.
+export async function deleteHabit(
+  habitId: string,
+  todayKey: string = toDateKey(new Date()),
+): Promise<void> {
+  const [habits, groups] = await Promise.all([loadHabits(), loadHabitGroups()]);
+  const groupIds = groupIdsByHabit(groups)[habitId] ?? [];
+
+  delete habits[habitId];
+  for (const groupId of groupIds) {
+    const group = groups[groupId];
+    groups[groupId] = {
+      ...group,
+      habitIds: group.habitIds.filter(id => id !== habitId),
+      ...(group.requiredHabitIds
+        ? {
+            requiredHabitIds: group.requiredHabitIds.filter(
+              id => id !== habitId,
+            ),
+          }
+        : {}),
+    };
+  }
+
+  await saveHabits(habits);
+  await saveHabitGroups(groups);
+  for (const groupId of groupIds) {
+    await syncGroupCompletion(groupId, todayKey);
+  }
 }
 
 export async function assignHabitToGroup(
