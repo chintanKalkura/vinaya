@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import GroupCard from './GroupCard';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
@@ -473,5 +473,49 @@ describe('GroupCard streak freeze', () => {
     );
 
     expect(queryByTestId('group-freeze-group-1')).toBeNull();
+  });
+});
+
+describe('GroupCard menu', () => {
+  it('deletes the group after confirming', () => {
+    const onDelete = jest.fn();
+    const { getByTestId } = render(
+      <GroupCard
+        group={makeGroup()}
+        habits={[]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+        onDelete={onDelete}
+      />,
+    );
+
+    fireEvent.press(getByTestId('group-menu-group-1'));
+    fireEvent.press(getByTestId('group-menu-group-1-delete'));
+    fireEvent.press(getByTestId('group-menu-group-1-confirm-delete'));
+
+    expect(onDelete).toHaveBeenCalledWith('group-1');
+  });
+
+  it('shows no menu on the Hours cells inside the card', () => {
+    const study: Habit = {
+      ...makeHabit('study', 'Study'),
+      type: 'Hours',
+      targetHours: 1,
+    };
+    const { queryByTestId } = render(
+      <GroupCard
+        group={makeGroup({
+          groupType: 'Hours',
+          targetHours: 2,
+          habitIds: ['study'],
+        })}
+        habits={[study]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+        onDelete={jest.fn()}
+      />,
+    );
+
+    expect(queryByTestId('habit-row-menu-study')).toBeNull();
   });
 });

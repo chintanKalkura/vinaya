@@ -12,12 +12,14 @@ import HabitPill from './HabitPill';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
+import BannerMenu from './BannerMenu';
 
 interface GroupCardProps {
   group: HabitGroup;
   habits: Habit[];
   todayKey: string;
   onToggle: (habitId: string) => void;
+  onDelete?: (groupId: string) => void;
 }
 
 export default function GroupCard({
@@ -25,6 +27,7 @@ export default function GroupCard({
   habits,
   todayKey,
   onToggle,
+  onDelete,
 }: GroupCardProps): React.JSX.Element {
   const isRequiredGroup = group.groupType === 'Required';
   const isHoursGroup = group.groupType === 'Hours';
@@ -96,6 +99,13 @@ export default function GroupCard({
         >
           {status.streak}
         </Text>
+        {onDelete ? (
+          <BannerMenu
+            kind="group"
+            onDelete={() => onDelete(group.id)}
+            testID={`group-menu-${group.id}`}
+          />
+        ) : null}
       </View>
       {isHoursGroup ? (
         <View style={styles.hoursProgress}>

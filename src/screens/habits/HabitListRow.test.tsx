@@ -543,3 +543,59 @@ describe('HabitListRow streak freeze', () => {
     ).toBe(colors.v2Ice);
   });
 });
+
+describe('HabitListRow menu', () => {
+  it('shows the menu right of the streak on a banner', () => {
+    const { getByTestId } = render(
+      <HabitListRow
+        habit={makeHabit()}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind="banner"
+        onDelete={jest.fn()}
+      />,
+    );
+
+    const nameRow = getByTestId('habit-row-streak-habit-1').parent?.parent;
+    const ids = nameRow?.children.map(
+      child => (child as ReactTestInstance).props.testID,
+    );
+    expect(ids?.slice(-2)).toEqual([
+      'habit-row-streak-habit-1',
+      'habit-row-menu-habit-1',
+    ]);
+  });
+
+  it('never shows the menu on a pill', () => {
+    const { queryByTestId } = render(
+      <HabitListRow
+        habit={makeHabit()}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind="pill"
+        onDelete={jest.fn()}
+      />,
+    );
+
+    expect(queryByTestId('habit-row-menu-habit-1')).toBeNull();
+  });
+
+  it('deletes the habit after confirming', () => {
+    const onDelete = jest.fn();
+    const { getByTestId } = render(
+      <HabitListRow
+        habit={makeHabit()}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind="banner"
+        onDelete={onDelete}
+      />,
+    );
+
+    fireEvent.press(getByTestId('habit-row-menu-habit-1'));
+    fireEvent.press(getByTestId('habit-row-menu-habit-1-delete'));
+    fireEvent.press(getByTestId('habit-row-menu-habit-1-confirm-delete'));
+
+    expect(onDelete).toHaveBeenCalledWith('habit-1');
+  });
+});
