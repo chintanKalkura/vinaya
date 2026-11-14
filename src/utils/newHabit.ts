@@ -3,10 +3,14 @@ import { HabitGroup } from '../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { clampCadenceTarget } from './cadence';
 import { clampFreezeInterval } from './streakFreeze';
+import { canTakeHabit } from './newHabitGroup';
 
 // Create Habit rules: docs/feature-development/create-habit.md
 
 export const HABIT_NAME_MAX = 40;
+
+// Stands for a group made with "+ Create Group" that is saved with the habit
+export const PENDING_GROUP_ID = 'pending-group';
 
 export interface NewHabitDraft {
   name: string;
@@ -15,7 +19,7 @@ export interface NewHabitDraft {
   streakFreezeInterval: number;
   type: HabitType;
   targetHours: number; // Hours only
-  groupId?: string;
+  groupId?: string; // the group to join; membership is stored on the group
 }
 
 export const DEFAULT_DRAFT: NewHabitDraft = {
@@ -32,9 +36,8 @@ export function isDraftValid(draft: NewHabitDraft): boolean {
   return name.length > 0 && name.length <= HABIT_NAME_MAX;
 }
 
-// Required/Any/All groups take Checkmark habits; Hours groups take Hours habits
 export function canJoinGroup(type: HabitType, group: HabitGroup): boolean {
-  return (group.groupType === 'Hours') === (type === 'Hours');
+  return canTakeHabit(group.groupType, type);
 }
 
 export function clampTargetHours(value: number): number {
@@ -66,6 +69,5 @@ export function buildHabit(
   if (draft.type === 'Hours') {
     habit.targetHours = clampTargetHours(draft.targetHours);
   }
-  if (draft.groupId) habit.groupId = draft.groupId;
   return habit;
 }

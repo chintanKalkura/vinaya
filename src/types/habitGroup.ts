@@ -8,7 +8,7 @@ export interface HabitGroup {
   name: string;
   cadence: HabitCadence; // independent of member habits' cadence
   groupType: HabitGroupType;
-  habitIds: string[]; // assigned habits, kept in sync by the service layer
+  habitIds: string[]; // assigned habits; the only stored membership, a habit may be in several groups
   target?: number; // Week/Month/Year cadence — complete days per window, max cadenceTargetMax
   requiredHabitIds?: string[]; // Required type only — subset of habitIds
   targetHours?: number; // Hours type only — daily aggregate target across assigned habits, max hoursTargetMax
