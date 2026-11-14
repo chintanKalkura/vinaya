@@ -43,6 +43,11 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
 
   const today = toDateKey(new Date());
 
+  // Seeded memberships; stored on each group's habitIds below
+  const memberships: Record<string, string> = {};
+  const membersOf = (groupId: string) =>
+    habits.filter(h => memberships[h.id] === groupId);
+
   let sortOrder = 0;
   const nextSortOrder = () => sortOrder++;
   const createdAt = Date.now();
@@ -53,13 +58,13 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     groupId: string | undefined,
     recentLog: LogEntry[],
   ): Habit {
+    if (groupId) memberships[id] = groupId;
     return {
       id,
       name,
       cadence: 'Day',
       type: 'Checkmark',
       streakFreezeInterval: 7,
-      groupId,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -74,6 +79,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     groupId: string,
     hoursToday: number,
   ): Habit {
+    memberships[id] = groupId;
     const log: LogEntry[] =
       hoursToday > 0 ? [{ date: today, kind: 'hours', value: hoursToday }] : [];
     return {
@@ -83,7 +89,6 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       type: 'Hours',
       targetHours: 1,
       streakFreezeInterval: 7,
-      groupId,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -103,6 +108,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     days: [number, number][],
     targetHours?: number,
   ): Habit {
+    if (groupId) memberships[id] = groupId;
     const history: LogEntry[] = [...days]
       .sort(([a], [b]) => b - a)
       .map(([daysAgo, value]) => ({
@@ -118,7 +124,6 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       target,
       targetHours,
       streakFreezeInterval: 7,
-      groupId,
       status: 'active',
       sortOrder: nextSortOrder(),
       createdAt,
@@ -330,9 +335,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
     target: number,
     targetHours?: number,
   ): HabitGroup {
-    const members = habits
-      .filter(h => h.groupId === id)
-      .map(h => ({ ...h, recentLog: h.history }));
+    const members = membersOf(id).map(h => ({ ...h, recentLog: h.history }));
     const group: HabitGroup = {
       id,
       name,
@@ -368,7 +371,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       name: '8 Precepts',
       cadence: 'Day',
       groupType: 'Required',
-      habitIds: habits.filter(h => h.groupId === 'precepts').map(h => h.id),
+      habitIds: [...membersOf('precepts').map(h => h.id), 'read-fiction'],
       requiredHabitIds: [
         'no-killing',
         'no-stealing',
@@ -389,7 +392,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       name: 'Eat Healthy',
       cadence: 'Day',
       groupType: 'Any',
-      habitIds: habits.filter(h => h.groupId === 'eat-healthy').map(h => h.id),
+      habitIds: membersOf('eat-healthy').map(h => h.id),
       streakFreezeInterval: 7,
       status: 'active',
       sortOrder: nextSortOrder(),
@@ -402,9 +405,7 @@ export async function seedDevFixturesIfNeeded(): Promise<void> {
       name: 'Stay Productive',
       cadence: 'Day',
       groupType: 'Hours',
-      habitIds: habits
-        .filter(h => h.groupId === 'stay-productive')
-        .map(h => h.id),
+      habitIds: membersOf('stay-productive').map(h => h.id),
       targetHours: 8,
       streakFreezeInterval: 7,
       status: 'active',

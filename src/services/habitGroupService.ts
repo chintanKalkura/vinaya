@@ -1,3 +1,4 @@
+import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
@@ -12,6 +13,56 @@ import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
 import { isGroupComplete } from '../utils/groupCompletion';
 import { habitMarkers } from '../utils/hours';
 import { withAppliedFreezes, withEarnedFreezes } from '../utils/streakFreeze';
+import { toDateKey } from '../utils/dates';
+import {
+  NewHabitGroupDraft,
+  buildHabitGroup,
+  canTakeHabit,
+  isGroupDraftValid,
+} from '../utils/newHabitGroup';
+
+export class InvalidHabitGroupError extends Error {}
+
+function newGroupId(createdAt: number): string {
+  return `group-${createdAt.toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+// Saves a new group last in sort order, then counts today if its members
+// already complete it
+export async function createHabitGroup(
+  draft: NewHabitGroupDraft,
+  todayKey: string = toDateKey(new Date()),
+): Promise<HabitGroup> {
+  if (!isGroupDraftValid(draft)) {
+    throw new InvalidHabitGroupError(
+      'A group needs a name, at least one habit and, for Required, a required habit',
+    );
+  }
+  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
+  for (const habitId of draft.habitIds) {
+    const habit = habits[habitId];
+    if (!habit) throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
+    if (!canTakeHabit(draft.groupType, habit.type)) {
+      throw new InvalidHabitGroupError(
+        `A ${draft.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+      );
+    }
+  }
+
+  const createdAt = Date.now();
+  const sortOrder =
+    Math.max(-1, ...Object.values(groups).map(g => g.sortOrder)) + 1;
+  const group = buildHabitGroup(
+    draft,
+    newGroupId(createdAt),
+    sortOrder,
+    createdAt,
+  );
+  await saveHabitGroup(group);
+  return (await syncGroupCompletion(group.id, todayKey)) ?? group;
+}
 
 // The group log holds one marker per day the group-type rule was met
 export function getGroupStatus(
@@ -35,7 +86,9 @@ export async function syncGroupCompletion(
   const group = groups[groupId];
   if (!group) return group;
 
-  const members = Object.values(habits).filter(h => h.groupId === groupId);
+  const members = group.habitIds
+    .map(id => habits[id])
+    .filter((habit): habit is Habit => habit !== undefined);
   const complete = isGroupComplete(group, members, todayKey);
   const hasToday = group.recentLog.some(entry => entry.date === todayKey);
 

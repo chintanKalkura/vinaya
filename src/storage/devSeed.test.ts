@@ -11,6 +11,7 @@ import { getCadenceStatus } from '../utils/cadence';
 import { habitMarkers, targetMetLog } from '../utils/hours';
 import { isGroupComplete, isHabitMarkedToday } from '../utils/groupCompletion';
 import { getAppLastUpdateTime } from './appInfo';
+import { groupIdsByHabit } from '../utils/groupIndex';
 import { Habit } from '../types/habit';
 
 jest.mock('./appInfo', () => ({ getAppLastUpdateTime: jest.fn() }));
@@ -116,7 +117,7 @@ describe('seedDevFixturesIfNeeded', () => {
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
     const members = (groupId: string) =>
-      Object.values(habits).filter(h => h.groupId === groupId);
+      groups[groupId].habitIds.map(id => habits[id]);
 
     expect(isGroupComplete(groups.precepts, members('precepts'), today)).toBe(
       true,
@@ -142,9 +143,7 @@ describe('seedDevFixturesIfNeeded', () => {
     const habits = await loadHabits();
     const groups = await loadHabitGroups();
     const today = toDateKey(new Date());
-    const members = Object.values(habits).filter(
-      h => h.groupId === 'stay-productive',
-    );
+    const members = groups['stay-productive'].habitIds.map(id => habits[id]);
 
     expect(isGroupComplete(groups['stay-productive'], members, today)).toBe(
       true,
@@ -165,8 +164,9 @@ describe('seedDevFixturesIfNeeded', () => {
 
     const habits = await loadHabits();
     const today = toDateKey(new Date());
-    const marked = Object.values(habits)
-      .filter(h => h.groupId === 'stay-productive')
+    const groups = await loadHabitGroups();
+    const marked = groups['stay-productive'].habitIds
+      .map(id => habits[id])
       .filter(h => isHabitMarkedToday(h, today))
       .map(h => h.id);
 
@@ -180,7 +180,7 @@ describe('seedDevFixturesIfNeeded', () => {
     const today = toDateKey(new Date());
 
     expect([
-      habits['drink-water'].groupId,
+      groupIdsByHabit(await loadHabitGroups())['drink-water'],
       calculateStreak(habits['drink-water'].recentLog, today),
     ]).toEqual([undefined, 4]);
   });
@@ -251,9 +251,10 @@ describe('seedDevFixturesIfNeeded', () => {
     it('derives group logs that match the member marks', async () => {
       const habits = await loadHabits();
       const group = (await loadHabitGroups()).fitness;
-      const members = Object.values(habits)
-        .filter(h => h.groupId === 'fitness')
-        .map(h => ({ ...h, recentLog: h.history }));
+      const members = group.habitIds.map(id => ({
+        ...habits[id],
+        recentLog: habits[id].history,
+      }));
       const expected = group.history.every(entry =>
         isGroupComplete(group, members, entry.date),
       );
@@ -347,5 +348,21 @@ describe('seedDevFixturesIfNeeded', () => {
 
       expect(groups.every(g => g.streakFreezeInterval === 7)).toBe(true);
     });
+  });
+
+  it('seeds Read Fiction in both Wind-down and 8 Precepts', async () => {
+    await seedDevFixturesIfNeeded();
+
+    expect(groupIdsByHabit(await loadHabitGroups())['read-fiction']).toEqual([
+      'precepts',
+      'wind-down',
+    ]);
+  });
+
+  it('does not make Read Fiction required in 8 Precepts', async () => {
+    await seedDevFixturesIfNeeded();
+
+    const groups = await loadHabitGroups();
+    expect(groups.precepts.requiredHabitIds).not.toContain('read-fiction');
   });
 });
