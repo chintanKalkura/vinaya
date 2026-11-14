@@ -8,6 +8,7 @@ import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
   createHabit,
+  deleteHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -15,8 +16,18 @@ import {
 import {
   applyStreakFreezes,
   createHabitGroup,
+  deleteHabitGroup,
+  getGroupStatus,
 } from '../services/habitGroupService';
-import { getHoursToday } from '../utils/hours';
+import { getHoursToday, habitMarkers } from '../utils/hours';
+import { getCadenceStatus } from '../utils/cadence';
+import {
+  DEFAULT_SORT_FILTER,
+  SortFilterState,
+  filterItems,
+  sortItems,
+} from '../utils/sortFilter';
+import SortFilterSheet from './habits/SortFilterSheet';
 import { groupIdsByHabit } from '../utils/groupIndex';
 import GroupCard from './habits/GroupCard';
 import HoursEntryModal from './habits/HoursEntryModal';
@@ -44,6 +55,10 @@ export default function HabitsScreen(): React.JSX.Element {
   const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const [createStep, setCreateStep] = useState<CreateStep>('none');
+  // Session only: docs/feature-development/sort-filter-delete-habit.md
+  const [sortFilter, setSortFilter] =
+    useState<SortFilterState>(DEFAULT_SORT_FILTER);
+  const [sortOpen, setSortOpen] = useState(false);
   // Habit form → "+ Create Group": the group is saved with the habit
   const [groupForHabit, setGroupForHabit] = useState<PendingHabit | null>(null);
   const [pendingGroupDraft, setPendingGroupDraft] =
@@ -164,6 +179,22 @@ export default function HabitsScreen(): React.JSX.Element {
     [todayKey, reload],
   );
 
+  const handleDeleteHabit = useCallback(
+    async (habitId: string) => {
+      await deleteHabit(habitId, todayKey);
+      await reload();
+    },
+    [todayKey, reload],
+  );
+
+  const handleDeleteGroup = useCallback(
+    async (groupId: string) => {
+      await deleteHabitGroup(groupId);
+      await reload();
+    },
+    [reload],
+  );
+
   const pendingGroup = useMemo<PendingGroup | undefined>(
     () =>
       pendingGroupDraft
@@ -178,9 +209,35 @@ export default function HabitsScreen(): React.JSX.Element {
   const hoursHabit = hoursHabitId ? habits[hoursHabitId] : undefined;
   const matchesFilter = (item: { cadence: string }) =>
     cadenceFilter === 'All' || item.cadence === cadenceFilter;
-  const sortedGroups = bySortOrder(Object.values(groups)).filter(matchesFilter);
+  const habitStatus = (habit: Habit) =>
+    getCadenceStatus(
+      habitMarkers(habit),
+      habit.cadence,
+      habit.target,
+      todayKey,
+      habit.streakFreeze,
+    );
+  const groupStatus = (group: HabitGroup) => getGroupStatus(group, todayKey);
+  // Cadence filter first, then Show, then Sort
+  const sortedGroups = sortItems(
+    filterItems(
+      Object.values(groups).filter(matchesFilter),
+      sortFilter.completedOnly,
+      groupStatus,
+    ),
+    sortFilter.sort,
+    groupStatus,
+  );
   const allHabits = bySortOrder(Object.values(habits));
-  const listHabits = allHabits.filter(matchesFilter);
+  const listHabits = sortItems(
+    filterItems(
+      allHabits.filter(matchesFilter),
+      sortFilter.completedOnly,
+      habitStatus,
+    ),
+    sortFilter.sort,
+    habitStatus,
+  );
   // A habit may be in several groups: its list subtext names them all
   const groupNamesByHabit = useMemo(() => {
     const index = groupIdsByHabit(groups);
@@ -203,6 +260,7 @@ export default function HabitsScreen(): React.JSX.Element {
         onChangeCadenceFilter={setCadenceFilter}
         viewMode={viewMode}
         onChangeViewMode={setViewMode}
+        onOpenSort={() => setSortOpen(true)}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -215,6 +273,7 @@ export default function HabitsScreen(): React.JSX.Element {
                 todayKey={todayKey}
                 onPress={handleToggleHabit}
                 colorKind="banner"
+                onDelete={handleDeleteHabit}
               />
             ))
           : sortedGroups.map(group => {
@@ -228,6 +287,7 @@ export default function HabitsScreen(): React.JSX.Element {
                   habits={groupHabits}
                   todayKey={todayKey}
                   onToggle={handleToggleHabit}
+                  onDelete={handleDeleteGroup}
                 />
               );
             })}
@@ -247,6 +307,15 @@ export default function HabitsScreen(): React.JSX.Element {
         initialHours={hoursHabit ? getHoursToday(hoursHabit, todayKey) : 0}
         onDone={handleHoursDone}
         onClose={() => setHoursHabitId(null)}
+      />
+      <SortFilterSheet
+        visible={sortOpen}
+        value={sortFilter}
+        onApply={value => {
+          setSortFilter(value);
+          setSortOpen(false);
+        }}
+        onClose={() => setSortOpen(false)}
       />
       <CreateChoiceSheet
         visible={createStep === 'choice'}

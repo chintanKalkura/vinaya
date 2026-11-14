@@ -756,3 +756,153 @@ describe('HabitsScreen create habit group', () => {
     ]);
   });
 });
+
+describe('HabitsScreen sort and filter', () => {
+  const today = { date: TODAY, kind: 'marker' as const, value: 1 };
+  const fixtures = () =>
+    seed(
+      {
+        'no-killing': makeHabit({ createdAt: 1 }),
+        apple: makeHabit({
+          id: 'apple',
+          name: 'apple',
+          createdAt: 2,
+          recentLog: [today],
+        }),
+        // Week habit complete for its window but not marked today
+        call: makeHabit({
+          id: 'call',
+          name: 'Call Family',
+          cadence: 'Week',
+          target: 1,
+          createdAt: 3,
+          recentLog: [{ date: '2024-06-13', kind: 'marker', value: 1 }],
+        }),
+      },
+      {
+        precepts: makeGroup({ createdAt: 1 }),
+        eat: makeGroup({
+          id: 'eat',
+          name: 'Eat Healthy',
+          groupType: 'Any',
+          habitIds: ['apple'],
+          createdAt: 2,
+          recentLog: [today],
+        }),
+      },
+    );
+
+  const rowOrder = (utils: ReturnType<typeof render>) =>
+    utils
+      .getAllByTestId(/^habit-row-(no-killing|apple|call)$/)
+      .map(node => node.props.testID.replace('habit-row-', ''));
+
+  async function apply(utils: ReturnType<typeof render>, pick: () => void) {
+    fireEvent.press(utils.getByTestId('sort-button'));
+    await utils.findByTestId('sort-sheet');
+    pick();
+    fireEvent.press(utils.getByTestId('sort-sheet-apply'));
+  }
+
+  it('lists oldest first by default', async () => {
+    await fixtures();
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('habit-row-call');
+
+    expect(rowOrder(utils)).toEqual(['no-killing', 'apple', 'call']);
+  });
+
+  it('applies Recent from the sheet', async () => {
+    await fixtures();
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('habit-row-call');
+
+    await apply(utils, () =>
+      fireEvent.press(utils.getByTestId('sort-option-Recent')),
+    );
+
+    expect(rowOrder(utils)).toEqual(['call', 'apple', 'no-killing']);
+  });
+
+  it('applies A–Z ignoring case', async () => {
+    await fixtures();
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('habit-row-call');
+
+    await apply(utils, () =>
+      fireEvent.press(utils.getByTestId('sort-option-A–Z')),
+    );
+
+    expect(rowOrder(utils)).toEqual(['apple', 'call', 'no-killing']);
+  });
+
+  it('shows only completed habits, including a complete Week habit', async () => {
+    await fixtures();
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('habit-row-call');
+
+    await apply(utils, () =>
+      fireEvent.press(utils.getByTestId('show-option-Completed')),
+    );
+
+    expect(rowOrder(utils)).toEqual(['apple', 'call']);
+  });
+
+  it('shows only completed groups in group view', async () => {
+    await fixtures();
+    const utils = renderInGroupView();
+    await utils.findByTestId('group-card-eat');
+
+    await apply(utils, () =>
+      fireEvent.press(utils.getByTestId('show-option-Completed')),
+    );
+
+    expect([
+      utils.queryByTestId('group-card-precepts'),
+      !!utils.getByTestId('group-card-eat'),
+    ]).toEqual([null, true]);
+  });
+});
+
+describe('HabitsScreen delete', () => {
+  async function confirmDelete(utils: ReturnType<typeof render>, id: string) {
+    fireEvent.press(await utils.findByTestId(id));
+    fireEvent.press(utils.getByTestId(`${id}-delete`));
+    fireEvent.press(utils.getByTestId(`${id}-confirm-delete`));
+  }
+
+  it('deletes a habit from list view and its group card loses the pill', async () => {
+    await seed(
+      {
+        'no-killing': makeHabit(),
+        'no-stealing': makeHabit({ id: 'no-stealing', name: 'No Stealing' }),
+      },
+      { precepts: makeGroup({ habitIds: ['no-killing', 'no-stealing'] }) },
+    );
+    const utils = render(<HabitsScreen />);
+
+    await confirmDelete(utils, 'habit-row-menu-no-killing');
+    await waitFor(() =>
+      expect(utils.queryByTestId('habit-row-no-killing')).toBeNull(),
+    );
+    fireEvent.press(utils.getByTestId('view-mode-toggle-group'));
+
+    expect([
+      utils.queryByTestId('habit-pill-no-killing'),
+      !!(await utils.findByTestId('habit-pill-no-stealing')),
+    ]).toEqual([null, true]);
+  });
+
+  it('deletes a group from group view and keeps its habits', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = renderInGroupView();
+
+    await confirmDelete(utils, 'group-menu-precepts');
+    await waitFor(() =>
+      expect(utils.queryByTestId('group-card-precepts')).toBeNull(),
+    );
+    fireEvent.press(utils.getByTestId('view-mode-toggle-list'));
+
+    expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
+  });
+});

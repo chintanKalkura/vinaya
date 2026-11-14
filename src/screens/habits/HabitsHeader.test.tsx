@@ -5,6 +5,7 @@ import HabitsHeader, { HabitsViewMode } from './HabitsHeader';
 function renderHeader(
   viewMode: HabitsViewMode = 'group',
   onChangeViewMode = jest.fn(),
+  onOpenSort = jest.fn(),
 ) {
   return render(
     <HabitsHeader
@@ -12,6 +13,7 @@ function renderHeader(
       onChangeCadenceFilter={jest.fn()}
       viewMode={viewMode}
       onChangeViewMode={onChangeViewMode}
+      onOpenSort={onOpenSort}
     />,
   );
 }
@@ -63,5 +65,14 @@ describe('HabitsHeader', () => {
     fireEvent.press(getByTestId('view-mode-toggle-group'));
 
     expect(onChangeViewMode).toHaveBeenCalledWith('group');
+  });
+
+  it('should open the Sort & Filter sheet from the sort button', () => {
+    const onOpenSort = jest.fn();
+    const { getByTestId } = renderHeader('group', jest.fn(), onOpenSort);
+
+    fireEvent.press(getByTestId('sort-button'));
+
+    expect(onOpenSort).toHaveBeenCalled();
   });
 });
