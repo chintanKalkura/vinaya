@@ -3,7 +3,7 @@
 Status: ready for planning.
 
 ## Goal
-The Group View screen follows the design as shown in ![01 - Habits - Group view.png](../screens/01%20-%20Habits%20-%20Group%20view.png).
+The Group View screen follows the design as shown in ![01 - Habits - Group view.png](../../screens/habits-section/01%20-%20Habits%20-%20Group%20view.png).
 The user can see this screen with the data preloaded in the previous spec (mark-habit).
 
 ## Scope

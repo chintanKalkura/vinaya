@@ -6,7 +6,7 @@ Status: ready for planning.
 user should be able to delete and sort habits and groups.
 
 ## Screens
-- ![03 - Sort & Filter Sheet.png](../screens/03%20-%20Sort%20%26%20Filter%20Sheet.png)
+- ![03 - Sort & Filter Sheet.png](../../screens/habits-section/03%20-%20Sort%20%26%20Filter%20Sheet.png)
 
 ## Scope
 - Add a modal to open delete options on a habit and group.
@@ -31,12 +31,12 @@ user should be able to delete and sort habits and groups.
    - Ties keep the default order (creation time, then `sortOrder`).
 2. **What sort orders.** List view sorts habits. Group view sorts the group cards; the habits inside a card keep their order. The cadence filter applies first, then Show, then Sort.
 3. **Show.**
-   - "Marked" is renamed **Completed**. When on, only habits or groups complete today by `docs/style-choices/coloring-rules.md` are shown, so a Week/Month/Year item counts while its window meets the target.
+   - "Marked" is renamed **Completed**. When on, only habits or groups complete today by `../../style-choices/habits-section/coloring-rules.md` are shown, so a Week/Month/Year item counts while its window meets the target.
    - **Active** is always selected and can't be turned off.
    - **Paused** and **Archived** are greyed out and can't be tapped.
    - Completed is off by default.
 4. **Sheet.** Choices apply on Apply; the backdrop or back discards them. They last for the session and aren't stored.
-5. **Delete menu.** A ⋮ right of the streak number on banners only: habit rows in list view, group cards in group view. It opens a menu ("Delete habit" or "Delete group", Cancel), then a confirm step ("Are you sure? This can't be undone.", Cancel, Delete). See `docs/style-choices/banner-menu.md`. Later changed to a dropdown below the ⋮ with Edit (disabled until editing is built) and Delete; the confirm step is unchanged.
+5. **Delete menu.** A ⋮ right of the streak number on banners only: habit rows in list view, group cards in group view. It opens a menu ("Delete habit" or "Delete group", Cancel), then a confirm step ("Are you sure? This can't be undone.", Cancel, Delete). See `../../style-choices/habits-section/banner-menu.md`. Later changed to a dropdown below the ⋮ with Edit (disabled until editing is built) and Delete; the confirm step is unchanged.
 6. **Deleting a habit** removes it and every assignment: its id leaves each group's `habitIds` and `requiredHabitIds`, and those groups are re-checked for today. Groups left with no habits, or Required groups left with no required habits, stay as they are and can't complete until habits are added.
 7. **Deleting a group** removes only the group; its habits are untouched.
 

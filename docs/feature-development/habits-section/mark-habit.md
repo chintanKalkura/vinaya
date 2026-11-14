@@ -19,7 +19,7 @@ Out of scope (each gets its own spec):
 - Editing, pausing, archiving
 
 ## Visual reference
-Which part of the habit is orange or grey, and how the streak is laid out, follows `docs/screens/` (screens 01 and 04). Where the screens and this spec disagree, ask; do not invent.
+Which part of the habit is orange or grey, and how the streak is laid out, follows `../../screens` (screens 01 and 04). Where the screens and this spec disagree, ask; do not invent.
 
 ## Rules
 1. A Day-cadence Checkmark habit has one state per calendar day: marked or not marked.

@@ -18,7 +18,7 @@ const ITEMS = [
 const SELECTED = 'Habits';
 
 // Flush with the screen's bottom edge, padded by the bottom inset so it clears
-// the gesture or 3-button bar: docs/style-choices/header-and-bottom-menu.md
+// the gesture or 3-button bar: docs/style-choices/habits-section/header-and-bottom-menu.md
 export const BOTTOM_MENU_HEIGHT = 60;
 
 export default function BottomMenu(): React.JSX.Element {

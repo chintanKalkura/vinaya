@@ -7,11 +7,11 @@ User should be able to configure a streak freeze for both habits and groups.
 Streak freezes should apply when applicable.
 
 ## Screen
-- ![06 - Create_ New Habit - Day.png](../screens/06%20-%20Create_%20New%20Habit%20-%20Day.png)
-- ![07 - Create_ New Habit - Week.png](../screens/07%20-%20Create_%20New%20Habit%20-%20Week.png)
-- ![08 - Create_ New Habit - Month.png](../screens/08%20-%20Create_%20New%20Habit%20-%20Month.png)
-- ![09 - Create_ New Habit - Year.png](../screens/09%20-%20Create_%20New%20Habit%20-%20Year.png)
-- ![10 - Create_ New Habit - Day - Hours.png](../screens/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
+- ![06 - Create_ New Habit - Day.png](../../screens/habits-section/06%20-%20Create_%20New%20Habit%20-%20Day.png)
+- ![07 - Create_ New Habit - Week.png](../../screens/habits-section/07%20-%20Create_%20New%20Habit%20-%20Week.png)
+- ![08 - Create_ New Habit - Month.png](../../screens/habits-section/08%20-%20Create_%20New%20Habit%20-%20Month.png)
+- ![09 - Create_ New Habit - Year.png](../../screens/habits-section/09%20-%20Create_%20New%20Habit%20-%20Year.png)
+- ![10 - Create_ New Habit - Day - Hours.png](../../screens/habits-section/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
 
 ## Scope
 - Seed streak freeze configuration and also some new habits to test the streak freeze functionality.
@@ -42,7 +42,7 @@ Streak freezes should apply when applicable.
    - Example: Day habit, streak 9, 1 freeze, yesterday missed. Today the freeze covers yesterday and the streak stays 9. Marking today makes it 10.
 6. **Frozen look.** It shows only on the day a freeze is used, while the streak is still alive. Complete beats frozen: complete (orange), then frozen today (icy), then grey.
    - Example (decision 5): today the habit is icy with "0 freezes left". Marking it turns it orange at 10. Tomorrow it looks normal again.
-7. **Design.** Glacier icy blue `#5ec8e5`, lucide `Snowflake` in place of the check, group selector or Hours chart icon, and a solid icy bar fill. Pills and banners both change; banner titles stay white. See `docs/style-choices/streak-freeze.md`.
+7. **Design.** Glacier icy blue `#5ec8e5`, lucide `Snowflake` in place of the check, group selector or Hours chart icon, and a solid icy bar fill. Pills and banners both change; banner titles stay white. See `../../style-choices/habits-section/streak-freeze.md`.
 8. **Freeze text.** "n freezes left" ("1 freeze left") at the bottom centre of habit banners (list view) and group cards, in icy blue. Pills never show it.
 9. **Week, Month and Year streaks stay alive one day longer.** This amends decision 5 of `week-month-year-cadence.md` so these cadences behave like Day: a run stays alive through the day one window after its latest mark, and breaks only once that day ends with no mark.
    - Example: Week, 1 freeze, last marked 1 June. 2–8 June: alive (counting back 7 days from 8 June reaches 1 June). 9 June: 8 June ended with no mark, so the freeze covers 8 June and the streak stays. Marking on 9 June continues the run.

@@ -6,14 +6,14 @@ Status: ready for planning.
 user should be able to create a habit and configure it with all possible vlaues.
 
 ## Screens
-- ![05 - Create_ Choice Sheet.png](../screens/05%20-%20Create_%20Choice%20Sheet.png)
-- ![06 - Create_ New Habit - Day.png](../screens/06%20-%20Create_%20New%20Habit%20-%20Day.png)
-- ![07 - Create_ New Habit - Week.png](../screens/07%20-%20Create_%20New%20Habit%20-%20Week.png)
-- ![08 - Create_ New Habit - Month.png](../screens/08%20-%20Create_%20New%20Habit%20-%20Month.png)
-- ![09 - Create_ New Habit - Year.png](../screens/09%20-%20Create_%20New%20Habit%20-%20Year.png)
-- ![10 - Create_ New Habit - Day - Hours.png](../screens/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
-- [habits-gaps-and-additional-info.md](../screens/habits-gaps-and-additional-info.md)
-- [navigation](../navigation)
+- ![05 - Create_ Choice Sheet.png](../../screens/habits-section/05%20-%20Create_%20Choice%20Sheet.png)
+- ![06 - Create_ New Habit - Day.png](../../screens/habits-section/06%20-%20Create_%20New%20Habit%20-%20Day.png)
+- ![07 - Create_ New Habit - Week.png](../../screens/habits-section/07%20-%20Create_%20New%20Habit%20-%20Week.png)
+- ![08 - Create_ New Habit - Month.png](../../screens/habits-section/08%20-%20Create_%20New%20Habit%20-%20Month.png)
+- ![09 - Create_ New Habit - Year.png](../../screens/habits-section/09%20-%20Create_%20New%20Habit%20-%20Year.png)
+- ![10 - Create_ New Habit - Day - Hours.png](../../screens/habits-section/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
+- [habits-gaps-and-additional-info.md](../../screens/habits-section/habits-gaps-and-additional-info.md)
+- [navigation](../../navigation/habits-section)
 
 ## Scope
 - Create all kinds of habits with all possible cadences.
@@ -22,7 +22,7 @@ user should be able to create a habit and configure it with all possible vlaues.
 - Use the navigation folder and mermaid diagrams from the folder to make decision on naviagtion.
 
 ## Decisions
-1. **Flow** (`docs/navigation/02-habit-creation.md`):
+1. **Flow** (`../../navigation/habits-section/02-habit-creation.md`):
    - The + button opens the Choice sheet (05). New Habit opens the New Habit form (06-10).
    - Back on the form (the arrow or Android back) returns to the Choice sheet. Tapping the backdrop or pressing back on the sheet closes it.
    - Create Habit saves the habit and returns to the Habits view the + was tapped from, list or group (navigation gap 2). The cadence filter is unchanged, so a new habit outside the current filter stays hidden until the filter changes.

@@ -1,7 +1,7 @@
 import { HabitStatus } from '../types/habit';
 import { CadenceStatus } from './cadence';
 
-// Sort & Filter rules: docs/feature-development/sort-filter-delete-habit.md
+// Sort & Filter rules: docs/feature-development/habits-section/sort-filter-delete-habit.md
 export type SortKey = 'Streak' | 'A–Z' | 'Recent';
 
 export const SORT_KEYS: readonly SortKey[] = ['Streak', 'A–Z', 'Recent'];

@@ -10,7 +10,7 @@ import {
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
 import { colors } from '../../theme';
 
-// ⋮ right of a banner's streak number: docs/style-choices/banner-menu.md.
+// ⋮ right of a banner's streak number: docs/style-choices/habits-section/banner-menu.md.
 // Opens a dropdown (Edit, Delete), then a confirm step before deleting.
 interface BannerMenuProps {
   kind: 'habit' | 'group';

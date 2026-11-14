@@ -18,11 +18,11 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/start-app.md` — commands
 - `docs/testing.md` — testing libraries, coverage, conventions
 - `docs/bug-fixes.md` — bug fix process
-- `docs/feature-development/` — feature development (empty)
-- `docs/style-choices/coloring-rules.md` — Habits coloring rules for pills and banners (complete vs not complete), implemented in `src/screens/habits/colorRules.ts`
-- `docs/style-choices/hours-progress.md` — Hours progress bar with its `{hours}/{target}h` label on one line, implemented in `src/screens/habits/HoursProgress.tsx`
-- `docs/style-choices/cadence-filter.md` — cadence filter dropdown (All, Day, Week, Month, Year) in the Habits header, implemented in `src/screens/habits/CadenceFilter.tsx`
-- `docs/style-choices/cadence-label.md` — cadence label (repeating calendar + Daily/Weekly/Monthly/Yearly) in the bottom-right corner of habit and group banners, implemented in `src/screens/habits/CadenceLabel.tsx`
-- `docs/style-choices/streak-freeze.md` — frozen look on the day a streak freeze is used (Glacier icy blue, Snowflake icon, icy bar, "n freezes left" on banners), implemented in `src/screens/habits/colorRules.ts` and `src/screens/habits/FreezeLabel.tsx`
-- `docs/style-choices/banner-menu.md` — ⋮ right of the streak number on habit banners and group cards, opening an Edit/Delete dropdown (Edit opens the edit forms) and a delete confirm modal, implemented in `src/screens/habits/BannerMenu.tsx`
-- `docs/style-choices/header-and-bottom-menu.md` — "Vinaya - Habits" title in serif italic with the cadence filter, toggle and sort on one row, and the flush espresso-brown bottom menu padded by the bottom inset, implemented in `src/screens/habits/HabitsHeader.tsx` and `src/screens/habits/BottomMenu.tsx`
+- `docs/feature-development/habits-section/` — Habits feature specs
+- `docs/style-choices/habits-section/coloring-rules.md` — Habits coloring rules for pills and banners (complete vs not complete), implemented in `src/screens/habits/colorRules.ts`
+- `docs/style-choices/habits-section/hours-progress.md` — Hours progress bar with its `{hours}/{target}h` label on one line, implemented in `src/screens/habits/HoursProgress.tsx`
+- `docs/style-choices/habits-section/cadence-filter.md` — cadence filter dropdown (All, Day, Week, Month, Year) in the Habits header, implemented in `src/screens/habits/CadenceFilter.tsx`
+- `docs/style-choices/habits-section/cadence-label.md` — cadence label (repeating calendar + Daily/Weekly/Monthly/Yearly) in the bottom-right corner of habit and group banners, implemented in `src/screens/habits/CadenceLabel.tsx`
+- `docs/style-choices/habits-section/streak-freeze.md` — frozen look on the day a streak freeze is used (Glacier icy blue, Snowflake icon, icy bar, "n freezes left" on banners), implemented in `src/screens/habits/colorRules.ts` and `src/screens/habits/FreezeLabel.tsx`
+- `docs/style-choices/habits-section/banner-menu.md` — ⋮ right of the streak number on habit banners and group cards, opening an Edit/Delete dropdown (Edit opens the edit forms) and a delete confirm modal, implemented in `src/screens/habits/BannerMenu.tsx`
+- `docs/style-choices/habits-section/header-and-bottom-menu.md` — "Vinaya - Habits" title in serif italic with the cadence filter, toggle and sort on one row, and the flush espresso-brown bottom menu padded by the bottom inset, implemented in `src/screens/habits/HabitsHeader.tsx` and `src/screens/habits/BottomMenu.tsx`

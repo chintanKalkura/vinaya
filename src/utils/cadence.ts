@@ -4,7 +4,7 @@ import { LogEntry } from '../types/log';
 import { parseDate } from './dates';
 import { calculateStreak } from './streak';
 
-// Rolling-window tracking: docs/feature-development/week-month-year-cadence.md
+// Rolling-window tracking: docs/feature-development/habits-section/week-month-year-cadence.md
 
 export interface CadenceStatus {
   markedToday: boolean;

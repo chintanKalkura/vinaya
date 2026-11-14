@@ -2,7 +2,7 @@
 
 Scope: the ⋮ button that opens the Edit and Delete options on banners in the Habits section (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in `src/screens/habits/BannerMenu.tsx`, used by `HabitListRow` (banners only) and `GroupCard`.
+Implemented in `../../../src/screens/habits/BannerMenu.tsx`, used by `HabitListRow` (banners only) and `GroupCard`.
 
 ## Design
 
@@ -25,7 +25,7 @@ A small grey ⋮ (lucide `EllipsisVertical`, 18px, muted grey) on the title line
 ## Dropdown and confirm
 
 1. **Dropdown.** Tapping ⋮ opens a small card just below it, right-aligned with it, over a transparent backdrop (like the cadence filter's dropdown):
-   - **Edit** (lucide `Pencil`, white): opens Edit Habit or Edit Habit Group (`docs/feature-development/edit-habit-group.md`).
+   - **Edit** (lucide `Pencil`, white): opens Edit Habit or Edit Habit Group (`../../feature-development/habits-section/edit-habit-group.md`).
    - **Delete** (lucide `Trash2`, red): opens the confirm step.
 2. **Confirm.** A small centred card over a dark backdrop: "Are you sure?" with "This can't be undone.", and Cancel and a red Delete button. The item's name isn't shown.
 

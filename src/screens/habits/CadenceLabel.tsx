@@ -4,7 +4,7 @@ import { CalendarSync } from 'lucide-react-native';
 import { HabitCadence } from '../../types/habit';
 import { colors } from '../../theme';
 
-// Bottom-right cadence label on banners: docs/style-choices/cadence-label.md
+// Bottom-right cadence label on banners: docs/style-choices/habits-section/cadence-label.md
 const LABELS: Record<HabitCadence, string> = {
   Day: 'Daily',
   Week: 'Weekly',

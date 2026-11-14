@@ -2,7 +2,7 @@
 
 Scope: the cadence filter in the Habits header (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in `src/screens/habits/CadenceFilter.tsx` and used by `HabitsHeader`.
+Implemented in `../../../src/screens/habits/CadenceFilter.tsx` and used by `HabitsHeader`.
 
 ## Design
 

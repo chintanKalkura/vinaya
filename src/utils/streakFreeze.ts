@@ -5,7 +5,7 @@ import { NO_FREEZE, daysBetween, getStreak, windowLength } from './cadence';
 import { addDays } from './dates';
 import { calculateStreak } from './streak';
 
-// Streak freeze rules: docs/feature-development/streak-freeze.md
+// Streak freeze rules: docs/feature-development/habits-section/streak-freeze.md
 
 export function clampFreezeInterval(value: number | undefined): number {
   const whole = Number.isFinite(value) ? Math.round(value as number) : 0;

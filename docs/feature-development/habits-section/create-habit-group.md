@@ -6,13 +6,13 @@ Status: ready for planning.
 user should be able to create a habit group and configure it with all possible vlaues.
 
 ## Screens
-- ![11 - Create_ New Habit Group.png](../screens/11%20-%20Create_%20New%20Habit%20Group.png)
-- ![12 - Create_ New Habit Group - Assign Sheet.png](../screens/12%20-%20Create_%20New%20Habit%20Group%20-%20Assign%20Sheet.png)
-- ![13 - Create_ New Habit Group - Required.png](../screens/13%20-%20Create_%20New%20Habit%20Group%20-%20Required.png)
-- ![14 - Create_ New Habit Group - Required Sheet.png](../screens/14%20-%20Create_%20New%20Habit%20Group%20-%20Required%20Sheet.png)
-- ![15 - Create_ New Habit Group - Hours.png](../screens/15%20-%20Create_%20New%20Habit%20Group%20-%20Hours.png)
-- [habits-gaps-and-additional-info.md](../screens/habits-gaps-and-additional-info.md)
-- [navigation](../navigation)
+- ![11 - Create_ New Habit Group.png](../../screens/habits-section/11%20-%20Create_%20New%20Habit%20Group.png)
+- ![12 - Create_ New Habit Group - Assign Sheet.png](../../screens/habits-section/12%20-%20Create_%20New%20Habit%20Group%20-%20Assign%20Sheet.png)
+- ![13 - Create_ New Habit Group - Required.png](../../screens/habits-section/13%20-%20Create_%20New%20Habit%20Group%20-%20Required.png)
+- ![14 - Create_ New Habit Group - Required Sheet.png](../../screens/habits-section/14%20-%20Create_%20New%20Habit%20Group%20-%20Required%20Sheet.png)
+- ![15 - Create_ New Habit Group - Hours.png](../../screens/habits-section/15%20-%20Create_%20New%20Habit%20Group%20-%20Hours.png)
+- [habits-gaps-and-additional-info.md](../../screens/habits-section/habits-gaps-and-additional-info.md)
+- [navigation](../../navigation/habits-section)
 
 ## Scope
 - Create all kinds of habit groups with all possible cadences.
@@ -22,14 +22,14 @@ user should be able to create a habit group and configure it with all possible v
 - The assign habits and required habits sheets are in scope and should work as per the screens.
 
 ## Decisions
-1. **Flow** (`docs/navigation/03-group-creation.md`):
+1. **Flow** (`../../navigation/habits-section/03-group-creation.md`):
    - The Choice sheet's "New Habit Group" opens the New Habit Group form (11, 13, 15). Back returns to the Choice sheet.
    - Create Habit Group saves the group and returns to the Habits view the + was tapped from, list or group.
    - Cadence and group type are pill selections on the same form.
    - Shown with React Native `Modal`s, like the New Habit form (`create-habit.md` decision 2).
 2. **A habit can be in several groups.**
    - `HabitGroup.habitIds` is the only stored membership; `Habit.groupId` is removed.
-   - A lookup map, `groupIdsByHabit` (`src/utils/groupIndex.ts`), is built from the groups whenever they load and is never stored. The list view, syncing and the seed use it.
+   - A lookup map, `groupIdsByHabit` (`../../../src/utils/groupIndex.ts`), is built from the groups whenever they load and is never stored. The list view, syncing and the seed use it.
    - Marking a habit or logging its hours re-checks every group it's in.
    - In list view, a habit's subtext is all its group names, comma-joined in group sort order, on one line, truncated with "…".
    - Assigning a habit to a new group never removes it from its other groups.

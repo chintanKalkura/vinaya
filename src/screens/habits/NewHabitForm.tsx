@@ -30,7 +30,7 @@ import Stepper from './Stepper';
 import StreakFreezeField from './StreakFreezeField';
 import { formStyles } from './formStyles';
 
-// Screens 06-10: docs/feature-development/create-habit.md
+// Screens 06-10: docs/feature-development/habits-section/create-habit.md
 const CADENCES: readonly HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
 const TYPES: readonly HabitType[] = ['Checkmark', 'Hours'];
 
@@ -47,7 +47,7 @@ interface NewHabitFormProps {
   onCreateGroup?: (draft: NewHabitDraft) => void;
   pendingGroup?: PendingGroup; // made with "+ Create Group", saved with the habit
   hideGroupRow?: boolean; // opened from the group form
-  editing?: Habit; // Edit Habit: docs/feature-development/edit-habit-group.md
+  editing?: Habit; // Edit Habit: docs/feature-development/habits-section/edit-habit-group.md
 }
 
 export default function NewHabitForm({

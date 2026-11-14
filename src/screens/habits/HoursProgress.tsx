@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../theme';
 
-// Bar with a short "4/8h" label at its right end: docs/style-choices/hours-progress.md
+// Bar with a short "4/8h" label at its right end: docs/style-choices/habits-section/hours-progress.md
 interface HoursProgressProps {
   total: number;
   target: number;

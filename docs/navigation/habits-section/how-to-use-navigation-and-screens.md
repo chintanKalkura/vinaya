@@ -8,9 +8,9 @@ Scope: the Habits section only. Journal, Level-Up and Profile appear in the bott
 
 | Artifact | Location | Source of truth for |
 |---|---|---|
-| Screen images | `docs/screens/` (PNG exports of the Penpot boards, filenames prefixed with the screen number) | Layout, components, copy, visual styling of each screen |
-| Navigation files | `docs/navigation/01-main-views.md`, `02-habit-creation.md`, `03-group-creation.md` | Which screen leads to which, and what triggers it |
-| Gaps and additional info | `docs/screens/habits-gaps-and-additional-info.md` | Changes decided after the screens and flows were produced, plus known gaps |
+| Screen images | `../../screens/habits-section/` (PNG exports of the Penpot boards, filenames prefixed with the screen number) | Layout, components, copy, visual styling of each screen |
+| Navigation files | `01-main-views.md`, `02-habit-creation.md`, `03-group-creation.md` (in this folder) | Which screen leads to which, and what triggers it |
+| Gaps and additional info | `../../screens/habits-section/habits-gaps-and-additional-info.md` | Changes decided after the screens and flows were produced, plus known gaps |
 | CLAUDE.md | repo root | Project conventions and architecture |
 
 **Precedence:** the gaps document overrides the screen PNGs and the Mermaid files wherever they conflict.
@@ -62,7 +62,7 @@ For any screen or flow, read in this order:
 
 1. The relevant navigation file (section 2 table shows which).
 2. The PNG for each screen involved.
-3. `docs/screens/habits-gaps-and-additional-info.md`. Check sections 1 and 2 for anything that changes or extends the screen.
+3. `../../screens/habits-section/habits-gaps-and-additional-info.md`. Check sections 1 and 2 for anything that changes or extends the screen.
 4. CLAUDE.md for conventions.
 
 Where something is listed as a gap, it has no design yet. Do not invent one; ask.
@@ -71,9 +71,9 @@ Where something is listed as a gap, it has no design yet. Do not invent one; ask
 
 ## 5. Example prompt
 
-> Implement the New Habit screen. Read `docs/navigation/02-habit-creation.md`, the PNGs for screens 06-10, and `docs/screens/docs/screens/habits-gaps-and-additional-info.md`.
+> Implement the New Habit screen. Read `02-habit-creation.md`, the PNGs for screens 06-10, and `../../screens/habits-section/habits-gaps-and-additional-info.md`.
 
-> Implement the group creation flow. Read `docs/navigation/03-group-creation.md`, the PNGs for screens 11-15, and `docs/screens/docs/screens/habits-gaps-and-additional-info.md`.
+> Implement the group creation flow. Read `03-group-creation.md`, the PNGs for screens 11-15, and `../../screens/habits-section/habits-gaps-and-additional-info.md`.
 
 ---
 

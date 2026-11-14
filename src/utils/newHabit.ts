@@ -5,7 +5,7 @@ import { clampCadenceTarget } from './cadence';
 import { clampFreezeInterval } from './streakFreeze';
 import { canTakeHabit } from './newHabitGroup';
 
-// Create Habit rules: docs/feature-development/create-habit.md
+// Create Habit rules: docs/feature-development/habits-section/create-habit.md
 
 export const HABIT_NAME_MAX = 40;
 
@@ -72,7 +72,7 @@ export function buildHabit(
   return habit;
 }
 
-// Edit Habit: docs/feature-development/edit-habit-group.md
+// Edit Habit: docs/feature-development/habits-section/edit-habit-group.md
 export function draftFromHabit(habit: Habit): NewHabitDraft {
   return {
     name: habit.name,

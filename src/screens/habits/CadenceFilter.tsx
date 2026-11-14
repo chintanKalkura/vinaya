@@ -4,7 +4,7 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { HabitCadence } from '../../types/habit';
 import { colors } from '../../theme';
 
-// Design: docs/style-choices/cadence-filter.md
+// Design: docs/style-choices/habits-section/cadence-filter.md
 export type CadenceFilterValue = 'All' | HabitCadence;
 
 const OPTIONS: CadenceFilterValue[] = ['All', 'Day', 'Week', 'Month', 'Year'];

@@ -2,7 +2,7 @@
 
 Scope: the Habits section (group view, screen 01, and list view, screen 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-All rules are implemented in one place: `src/screens/habits/colorRules.ts`. Components read their colors from there and do not decide colors themselves.
+All rules are implemented in one place: `../../../src/screens/habits/colorRules.ts`. Components read their colors from there and do not decide colors themselves.
 
 ## 1. State
 
@@ -17,7 +17,7 @@ A **marked day** is a day the element was marked by hand (Checkmark), met its da
 | Day | today is a marked day | today is a marked day |
 | Week, Month, Year | the marked days in the rolling window reach the target | today is a marked day |
 
-For Day the two states are always the same. The rolling windows and targets are defined in `docs/feature-development/week-month-year-cadence.md`.
+For Day the two states are always the same. The rolling windows and targets are defined in `../../feature-development/habits-section/week-month-year-cadence.md`.
 
 The streak is never used to pick a color. A habit or group with an active streak that is not complete is shown as not complete.
 
