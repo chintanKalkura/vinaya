@@ -38,6 +38,22 @@ beforeEach(async () => {
   mockLastUpdateTime.mockResolvedValue(1000);
 });
 
+describe('seedDevFixturesIfNeeded in a release build', () => {
+  const globals = globalThis as unknown as { __DEV__: boolean };
+
+  afterEach(() => {
+    globals.__DEV__ = true;
+  });
+
+  it('should leave storage empty', async () => {
+    globals.__DEV__ = false;
+
+    await seedDevFixturesIfNeeded();
+
+    expect([await loadHabits(), await loadHabitGroups()]).toEqual([{}, {}]);
+  });
+});
+
 describe('seedDevFixturesIfNeeded install and update', () => {
   it('should reseed over existing data when the app has been updated', async () => {
     await seedDevFixturesIfNeeded();

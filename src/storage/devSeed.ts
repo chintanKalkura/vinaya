@@ -29,9 +29,11 @@ function range(from: number, to: number, step: number): number[] {
 
 const SEEDED_UPDATE_TIME_KEY = 'dev_seed_app_update_time';
 
-// Seeds on a fresh install and reseeds (replacing all habits and groups)
-// whenever the app is updated. Falls back to seeding empty storage only.
+// Debug builds only: seeds on a fresh install and reseeds (replacing all
+// habits and groups) whenever the app is updated. Falls back to seeding empty
+// storage only. Release builds start empty.
 export async function seedDevFixturesIfNeeded(): Promise<void> {
+  if (!__DEV__) return;
   const updateTime = await getAppLastUpdateTime();
   if (updateTime === null) {
     const existing = await loadHabits();
