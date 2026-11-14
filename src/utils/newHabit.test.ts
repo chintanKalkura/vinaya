@@ -3,6 +3,8 @@ import {
   NewHabitDraft,
   buildHabit,
   canJoinGroup,
+  draftFromHabit,
+  isDraftChanged,
   isDraftValid,
 } from './newHabit';
 import { HabitGroup, HabitGroupType } from '../types/habitGroup';
@@ -120,5 +122,56 @@ describe('buildHabit', () => {
     expect(buildHabit(draft({ groupId: 'g' }), 'id', 0, 0)).not.toHaveProperty(
       'groupId',
     );
+  });
+});
+
+describe('draftFromHabit and isDraftChanged', () => {
+  const habit = buildHabit(
+    draft({
+      name: 'Run',
+      cadence: 'Week',
+      target: 3,
+      type: 'Hours',
+      targetHours: 2,
+    }),
+    'run',
+    0,
+    0,
+  );
+
+  it('should load a saved habit into a draft', () => {
+    expect(draftFromHabit(habit)).toEqual({
+      name: 'Run',
+      cadence: 'Week',
+      target: 3,
+      streakFreezeInterval: 7,
+      type: 'Hours',
+      targetHours: 2,
+    });
+  });
+
+  it('should default the target to 1 for a Day habit', () => {
+    expect(draftFromHabit(buildHabit(draft(), 'd', 0, 0)).target).toBe(1);
+  });
+
+  it('should treat the loaded draft and a trimmed name as unchanged', () => {
+    const saved = draftFromHabit(habit);
+
+    expect([
+      isDraftChanged(saved, saved),
+      isDraftChanged(saved, { ...saved, name: ' Run ' }),
+    ]).toEqual([false, false]);
+  });
+
+  it.each([
+    ['name', { name: 'Swim' }],
+    ['cadence', { cadence: 'Month' }],
+    ['target', { target: 4 }],
+    ['streak freeze', { streakFreezeInterval: 3 }],
+    ['daily target hours', { targetHours: 5 }],
+  ] as const)('should notice a changed %s', (_label, change) => {
+    const saved = draftFromHabit(habit);
+
+    expect(isDraftChanged(saved, { ...saved, ...change })).toBe(true);
   });
 });

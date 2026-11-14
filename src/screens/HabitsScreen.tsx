@@ -10,6 +10,7 @@ import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
   createHabit,
   deleteHabit,
+  updateHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -19,6 +20,7 @@ import {
   createHabitGroup,
   deleteHabitGroup,
   getGroupStatus,
+  updateHabitGroup,
 } from '../services/habitGroupService';
 import { getHoursToday, habitMarkers } from '../utils/hours';
 import { getCadenceStatus } from '../utils/cadence';
@@ -60,6 +62,9 @@ export default function HabitsScreen(): React.JSX.Element {
   const [sortFilter, setSortFilter] =
     useState<SortFilterState>(DEFAULT_SORT_FILTER);
   const [sortOpen, setSortOpen] = useState(false);
+  // Edit Habit / Edit Habit Group: docs/feature-development/edit-habit-group.md
+  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   // Habit form → "+ Create Group": the group is saved with the habit
   const [groupForHabit, setGroupForHabit] = useState<PendingHabit | null>(null);
   const [pendingGroupDraft, setPendingGroupDraft] =
@@ -182,6 +187,27 @@ export default function HabitsScreen(): React.JSX.Element {
     [todayKey, reload],
   );
 
+  const handleSaveHabit = useCallback(
+    async (draft: NewHabitDraft) => {
+      if (!editingHabitId) return;
+      await updateHabit(editingHabitId, draft);
+      await reload();
+      setEditingHabitId(null);
+    },
+    [editingHabitId, reload],
+  );
+
+  const handleSaveGroup = useCallback(
+    async (draft: NewHabitGroupDraft) => {
+      if (!editingGroupId) return;
+      await updateHabitGroup(editingGroupId, draft, todayKey);
+      await reload();
+      setEditingGroupId(null);
+      setGroupNewHabitId(undefined);
+    },
+    [editingGroupId, todayKey, reload],
+  );
+
   const handleDeleteHabit = useCallback(
     async (habitId: string) => {
       await deleteHabit(habitId, todayKey);
@@ -279,6 +305,7 @@ export default function HabitsScreen(): React.JSX.Element {
                 todayKey={todayKey}
                 onPress={handleToggleHabit}
                 colorKind="banner"
+                onEdit={setEditingHabitId}
                 onDelete={handleDeleteHabit}
               />
             ))
@@ -293,6 +320,7 @@ export default function HabitsScreen(): React.JSX.Element {
                   habits={groupHabits}
                   todayKey={todayKey}
                   onToggle={handleToggleHabit}
+                  onEdit={setEditingGroupId}
                   onDelete={handleDeleteGroup}
                 />
               );
@@ -365,6 +393,25 @@ export default function HabitsScreen(): React.JSX.Element {
           setCreateStep('choice');
         }}
         onCreate={handleCreateGroup}
+        onCreateHabit={() => setHabitForGroup(true)}
+      />
+      <NewHabitForm
+        visible={editingHabitId !== null}
+        groups={[]}
+        editing={editingHabitId ? habits[editingHabitId] : undefined}
+        onBack={() => setEditingHabitId(null)}
+        onCreate={handleSaveHabit}
+      />
+      <NewHabitGroupForm
+        visible={editingGroupId !== null}
+        habits={assignableHabits}
+        editing={editingGroupId ? groups[editingGroupId] : undefined}
+        newHabitId={groupNewHabitId}
+        onBack={() => {
+          setGroupNewHabitId(undefined);
+          setEditingGroupId(null);
+        }}
+        onCreate={handleSaveGroup}
         onCreateHabit={() => setHabitForGroup(true)}
       />
       <NewHabitForm

@@ -19,6 +19,7 @@ interface GroupCardProps {
   habits: Habit[];
   todayKey: string;
   onToggle: (habitId: string) => void;
+  onEdit?: (groupId: string) => void;
   onDelete?: (groupId: string) => void;
 }
 
@@ -27,6 +28,7 @@ export default function GroupCard({
   habits,
   todayKey,
   onToggle,
+  onEdit,
   onDelete,
 }: GroupCardProps): React.JSX.Element {
   const isRequiredGroup = group.groupType === 'Required';
@@ -99,9 +101,10 @@ export default function GroupCard({
         >
           {status.streak}
         </Text>
-        {onDelete ? (
+        {onEdit && onDelete ? (
           <BannerMenu
             kind="group"
+            onEdit={() => onEdit(group.id)}
             onDelete={() => onDelete(group.id)}
             testID={`group-menu-${group.id}`}
           />

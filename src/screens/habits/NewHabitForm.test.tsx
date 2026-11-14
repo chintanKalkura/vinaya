@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import NewHabitForm from './NewHabitForm';
+import { Habit } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 
 function group(id: string, groupType: HabitGroupType): HabitGroup {
@@ -222,5 +223,85 @@ describe('NewHabitForm', () => {
     fireEvent.press(getByTestId('new-habit-back'));
 
     expect(onBack).toHaveBeenCalled();
+  });
+});
+
+describe('NewHabitForm editing', () => {
+  const habit: Habit = {
+    id: 'run',
+    name: 'Run',
+    cadence: 'Week',
+    type: 'Checkmark',
+    target: 3,
+    streakFreezeInterval: 5,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+  };
+
+  const renderEdit = () => {
+    const onCreate = jest.fn();
+    const utils = render(
+      <NewHabitForm
+        visible
+        groups={GROUPS}
+        editing={habit}
+        onBack={jest.fn()}
+        onCreate={onCreate}
+      />,
+    );
+    return { ...utils, onCreate };
+  };
+  const saveDisabled = (utils: ReturnType<typeof renderEdit>) =>
+    utils.getByTestId('new-habit-create').props.accessibilityState.disabled;
+
+  it('should show Edit Habit with the saved values and a Save button', () => {
+    const utils = renderEdit();
+
+    expect([
+      !!utils.getByText('Edit Habit'),
+      !!utils.getByText('Save'),
+      utils.getByTestId('new-habit-name').props.value,
+      utils.getByTestId('new-habit-cadence-Week').props.accessibilityState
+        .selected,
+      utils.getByTestId('new-habit-target-input').props.value,
+      utils.getByTestId('new-habit-freeze').props.value,
+    ]).toEqual([true, true, 'Run', true, '3', '5']);
+  });
+
+  it('should lock the type and hide the group row', () => {
+    const utils = renderEdit();
+
+    expect([
+      utils.getByTestId('new-habit-type-Hours').props.accessibilityState
+        .disabled,
+      utils.queryByText('HABIT GROUP'),
+    ]).toEqual([true, null]);
+  });
+
+  it('should enable Save only while something has changed', () => {
+    const utils = renderEdit();
+    const before = saveDisabled(utils);
+    fireEvent.press(utils.getByTestId('new-habit-target-increment'));
+    const changed = saveDisabled(utils);
+    fireEvent.press(utils.getByTestId('new-habit-target-decrement'));
+
+    expect([before, changed, saveDisabled(utils)]).toEqual([true, false, true]);
+  });
+
+  it('should save the edited draft', () => {
+    const utils = renderEdit();
+    fireEvent.changeText(utils.getByTestId('new-habit-name'), 'Morning run');
+
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    expect(utils.onCreate.mock.calls[0][0]).toMatchObject({
+      name: 'Morning run',
+      cadence: 'Week',
+      target: 3,
+      streakFreezeInterval: 5,
+    });
   });
 });

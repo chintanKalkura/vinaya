@@ -552,6 +552,7 @@ describe('HabitListRow menu', () => {
         todayKey={TODAY}
         onPress={jest.fn()}
         colorKind="banner"
+        onEdit={jest.fn()}
         onDelete={jest.fn()}
       />,
     );
@@ -573,6 +574,7 @@ describe('HabitListRow menu', () => {
         todayKey={TODAY}
         onPress={jest.fn()}
         colorKind="pill"
+        onEdit={jest.fn()}
         onDelete={jest.fn()}
       />,
     );
@@ -588,6 +590,7 @@ describe('HabitListRow menu', () => {
         todayKey={TODAY}
         onPress={jest.fn()}
         colorKind="banner"
+        onEdit={jest.fn()}
         onDelete={onDelete}
       />,
     );

@@ -150,7 +150,7 @@ Screens 01 and 04 are superseded on three points:
   - Show: "Marked" is renamed Completed (items complete today). Active is always selected. Paused and Archived are greyed out until those states exist.
   - Choices apply on Apply and last for the session.
 - **Group view** sorts group cards; habits inside a card keep their order.
-- **Banner menu.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a dropdown with Edit (disabled for now) and Delete; Delete asks for confirmation. See `docs/style-choices/banner-menu.md`.
+- **Banner menu.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a dropdown with Edit and Delete; Delete asks for confirmation. See `docs/style-choices/banner-menu.md`.
 - Full rules: `docs/feature-development/sort-filter-delete-habit.md`.
 
 ### 1.12 Header title and flush bottom menu (screens 01 and 04)
@@ -158,6 +158,14 @@ Screens 01 and 04 are superseded on three points:
 - **Title.** The header starts with "Vinaya - Habits" in the phone's serif italic, white. The cadence filter moves right, just left of the group/list toggle. Screens 01 and 04 have no title and show the filter at the left.
 - **Bottom menu.** The menu bar is flush with the bottom edge, full width, in espresso brown (`#1e1510`) with a darker top border, and padded by the bottom safe-area inset. Screens 01 and 04 draw it as a floating blue-grey rounded card.
 - Full design: `docs/style-choices/header-and-bottom-menu.md`.
+
+### 1.13 Edit Habit and Edit Habit Group (no screens)
+
+- Edit uses the create forms (screens 06-15) with the values loaded, the title "Edit Habit" or "Edit Habit Group", and a Save button that stays disabled until something changes.
+- A habit's type and a group's type can't be changed; the other options are disabled.
+- Edit Habit has no Habit Group row; memberships are edited from the group.
+- Back returns to the Habits screen.
+- Full rules: `docs/feature-development/edit-habit-group.md`.
 
 ---
 

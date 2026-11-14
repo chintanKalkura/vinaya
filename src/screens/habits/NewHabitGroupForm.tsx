@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Star } from 'lucide-react-native';
 import { Habit, HabitCadence, HabitType } from '../../types/habit';
-import { HabitGroupType } from '../../types/habitGroup';
+import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
 import { colors } from '../../theme';
 import { clampCadenceTarget } from '../../utils/cadence';
@@ -15,6 +15,8 @@ import {
   assignHabits,
   canTakeHabit,
   changeGroupType,
+  draftFromGroup,
+  isGroupDraftChanged,
   isGroupDraftValid,
 } from '../../utils/newHabitGroup';
 import CadenceTargetField from './CadenceTargetField';
@@ -50,9 +52,14 @@ interface NewHabitGroupFormProps {
   allowCreateHabit?: boolean;
   newHabitId?: string; // made with Create Habit; assigned when it returns
   pendingHabit?: PendingHabit; // the habit whose "+ Create Group" opened this
+  editing?: HabitGroup; // Edit Habit Group: docs/feature-development/edit-habit-group.md
 }
 
-function initialDraft(pendingHabit?: PendingHabit): NewHabitGroupDraft {
+function initialDraft(
+  pendingHabit?: PendingHabit,
+  editing?: HabitGroup,
+): NewHabitGroupDraft {
+  if (editing) return draftFromGroup(editing);
   if (!pendingHabit) return DEFAULT_GROUP_DRAFT;
   return {
     ...DEFAULT_GROUP_DRAFT,
@@ -70,9 +77,10 @@ export default function NewHabitGroupForm({
   allowCreateHabit = true,
   newHabitId,
   pendingHabit,
+  editing,
 }: NewHabitGroupFormProps): React.JSX.Element {
   const [draft, setDraft] = useState<NewHabitGroupDraft>(
-    initialDraft(pendingHabit),
+    initialDraft(pendingHabit, editing),
   );
   const [sheet, setSheet] = useState<OpenSheet>('none');
   const handledHabitId = useRef<string | undefined>(undefined);
@@ -80,7 +88,7 @@ export default function NewHabitGroupForm({
   // Every opening starts from a fresh draft
   useEffect(() => {
     if (!visible) return;
-    setDraft(initialDraft(pendingHabit));
+    setDraft(initialDraft(pendingHabit, editing));
     setSheet('none');
     // Only reset when the form opens
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -124,7 +132,10 @@ export default function NewHabitGroupForm({
 
   const isRequired = draft.groupType === 'Required';
   const isHours = draft.groupType === 'Hours';
-  const disabledTypes = pendingHabit
+  // Editing locks the type; a pending habit rules out types it can't join
+  const disabledTypes = editing
+    ? GROUP_TYPES.filter(type => type !== editing.groupType)
+    : pendingHabit
     ? GROUP_TYPES.filter(type => !canTakeHabit(type, pendingHabit.type))
     : [];
 
@@ -142,12 +153,14 @@ export default function NewHabitGroupForm({
     id,
     name: nameOf(id),
   }));
-  const valid = isGroupDraftValid(draft);
+  const valid =
+    isGroupDraftValid(draft) &&
+    (!editing || isGroupDraftChanged(draftFromGroup(editing), draft));
 
   return (
     <FormScreen
       visible={visible}
-      title="New Habit Group"
+      title={editing ? 'Edit Habit Group' : 'New Habit Group'}
       testID="new-group-form"
       backTestID="new-group-back"
       onBack={onBack}
@@ -289,7 +302,9 @@ export default function NewHabitGroupForm({
         onPress={() => onCreate(draft)}
         style={[formStyles.createButton, !valid && formStyles.createDisabled]}
       >
-        <Text style={formStyles.createLabel}>Create Habit Group</Text>
+        <Text style={formStyles.createLabel}>
+          {editing ? 'Save' : 'Create Habit Group'}
+        </Text>
       </Pressable>
       {draft.habitIds.length === 0 ? (
         <Text style={styles.helper}>

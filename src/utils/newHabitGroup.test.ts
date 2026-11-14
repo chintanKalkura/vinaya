@@ -6,6 +6,8 @@ import {
   buildHabitGroup,
   canTakeHabit,
   changeGroupType,
+  draftFromGroup,
+  isGroupDraftChanged,
   isGroupDraftValid,
 } from './newHabitGroup';
 import { HabitType } from '../types/habit';
@@ -182,5 +184,55 @@ describe('buildHabitGroup', () => {
       buildHabitGroup(draft({ streakFreezeInterval: 300 }), 'id', 0, 0)
         .streakFreezeInterval,
     ).toBe(100);
+  });
+});
+
+describe('draftFromGroup and isGroupDraftChanged', () => {
+  const group = buildHabitGroup(
+    draft({
+      groupType: 'Required',
+      habitIds: ['run', 'read'],
+      requiredHabitIds: ['run'],
+    }),
+    'g',
+    0,
+    0,
+  );
+
+  it('should load a saved group into a draft', () => {
+    expect(draftFromGroup(group)).toEqual({
+      name: 'Morning Routine',
+      cadence: 'Day',
+      target: 1,
+      streakFreezeInterval: 7,
+      groupType: 'Required',
+      habitIds: ['run', 'read'],
+      requiredHabitIds: ['run'],
+      targetHours: 1,
+    });
+  });
+
+  it('should treat a reordered habit list as unchanged', () => {
+    const saved = draftFromGroup(group);
+
+    expect(
+      isGroupDraftChanged(saved, { ...saved, habitIds: ['read', 'run'] }),
+    ).toBe(false);
+  });
+
+  it.each([
+    ['name', { name: 'Evenings' }],
+    ['habits', { habitIds: ['run'] }],
+    ['required habits', { requiredHabitIds: ['read'] }],
+    ['streak freeze', { streakFreezeInterval: 3 }],
+  ] as const)('should notice changed %s', (_label, change) => {
+    const saved = draftFromGroup(group);
+
+    expect(
+      isGroupDraftChanged(saved, {
+        ...saved,
+        ...(change as Partial<NewHabitGroupDraft>),
+      }),
+    ).toBe(true);
   });
 });

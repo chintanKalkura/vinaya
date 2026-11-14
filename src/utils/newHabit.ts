@@ -71,3 +71,30 @@ export function buildHabit(
   }
   return habit;
 }
+
+// Edit Habit: docs/feature-development/edit-habit-group.md
+export function draftFromHabit(habit: Habit): NewHabitDraft {
+  return {
+    name: habit.name,
+    cadence: habit.cadence,
+    target: habit.target ?? 1,
+    streakFreezeInterval: habit.streakFreezeInterval,
+    type: habit.type,
+    targetHours: habit.targetHours ?? 1,
+  };
+}
+
+// Only the fields that apply to the draft's cadence and type count
+export function isDraftChanged(
+  saved: NewHabitDraft,
+  draft: NewHabitDraft,
+): boolean {
+  return (
+    saved.name.trim() !== draft.name.trim() ||
+    saved.cadence !== draft.cadence ||
+    (draft.cadence !== 'Day' && saved.target !== draft.target) ||
+    saved.streakFreezeInterval !== draft.streakFreezeInterval ||
+    saved.type !== draft.type ||
+    (draft.type === 'Hours' && saved.targetHours !== draft.targetHours)
+  );
+}
