@@ -36,7 +36,7 @@ user should be able to delete and sort habits and groups.
    - **Paused** and **Archived** are greyed out and can't be tapped.
    - Completed is off by default.
 4. **Sheet.** Choices apply on Apply; the backdrop or back discards them. They last for the session and aren't stored.
-5. **Delete menu.** A ⋮ right of the streak number on banners only: habit rows in list view, group cards in group view. It opens a menu ("Delete habit" or "Delete group", Cancel), then a confirm step ("Are you sure? This can't be undone.", Cancel, Delete). See `docs/style-choices/banner-menu.md`.
+5. **Delete menu.** A ⋮ right of the streak number on banners only: habit rows in list view, group cards in group view. It opens a menu ("Delete habit" or "Delete group", Cancel), then a confirm step ("Are you sure? This can't be undone.", Cancel, Delete). See `docs/style-choices/banner-menu.md`. Later changed to a dropdown below the ⋮ with Edit (disabled until editing is built) and Delete; the confirm step is unchanged.
 6. **Deleting a habit** removes it and every assignment: its id leaves each group's `habitIds` and `requiredHabitIds`, and those groups are re-checked for today. Groups left with no habits, or Required groups left with no required habits, stay as they are and can't complete until habits are added.
 7. **Deleting a group** removes only the group; its habits are untouched.
 

@@ -150,7 +150,7 @@ Screens 01 and 04 are superseded on three points:
   - Show: "Marked" is renamed Completed (items complete today). Active is always selected. Paused and Archived are greyed out until those states exist.
   - Choices apply on Apply and last for the session.
 - **Group view** sorts group cards; habits inside a card keep their order.
-- **Delete.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a menu, then a confirm step. See `docs/style-choices/banner-menu.md`.
+- **Banner menu.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a dropdown with Edit (disabled for now) and Delete; Delete asks for confirmation. See `docs/style-choices/banner-menu.md`.
 - Full rules: `docs/feature-development/sort-filter-delete-habit.md`.
 
 ### 1.12 Header title and flush bottom menu (screens 01 and 04)
