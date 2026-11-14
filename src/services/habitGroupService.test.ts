@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  InvalidHabitGroupError,
   applyStreakFreezes,
+  createHabitGroup,
   getGroupStatus,
   syncGroupCompletion,
 } from './habitGroupService';
@@ -15,6 +17,10 @@ import { Habit } from '../types/habit';
 import { HabitGroup, HabitGroupType } from '../types/habitGroup';
 import { LogEntry } from '../types/log';
 import { addDays } from '../utils/dates';
+import {
+  DEFAULT_GROUP_DRAFT,
+  NewHabitGroupDraft,
+} from '../utils/newHabitGroup';
 
 const TODAY = '2024-06-15';
 
@@ -29,7 +35,6 @@ function makeHabit(id: string, overrides: Partial<Habit> = {}): Habit {
     cadence: 'Day',
     type: 'Checkmark',
     streakFreezeInterval: 7,
-    groupId: 'g',
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
@@ -225,10 +230,7 @@ describe('marking habits syncs the group log', () => {
   });
 
   it('should not touch groups for a habit with no group', async () => {
-    await seed(
-      [makeHabit('a', { groupId: undefined })],
-      makeGroup('Any', { habitIds: [] }),
-    );
+    await seed([makeHabit('a')], makeGroup('Any', { habitIds: [] }));
 
     await markHabitDone('a', TODAY);
 
@@ -372,5 +374,87 @@ describe('applyStreakFreezes', () => {
       habit,
       group,
     ]);
+  });
+});
+
+describe('a habit in several groups', () => {
+  it('re-checks every group the habit is in when it is marked', async () => {
+    await saveHabits({ a: makeHabit('a') });
+    await saveHabitGroups({
+      g: makeGroup('Any', { id: 'g', habitIds: ['a'] }),
+      h: makeGroup('All', { id: 'h', habitIds: ['a'] }),
+    });
+
+    await markHabitDone('a', TODAY);
+
+    const groups = await loadHabitGroups();
+    expect([groups.g.history, groups.h.history]).toEqual([
+      [marker(TODAY)],
+      [marker(TODAY)],
+    ]);
+  });
+});
+
+describe('createHabitGroup', () => {
+  const draft = (
+    overrides: Partial<NewHabitGroupDraft> = {},
+  ): NewHabitGroupDraft => ({
+    ...DEFAULT_GROUP_DRAFT,
+    name: 'Morning Routine',
+    habitIds: ['a', 'b'],
+    ...overrides,
+  });
+
+  it('saves the group last in sort order', async () => {
+    await seed(
+      [makeHabit('a'), makeHabit('b')],
+      makeGroup('Any', { sortOrder: 3 }),
+    );
+
+    const created = await createHabitGroup(draft(), TODAY);
+
+    expect([
+      created.sortOrder,
+      (await loadHabitGroups())[created.id].habitIds,
+    ]).toEqual([4, ['a', 'b']]);
+  });
+
+  it('counts today when its members already complete it', async () => {
+    await seed(
+      [
+        makeHabit('a', {
+          recentLog: [marker(TODAY)],
+          history: [marker(TODAY)],
+        }),
+        makeHabit('b'),
+      ],
+      makeGroup('Any', { habitIds: [] }),
+    );
+
+    const created = await createHabitGroup(draft(), TODAY);
+
+    expect(created.history).toEqual([marker(TODAY)]);
+  });
+
+  it('keeps the habits in their other groups', async () => {
+    await seed([makeHabit('a'), makeHabit('b')], makeGroup('Any'));
+
+    await createHabitGroup(draft(), TODAY);
+
+    expect((await loadHabitGroups()).g.habitIds).toEqual(['a', 'b']);
+  });
+
+  it('rejects a draft with no habits', async () => {
+    await expect(
+      createHabitGroup(draft({ habitIds: [] }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+  });
+
+  it('rejects a habit the group type cannot take', async () => {
+    await seed([makeHabit('a'), makeHabit('b')], makeGroup('Any'));
+
+    await expect(
+      createHabitGroup(draft({ groupType: 'Hours' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
   });
 });

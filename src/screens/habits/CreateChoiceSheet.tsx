@@ -8,12 +8,14 @@ import { colors } from '../../theme';
 interface CreateChoiceSheetProps {
   visible: boolean;
   onNewHabit: () => void;
+  onNewGroup: () => void;
   onClose: () => void;
 }
 
 export default function CreateChoiceSheet({
   visible,
   onNewHabit,
+  onNewGroup,
   onClose,
 }: CreateChoiceSheetProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
@@ -26,12 +28,11 @@ export default function CreateChoiceSheet({
       onPress: onNewHabit,
     },
     {
-      // Group creation is not built yet; tapping does nothing
       key: 'group',
       title: 'New Habit Group',
       subtitle: 'Combine habits under one goal',
       Icon: LayoutGrid,
-      onPress: () => {},
+      onPress: onNewGroup,
     },
   ];
 

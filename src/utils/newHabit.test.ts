@@ -116,7 +116,9 @@ describe('buildHabit', () => {
     ).toBe(100);
   });
 
-  it('should keep the group id', () => {
-    expect(buildHabit(draft({ groupId: 'g' }), 'id', 0, 0).groupId).toBe('g');
+  it('should not store the group on the habit', () => {
+    expect(buildHabit(draft({ groupId: 'g' }), 'id', 0, 0)).not.toHaveProperty(
+      'groupId',
+    );
   });
 });

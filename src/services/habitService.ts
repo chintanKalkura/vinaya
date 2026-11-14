@@ -5,6 +5,7 @@ import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
 import { clampHours, habitMarkers } from '../utils/hours';
 import { withEarnedFreezes } from '../utils/streakFreeze';
+import { groupIdsByHabit } from '../utils/groupIndex';
 import {
   loadHabitGroups,
   loadHabits,
@@ -76,11 +77,15 @@ function loadMarkableHabit(
   return habit;
 }
 
-// Earns any freeze the new streak reached, then updates the habit's group
+// Earns any freeze the new streak reached, then re-checks every group the
+// habit is in
 async function saveAndSync(habit: Habit, todayKey: string): Promise<Habit> {
   const updated = withEarnedFreezes(habit, habitMarkers(habit), todayKey);
   await saveHabit(updated);
-  if (updated.groupId) await syncGroupCompletion(updated.groupId, todayKey);
+  const groupIds = groupIdsByHabit(await loadHabitGroups())[updated.id] ?? [];
+  for (const groupId of groupIds) {
+    await syncGroupCompletion(groupId, todayKey);
+  }
   return updated;
 }
 

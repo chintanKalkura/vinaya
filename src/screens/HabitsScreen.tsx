@@ -12,8 +12,12 @@ import {
   setHabitHours,
   unmarkHabitDone,
 } from '../services/habitService';
-import { applyStreakFreezes } from '../services/habitGroupService';
+import {
+  applyStreakFreezes,
+  createHabitGroup,
+} from '../services/habitGroupService';
 import { getHoursToday } from '../utils/hours';
+import { groupIdsByHabit } from '../utils/groupIndex';
 import GroupCard from './habits/GroupCard';
 import HoursEntryModal from './habits/HoursEntryModal';
 import HabitListRow from './habits/HabitListRow';
@@ -21,11 +25,13 @@ import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
 import { CadenceFilterValue } from './habits/CadenceFilter';
 import BottomMenu from './habits/BottomMenu';
 import CreateChoiceSheet from './habits/CreateChoiceSheet';
-import NewHabitForm from './habits/NewHabitForm';
-import { NewHabitDraft } from '../utils/newHabit';
+import NewHabitForm, { PendingGroup } from './habits/NewHabitForm';
+import NewHabitGroupForm, { PendingHabit } from './habits/NewHabitGroupForm';
+import { NewHabitDraft, PENDING_GROUP_ID } from '../utils/newHabit';
+import { NewHabitGroupDraft, PENDING_HABIT_ID } from '../utils/newHabitGroup';
 
-// The + flow from docs/navigation/02-habit-creation.md
-type CreateStep = 'none' | 'choice' | 'habit';
+// The + flow from docs/navigation/02-habit-creation.md and 03-group-creation.md
+type CreateStep = 'none' | 'choice' | 'habit' | 'group';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -38,6 +44,15 @@ export default function HabitsScreen(): React.JSX.Element {
   const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const [createStep, setCreateStep] = useState<CreateStep>('none');
+  // Habit form → "+ Create Group": the group is saved with the habit
+  const [groupForHabit, setGroupForHabit] = useState<PendingHabit | null>(null);
+  const [pendingGroupDraft, setPendingGroupDraft] =
+    useState<NewHabitGroupDraft | null>(null);
+  // Group form → Create Habit: the habit is saved, then assigned
+  const [habitForGroup, setHabitForGroup] = useState(false);
+  const [groupNewHabitId, setGroupNewHabitId] = useState<string | undefined>(
+    undefined,
+  );
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   useEffect(() => {
@@ -87,16 +102,77 @@ export default function HabitsScreen(): React.JSX.Element {
     [hoursHabitId, todayKey],
   );
 
-  // Returns to the view the + was tapped from; viewMode is left unchanged
+  const reload = useCallback(async () => {
+    const [h, g] = await Promise.all([loadHabits(), loadHabitGroups()]);
+    setHabits(h);
+    setGroups(g);
+  }, []);
+
+  const closeCreate = useCallback(() => {
+    setCreateStep('none');
+    setPendingGroupDraft(null);
+    setGroupNewHabitId(undefined);
+  }, []);
+
+  // Returns to the view the + was tapped from; viewMode is left unchanged.
+  // A group made with "+ Create Group" is saved after the habit, with it.
   const handleCreateHabit = useCallback(
     async (draft: NewHabitDraft) => {
-      await createHabit(draft, todayKey);
-      const [h, g] = await Promise.all([loadHabits(), loadHabitGroups()]);
-      setHabits(h);
-      setGroups(g);
-      setCreateStep('none');
+      if (draft.groupId === PENDING_GROUP_ID && pendingGroupDraft) {
+        const habit = await createHabit(
+          { ...draft, groupId: undefined },
+          todayKey,
+        );
+        const withHabit = (ids: string[]) =>
+          ids.map(id => (id === PENDING_HABIT_ID ? habit.id : id));
+        await createHabitGroup(
+          {
+            ...pendingGroupDraft,
+            habitIds: withHabit(pendingGroupDraft.habitIds),
+            requiredHabitIds: withHabit(pendingGroupDraft.requiredHabitIds),
+          },
+          todayKey,
+        );
+      } else {
+        await createHabit(draft, todayKey);
+      }
+      await reload();
+      closeCreate();
     },
-    [todayKey],
+    [pendingGroupDraft, todayKey, reload, closeCreate],
+  );
+
+  const handleCreateGroup = useCallback(
+    async (draft: NewHabitGroupDraft) => {
+      await createHabitGroup(draft, todayKey);
+      await reload();
+      closeCreate();
+    },
+    [todayKey, reload, closeCreate],
+  );
+
+  const handleCreateHabitForGroup = useCallback(
+    async (draft: NewHabitDraft) => {
+      const habit = await createHabit(
+        { ...draft, groupId: undefined },
+        todayKey,
+      );
+      await reload();
+      setGroupNewHabitId(habit.id);
+      setHabitForGroup(false);
+    },
+    [todayKey, reload],
+  );
+
+  const pendingGroup = useMemo<PendingGroup | undefined>(
+    () =>
+      pendingGroupDraft
+        ? {
+            name: pendingGroupDraft.name.trim(),
+            groupType: pendingGroupDraft.groupType,
+          }
+        : undefined,
+    [pendingGroupDraft],
   );
 
   const hoursHabit = hoursHabitId ? habits[hoursHabitId] : undefined;
@@ -105,9 +181,20 @@ export default function HabitsScreen(): React.JSX.Element {
   const sortedGroups = bySortOrder(Object.values(groups)).filter(matchesFilter);
   const allHabits = bySortOrder(Object.values(habits));
   const listHabits = allHabits.filter(matchesFilter);
+  // A habit may be in several groups: its list subtext names them all
+  const groupNamesByHabit = useMemo(() => {
+    const index = groupIdsByHabit(groups);
+    return Object.fromEntries(
+      Object.entries(index).map(([habitId, ids]) => [
+        habitId,
+        ids.map(id => groups[id].name).join(', '),
+      ]),
+    );
+  }, [groups]);
   const joinableGroups = bySortOrder(Object.values(groups)).filter(
     group => group.status === 'active',
   );
+  const assignableHabits = allHabits.filter(habit => habit.status === 'active');
 
   return (
     <View style={styles.screen}>
@@ -124,16 +211,16 @@ export default function HabitsScreen(): React.JSX.Element {
               <HabitListRow
                 key={habit.id}
                 habit={habit}
-                groupName={
-                  habit.groupId ? groups[habit.groupId]?.name : undefined
-                }
+                groupName={groupNamesByHabit[habit.id]}
                 todayKey={todayKey}
                 onPress={handleToggleHabit}
                 colorKind="banner"
               />
             ))
           : sortedGroups.map(group => {
-              const groupHabits = allHabits.filter(h => h.groupId === group.id);
+              const groupHabits = allHabits.filter(h =>
+                group.habitIds.includes(h.id),
+              );
               return (
                 <GroupCard
                   key={group.id}
@@ -164,13 +251,50 @@ export default function HabitsScreen(): React.JSX.Element {
       <CreateChoiceSheet
         visible={createStep === 'choice'}
         onNewHabit={() => setCreateStep('habit')}
-        onClose={() => setCreateStep('none')}
+        onNewGroup={() => setCreateStep('group')}
+        onClose={closeCreate}
       />
       <NewHabitForm
         visible={createStep === 'habit'}
         groups={joinableGroups}
-        onBack={() => setCreateStep('choice')}
+        onBack={() => {
+          setPendingGroupDraft(null);
+          setCreateStep('choice');
+        }}
         onCreate={handleCreateHabit}
+        onCreateGroup={draft =>
+          setGroupForHabit({ name: draft.name, type: draft.type })
+        }
+        pendingGroup={pendingGroup}
+      />
+      <NewHabitGroupForm
+        visible={groupForHabit !== null}
+        habits={assignableHabits}
+        pendingHabit={groupForHabit ?? undefined}
+        allowCreateHabit={false}
+        onBack={() => setGroupForHabit(null)}
+        onCreate={draft => {
+          setPendingGroupDraft(draft);
+          setGroupForHabit(null);
+        }}
+      />
+      <NewHabitGroupForm
+        visible={createStep === 'group'}
+        habits={assignableHabits}
+        newHabitId={groupNewHabitId}
+        onBack={() => {
+          setGroupNewHabitId(undefined);
+          setCreateStep('choice');
+        }}
+        onCreate={handleCreateGroup}
+        onCreateHabit={() => setHabitForGroup(true)}
+      />
+      <NewHabitForm
+        visible={habitForGroup}
+        groups={[]}
+        hideGroupRow
+        onBack={() => setHabitForGroup(false)}
+        onCreate={handleCreateHabitForGroup}
       />
     </View>
   );

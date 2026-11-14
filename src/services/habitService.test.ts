@@ -270,7 +270,7 @@ describe('setHabitHours', () => {
   });
 
   it('should sync the group log when the group target is reached and lost', async () => {
-    await saveHabits({ 'habit-1': hoursHabit({ groupId: 'g' }) });
+    await saveHabits({ 'habit-1': hoursHabit() });
     await saveHabitGroups({
       g: {
         id: 'g',
@@ -419,7 +419,6 @@ describe('createHabit', () => {
     const today = { date: TODAY, kind: 'marker' as const, value: 1 };
     await saveHabits({
       'habit-1': makeHabit({
-        groupId: 'g',
         recentLog: [today],
         history: [today],
       }),

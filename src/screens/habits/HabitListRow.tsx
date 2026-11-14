@@ -56,7 +56,9 @@ export default function HabitListRow({
     </>
   ) : null;
   const groupLabel = groupName ? (
-    <Text style={styles.groupName}>{groupName}</Text>
+    <Text style={styles.groupName} numberOfLines={1}>
+      {groupName}
+    </Text>
   ) : null;
 
   if (hours) {

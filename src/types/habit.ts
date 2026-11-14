@@ -21,7 +21,6 @@ export interface Habit {
   targetHours?: number; // Hours type, any cadence — daily target, max hoursTargetMax
   streakFreezeInterval: number; // the "N" in "1 skip per N streaks", max streakFreezeIntervalMax
   streakFreeze?: StreakFreezeState; // missing reads as nothing earned or used
-  groupId?: string; // FK -> HabitGroup.id, kept in sync by the service layer
   status: HabitStatus;
   sortOrder: number;
   createdAt: number;

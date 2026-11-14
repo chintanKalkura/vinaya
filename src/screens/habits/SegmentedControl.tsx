@@ -8,6 +8,7 @@ interface SegmentedControlProps<T extends string> {
   value: T;
   onChange: (value: T) => void;
   testID: string;
+  disabledOptions?: readonly T[];
 }
 
 export default function SegmentedControl<T extends string>({
@@ -15,19 +16,26 @@ export default function SegmentedControl<T extends string>({
   value,
   onChange,
   testID,
+  disabledOptions = [],
 }: SegmentedControlProps<T>): React.JSX.Element {
   return (
     <View testID={testID} style={styles.row}>
       {options.map(option => {
         const selected = option === value;
+        const disabled = disabledOptions.includes(option);
         return (
           <Pressable
             key={option}
             testID={`${testID}-${option}`}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled }}
+            disabled={disabled}
             onPress={() => onChange(option)}
-            style={[styles.segment, selected && styles.selected]}
+            style={[
+              styles.segment,
+              selected && styles.selected,
+              disabled && styles.disabled,
+            ]}
           >
             <Text style={[styles.label, selected && styles.selectedLabel]}>
               {option}
@@ -54,6 +62,9 @@ const styles = StyleSheet.create({
   },
   selected: {
     backgroundColor: colors.v2Orange,
+  },
+  disabled: {
+    opacity: 0.35,
   },
   label: {
     color: colors.v2GreyText,
