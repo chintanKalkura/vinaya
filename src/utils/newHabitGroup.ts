@@ -121,3 +121,39 @@ export function buildHabitGroup(
   }
   return group;
 }
+
+// Edit Habit Group: docs/feature-development/edit-habit-group.md
+export function draftFromGroup(group: HabitGroup): NewHabitGroupDraft {
+  return {
+    name: group.name,
+    cadence: group.cadence,
+    target: group.target ?? 1,
+    streakFreezeInterval: group.streakFreezeInterval,
+    groupType: group.groupType,
+    habitIds: [...group.habitIds],
+    requiredHabitIds: [...(group.requiredHabitIds ?? [])],
+    targetHours: group.targetHours ?? 1,
+  };
+}
+
+function sameSet(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every(id => b.includes(id));
+}
+
+// Only the fields that apply to the draft's cadence and type count
+export function isGroupDraftChanged(
+  saved: NewHabitGroupDraft,
+  draft: NewHabitGroupDraft,
+): boolean {
+  return (
+    saved.name.trim() !== draft.name.trim() ||
+    saved.cadence !== draft.cadence ||
+    (draft.cadence !== 'Day' && saved.target !== draft.target) ||
+    saved.streakFreezeInterval !== draft.streakFreezeInterval ||
+    saved.groupType !== draft.groupType ||
+    !sameSet(saved.habitIds, draft.habitIds) ||
+    (draft.groupType === 'Required' &&
+      !sameSet(saved.requiredHabitIds, draft.requiredHabitIds)) ||
+    (draft.groupType === 'Hours' && saved.targetHours !== draft.targetHours)
+  );
+}
