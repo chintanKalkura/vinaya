@@ -1,7 +1,7 @@
 import { StyleSheet, ViewStyle } from 'react-native';
 import { colors } from '../../theme';
 
-// Single source of the Habits coloring rules: docs/style-choices/coloring-rules.md
+// Single source of the Habits coloring rules: docs/style-choices/habits-section/coloring-rules.md
 export type ColorKind = 'pill' | 'banner';
 
 export interface ColorScheme {
@@ -11,7 +11,7 @@ export interface ColorScheme {
   iconFilled: boolean;
   iconFrozen: boolean; // the Snowflake replaces the check, selector or chart icon
   barColor: string;
-  frozen: boolean; // frozen look: docs/style-choices/streak-freeze.md
+  frozen: boolean; // frozen look: docs/style-choices/habits-section/streak-freeze.md
   container: ViewStyle | null;
 }
 

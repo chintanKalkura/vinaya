@@ -2,7 +2,7 @@
 
 Scope: how hours logged against a daily target are shown in the Habits section (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in one place: `src/screens/habits/HoursProgress.tsx`. Every Hours habit row and every Hours group card uses this component.
+Implemented in one place: `../../../src/screens/habits/HoursProgress.tsx`. Every Hours habit row and every Hours group card uses this component.
 
 ## Design
 

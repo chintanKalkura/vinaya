@@ -2,7 +2,7 @@
 
 Scope: how a habit or group looks on the day a streak freeze is used, in the Habits section (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-The colors are implemented in `src/screens/habits/colorRules.ts` (see `coloring-rules.md`). The banner text is `src/screens/habits/FreezeLabel.tsx`. The freeze rules themselves are in `docs/feature-development/streak-freeze.md`.
+The colors are implemented in `../../../src/screens/habits/colorRules.ts` (see `coloring-rules.md`). The banner text is `src/screens/habits/FreezeLabel.tsx`. The freeze rules themselves are in `../../feature-development/habits-section/streak-freeze.md`.
 
 ## When it shows
 

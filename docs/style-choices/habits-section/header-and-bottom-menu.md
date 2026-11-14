@@ -2,7 +2,7 @@
 
 Scope: the Habits screen's header row and bottom menu bar (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in `src/screens/habits/HabitsHeader.tsx`, `src/screens/habits/BottomMenu.tsx` and `src/screens/HabitsScreen.tsx`.
+Implemented in `../../../src/screens/habits/HabitsHeader.tsx`, `src/screens/habits/BottomMenu.tsx` and `src/screens/HabitsScreen.tsx`.
 
 ## Header
 

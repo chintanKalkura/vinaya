@@ -2,7 +2,7 @@
 
 Scope: how a habit's or group's cadence is shown in the Habits section (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in `src/screens/habits/CadenceLabel.tsx`, used by `HabitListRow` (banners only) and `GroupCard`.
+Implemented in `../../../src/screens/habits/CadenceLabel.tsx`, used by `HabitListRow` (banners only) and `GroupCard`.
 
 ## Design
 

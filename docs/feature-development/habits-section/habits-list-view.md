@@ -3,14 +3,14 @@
 Status: ready for planning.
 
 ## Goal
-The List View screen follows the design as shown in ![04 - Habits - List View.png](../screens/04%20-%20Habits%20-%20List%20View.png)
+The List View screen follows the design as shown in ![04 - Habits - List View.png](../../screens/habits-section/04%20-%20Habits%20-%20List%20View.png)
 The user can see this screen with the data preloaded from dev seed.
 
 ## Scope
 All the design elements seen in the screen are in scope.
 - The toggle for group view and list view must now be enabled and switch the views, the default selection will be group view.
 - Use the rounded checkmark design for all habits with a checkmark type.
-- The hours type habits should not have a checkmark, lets change the view to include the progress bar design from groups with hours type. Document this in [habits-gaps-and-additional-info.md](../screens/habits-gaps-and-additional-info.md)
+- The hours type habits should not have a checkmark, lets change the view to include the progress bar design from groups with hours type. Document this in [habits-gaps-and-additional-info.md](../../screens/habits-section/habits-gaps-and-additional-info.md)
 - The orange and greyed out elements are applicable as per existing rules.
 - The habit group assigned should be visible as is in the screen.
 - For habits without a group, keep the group name empty. Use Drink water for this, seed this habit into dev.
@@ -24,8 +24,8 @@ All the design elements seen in the screen are in scope.
 1. The view toggle switches between list view (default) and group view. List view became the default after the Week, Month and Year cadence feature; see 11. Cadence, sort, FAB and bottom menu stay unwired.
 2. List view shows every habit, in `sortOrder`, scrollable. Screen 04 shows the top of the list.
 3. Every Checkmark habit uses the round check icon: orange-filled with a check when marked, grey outline otherwise. Screen 04's square checkbox on Cook is superseded.
-4. Checkmark rows show the name, streak and italic group name. Tapping a row marks or unmarks it. Colors follow `docs/style-choices/coloring-rules.md`.
-5. Hours rows have no check icon. They show the name, the streak, the italic group name, a progress bar (hours today / habit `targetHours`, capped at full) with a short `{hours}/{target}h` label beside it (see `docs/style-choices/hours-progress.md`). The row is complete when hours today ≥ `targetHours`, and its colors follow `docs/style-choices/coloring-rules.md`.
+4. Checkmark rows show the name, streak and italic group name. Tapping a row marks or unmarks it. Colors follow `../../style-choices/habits-section/coloring-rules.md`.
+5. Hours rows have no check icon. They show the name, the streak, the italic group name, a progress bar (hours today / habit `targetHours`, capped at full) with a short `{hours}/{target}h` label beside it (see `../../style-choices/habits-section/hours-progress.md`). The row is complete when hours today ≥ `targetHours`, and its colors follow `../../style-choices/habits-section/coloring-rules.md`.
 6. Tapping an Hours row opens the existing Hours Entry Modal, the same as in group view.
 7. Habits without a group show no group name.
 8. An Hours habit's streak is the number of consecutive days its `targetHours` was met, ending today, or ending yesterday if today's target is not met yet. The streak number's color follows the coloring rules: orange only when the target is met today, grey otherwise, even while the streak is alive.
@@ -35,10 +35,10 @@ All the design elements seen in the screen are in scope.
     - Not complete: grey border, grey card background and grey streak number.
     - The title is white in both states.
     - For an Hours habit, complete means its `targetHours` is met today.
-    - All colors come from `getColorScheme` in `src/screens/habits/colorRules.ts` (see `docs/style-choices/coloring-rules.md`).
+    - All colors come from `getColorScheme` in `../../../src/screens/habits/colorRules.ts` (see `../../style-choices/habits-section/coloring-rules.md`).
 11. List view is the default view when the Habits screen opens. The grid toggle switches to group view.
 12. On a habit banner in list view, the streak number sits at the right end of the title line. This applies only to banners in list view. Habit pills inside a group card keep the streak right after the name.
-13. Every banner shows its cadence in the bottom-right corner: habit banners in list view and group cards in group view. Habit pills inside a group card don't show it. See `docs/style-choices/cadence-label.md`.
+13. Every banner shows its cadence in the bottom-right corner: habit banners in list view and group cards in group view. Habit pills inside a group card don't show it. See `../../style-choices/habits-section/cadence-label.md`.
 
 ## Fixtures
 Drink Water (Checkmark, no group) has a 4-day streak ending today and is the last habit by `sortOrder`.
@@ -52,7 +52,7 @@ Drink Water (Checkmark, no group) has a 4-day streak ending today and is the las
 - HabitListRow: a marked Checkmark row shows the round check. An Hours row shows the streak (not `{n}h`), the bar and the `{hours}/{target}h` label. An Hours row is orange at its target and grey below it, and pressing it calls `onPress`.
 - Hours streak: counts consecutive days the target was met, and is grey when the target was met yesterday but not yet today.
 - HabitListRow banner: a marked row (or an Hours row that met its target) has the orange border, background and number, and an unmarked row stays grey with a grey number. The title is white in both states. As a pill, the row never gets the orange banner.
-- colorRules: the pill and banner schemes match `docs/style-choices/coloring-rules.md`.
+- colorRules: the pill and banner schemes match `../../style-choices/habits-section/coloring-rules.md`.
 - HabitPill: the title and number are both grey when not marked today, even with an active streak.
 - GroupCard: the title is white in both states, and the selector and chart icon are grey when not complete.
 - GroupCard: an Hours group renders its habits as list rows, two per row, without repeating the group name.

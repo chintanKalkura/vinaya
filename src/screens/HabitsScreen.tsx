@@ -44,7 +44,7 @@ import NewHabitGroupForm, { PendingHabit } from './habits/NewHabitGroupForm';
 import { NewHabitDraft, PENDING_GROUP_ID } from '../utils/newHabit';
 import { NewHabitGroupDraft, PENDING_HABIT_ID } from '../utils/newHabitGroup';
 
-// The + flow from docs/navigation/02-habit-creation.md and 03-group-creation.md
+// The + flow from docs/navigation/habits-section/02-habit-creation.md and 03-group-creation.md
 type CreateStep = 'none' | 'choice' | 'habit' | 'group';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
@@ -58,11 +58,11 @@ export default function HabitsScreen(): React.JSX.Element {
   const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const [createStep, setCreateStep] = useState<CreateStep>('none');
-  // Session only: docs/feature-development/sort-filter-delete-habit.md
+  // Session only: docs/feature-development/habits-section/sort-filter-delete-habit.md
   const [sortFilter, setSortFilter] =
     useState<SortFilterState>(DEFAULT_SORT_FILTER);
   const [sortOpen, setSortOpen] = useState(false);
-  // Edit Habit / Edit Habit Group: docs/feature-development/edit-habit-group.md
+  // Edit Habit / Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   // Habit form → "+ Create Group": the group is saved with the habit

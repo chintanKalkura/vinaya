@@ -1,6 +1,6 @@
 # Habits Section: Gaps and Additional Info
 
-Scope: the Habits section only (Penpot screens 01-15 and the three Mermaid files in `docs/navigation/`). Journal, Level-Up and Profile are future work and are not covered here.
+Scope: the Habits section only (Penpot screens 01-15 and the three Mermaid files in `../../navigation`). Journal, Level-Up and Profile are future work and are not covered here.
 
 Where this document conflicts with a screen PNG or a Mermaid file, this document wins. It records changes that were decided after the screens and flow files were produced.
 
@@ -51,13 +51,13 @@ Field order: Name, Cadence, Target, Group Type, type description, Assigned Habit
 
 ### 1.3 Coloring rules (screens 01 and 04)
 
-The full rules are in `docs/style-choices/coloring-rules.md`. They are implemented in one place, `src/screens/habits/colorRules.ts`. Each element is either complete or not complete today, and the streak never decides a color. These are the differences from the screens and earlier specs:
+The full rules are in `../../style-choices/habits-section/coloring-rules.md`. They are implemented in one place, `src/screens/habits/colorRules.ts`. Each element is either complete or not complete today, and the streak never decides a color. These are the differences from the screens and earlier specs:
 
 - **Marked habit rows in list view (screen 04).** Screen 04 draws marked habits with orange text on a grey row. That is superseded. A habit row in list view is a banner, like a group card on screen 01:
   - Complete: orange 2px border, orange card background, orange streak number.
   - Not complete: grey border, grey card background, grey streak number.
 - **Banner titles stay white.** This covers both group cards and list rows, in both states.
-- **Streak number of an unmarked habit with an active streak.** It is grey, for pills and banners alike. This supersedes rule 10 and the "grey / orange" rows of the streak table in `docs/feature-development/mark-habit.md`, which showed the number orange while the streak was alive.
+- **Streak number of an unmarked habit with an active streak.** It is grey, for pills and banners alike. This supersedes rule 10 and the "grey / orange" rows of the streak table in `../../feature-development/habits-section/mark-habit.md`, which showed the number orange while the streak was alive.
 - **Pills (habits inside a group card in group view).** Title, streak number and check icon are orange when complete and grey when not. The card itself does not change.
 - **Hours habits inside an Hours group** are pills. They follow the pill rule, so they never get the orange banner background.
 - **Banner icons when not complete.** The group selector and the Hours chart icon use the grey outline color. Screen 01 draws them white. When complete, they are orange.
@@ -69,7 +69,7 @@ The full rules are in `docs/style-choices/coloring-rules.md`. They are implement
 Screen 04 draws Job Hunt and Study with a checkbox. That is superseded.
 
 - Hours habits have no checkbox.
-- The row shows the name, the streak, the italic group name, and a progress bar with a short `{hours}/{target}h` label at its right end, all on one line. The Hours group card uses the same bar and label. The full design is in `docs/style-choices/hours-progress.md`. It replaces the "{hours} / {target} hrs today" caption on its own line drawn on screen 01.
+- The row shows the name, the streak, the italic group name, and a progress bar with a short `{hours}/{target}h` label at its right end, all on one line. The Hours group card uses the same bar and label. The full design is in `../../style-choices/habits-section/hours-progress.md`. It replaces the "{hours} / {target} hrs today" caption on its own line drawn on screen 01.
 - The streak is the number of consecutive days the daily target hours were met. It replaces the `3h`/`2h` hours shown on screens 01 and 04; hours logged today appear in the label beside the bar instead.
 - Group view (screen 01): Hours habits inside an Hours group use this same row, without the group name, two per row in the banner. This replaces the compact `Job Hunt 3h` pills drawn on screen 01.
 - The bar fills with hours logged today against the habit's daily target hours, capped at full.
@@ -83,7 +83,7 @@ Screens 01 and 04 draw four cadence pills (Day, Week, Month, Year) with Day sele
 - One dropdown pill shows the selected value with a chevron. It opens a menu of All, Day, Week, Month and Year, with the selected value orange and checked.
 - The default is All.
 - In group view it filters groups by group cadence. In list view it filters habits by habit cadence.
-- Full design: `docs/style-choices/cadence-filter.md`.
+- Full design: `../../style-choices/habits-section/cadence-filter.md`.
 
 ### 1.6 Week, Month and Year tracking
 
@@ -98,7 +98,7 @@ Further rules:
 - **Icon:** shows only whether today is marked.
 - **Groups:** a group's days are complete by its group-type rule, and its target counts those days. Member habits' cadences don't affect this.
 
-Full rules: `docs/feature-development/week-month-year-cadence.md`.
+Full rules: `../../feature-development/habits-section/week-month-year-cadence.md`.
 
 ### 1.7 Default view, list-view streak and cadence label (screens 01 and 04)
 
@@ -110,7 +110,7 @@ Screens 01 and 04 are superseded on three points:
   - It appears on habit banners in list view and group cards in group view.
   - Habit pills inside a group card don't show it.
   - On Hours banners it sits below the progress bar.
-  - Full design: `docs/style-choices/cadence-label.md`.
+  - Full design: `../../style-choices/habits-section/cadence-label.md`.
 
 ### 1.8 Streak freeze (screens 01, 04 and 06-11)
 
@@ -121,7 +121,7 @@ Screens 01 and 04 are superseded on three points:
   - Freezes keep the streak intact but never add to it.
   - The number of freezes held is stored on the habit or group.
 - **Look on screens 01 and 04.** On the day a freeze is used, a not complete habit or group is icy blue, with a Snowflake icon and an icy bar. Banners also show "n freezes left" at the bottom centre; pills don't.
-- Full rules: `docs/feature-development/streak-freeze.md`. Design: `docs/style-choices/streak-freeze.md`.
+- Full rules: `../../feature-development/habits-section/streak-freeze.md`. Design: `../../style-choices/habits-section/streak-freeze.md`.
 
 ### 1.9 Create Habit (screens 05-10)
 
@@ -131,7 +131,7 @@ Screens 01 and 04 are superseded on three points:
   - Groups the habit's type can't join are greyed out: Checkmark habits join Required, Any or All groups, and Hours habits join Hours groups.
   - "+ Create Group" and the Choice sheet's "New Habit Group" open the group form (1.10).
 - **Defaults.** Target 1, streak freeze 7, daily target hours 1. The name is required, at most 40 characters.
-- Full rules: `docs/feature-development/create-habit.md`.
+- Full rules: `../../feature-development/habits-section/create-habit.md`.
 
 ### 1.10 Create Habit Group (screens 11-15)
 
@@ -141,7 +141,7 @@ Screens 01 and 04 are superseded on three points:
 - **Sheets.** The Assign (12) and Required (14) sheets apply on Done and discard on the backdrop or back.
 - **Hours Target.** 1-24, default 1. Screen 15 shows 8.
 - **Cross-links.** Create Habit on the group form returns with the new habit assigned. "+ Create Group" on the New Habit form returns with the new group selected, and both are saved together on Create Habit.
-- Full rules: `docs/feature-development/create-habit-group.md`.
+- Full rules: `../../feature-development/habits-section/create-habit-group.md`.
 
 ### 1.11 Sort & Filter and delete (screens 01, 03 and 04)
 
@@ -150,14 +150,14 @@ Screens 01 and 04 are superseded on three points:
   - Show: "Marked" is renamed Completed (items complete today). Active is always selected. Paused and Archived are greyed out until those states exist.
   - Choices apply on Apply and last for the session.
 - **Group view** sorts group cards; habits inside a card keep their order.
-- **Banner menu.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a dropdown with Edit and Delete; Delete asks for confirmation. See `docs/style-choices/banner-menu.md`.
-- Full rules: `docs/feature-development/sort-filter-delete-habit.md`.
+- **Banner menu.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a dropdown with Edit and Delete; Delete asks for confirmation. See `../../style-choices/habits-section/banner-menu.md`.
+- Full rules: `../../feature-development/habits-section/sort-filter-delete-habit.md`.
 
 ### 1.12 Header title and flush bottom menu (screens 01 and 04)
 
 - **Title.** The header starts with "Vinaya - Habits" in the phone's serif italic, white. The cadence filter moves right, just left of the group/list toggle. Screens 01 and 04 have no title and show the filter at the left.
 - **Bottom menu.** The menu bar is flush with the bottom edge, full width, in espresso brown (`#1e1510`) with a darker top border, and padded by the bottom safe-area inset. Screens 01 and 04 draw it as a floating blue-grey rounded card.
-- Full design: `docs/style-choices/header-and-bottom-menu.md`.
+- Full design: `../../style-choices/habits-section/header-and-bottom-menu.md`.
 
 ### 1.13 Edit Habit and Edit Habit Group (no screens)
 
@@ -165,7 +165,7 @@ Screens 01 and 04 are superseded on three points:
 - A habit's type and a group's type can't be changed; the other options are disabled.
 - Edit Habit has no Habit Group row; memberships are edited from the group.
 - Back returns to the Habits screen.
-- Full rules: `docs/feature-development/edit-habit-group.md`.
+- Full rules: `../../feature-development/habits-section/edit-habit-group.md`.
 
 ---
 
@@ -177,23 +177,25 @@ Screens 01 and 04 are superseded on three points:
 4. **Group type All**: resolved by 1.10. It looks like Any, with the description "Every habit must be done to complete the group".
 5. **Any / All group with habits assigned**: resolved by 1.10. Every type uses the same Assigned Habits chip box as screens 13 and 15.
 6. **Paused and Archived appearance on screens 01 and 04**: the treatment (grey icon, greyed lettering) was decided but never drawn on habit or group items. Screen 03 only shows the filter toggles.
-7. **Cadence filter on screens 01 and 04**: resolved by 1.5. The filter is a dropdown (All, Day, Week, Month, Year) and its filtered states follow `docs/style-choices/cadence-filter.md`.
+7. **Cadence filter on screens 01 and 04**: resolved by 1.5. The filter is a dropdown (All, Day, Week, Month, Year) and its filtered states follow `../../style-choices/habits-section/cadence-filter.md`.
 8. **Edit, pause and archive flows**: no screen exists for editing a habit or group, or for pausing and archiving one. Paused and Archived exist as filter values, but how an item enters those states is not designed.
 
 ---
 
 ## 3. Gaps in the navigation Mermaid files
 
-1. **`01-main-views.md` only covers screen 01 for sort and hours.** Screen 04 also has a sort button and (hours-type) habit rows. Missing edges: 04 to 03 (sort) and 04 to 02 (hours modal). Both are implemented: the sort button opens the Sort & Filter sheet from either view (`docs/feature-development/sort-filter-delete-habit.md`), and Hours rows open the Hours modal.
+The Mermaid files are in `../../navigation/habits-section/`.
+
+1. **`01-main-views.md` only covers screen 01 for sort and hours.** Screen 04 also has a sort button and (hours-type) habit rows. Missing edges: 04 to 03 (sort) and 04 to 02 (hours modal). Both are implemented: the sort button opens the Sort & Filter sheet from either view (`../../feature-development/habits-section/sort-filter-delete-habit.md`), and Hours rows open the Hours modal.
 2. **Return destinations are hard-coded.** Sheets and modals return to the screen that opened them, but the diagrams show fixed targets.
    - 02 Done and 03 Apply return to 01 in the diagram; they should return to 01 or 04, whichever opened them.
-   - Create Habit (06-10) goes to 01 in `02-habit-creation.md`; it returns to 01 or 04, whichever the + was tapped from. Implemented by `docs/feature-development/create-habit.md`.
+   - Create Habit (06-10) goes to 01 in `02-habit-creation.md`; it returns to 01 or 04, whichever the + was tapped from. Implemented by `../../feature-development/habits-section/create-habit.md`.
    - 12 Done goes to 13 in the diagram; it should return to the group screen that opened it (11, 13 or 15).
    - 14 Done goes to 13. This one is correct, since 14 is only opened from 13.
 3. **State changes are drawn as navigation.**
    - In `02-habit-creation.md`, the cadence and type switches between 06-10 are pill selections on one form, drawn as edges between separate nodes.
    - In `03-group-creation.md`, the group type switches between 11, 13 and 15 are drawn the same way.
-   - See `how-to-use-navigation-and-screen-docs.md` for how these are to be read.
+   - See `../../navigation/habits-section/how-to-use-navigation-and-screens.md` for how these are to be read.
 4. **Return path after a redirect is unspecified.**
    - "+ Create Habit" from a group screen opens 06. "+ Create Group" from a habit screen opens 11.
    - The diagrams show Create Habit going to 01 and back going to 05 in every case.

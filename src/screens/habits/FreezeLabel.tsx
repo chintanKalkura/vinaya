@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { colors } from '../../theme';
 
-// Bottom-centre "n freezes left" on frozen banners: docs/style-choices/streak-freeze.md
+// Bottom-centre "n freezes left" on frozen banners: docs/style-choices/habits-section/streak-freeze.md
 interface FreezeLabelProps {
   freezesLeft: number;
   testID: string;

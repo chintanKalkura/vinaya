@@ -27,7 +27,7 @@ import Stepper from './Stepper';
 import StreakFreezeField from './StreakFreezeField';
 import { formStyles } from './formStyles';
 
-// Screens 11-15: docs/feature-development/create-habit-group.md
+// Screens 11-15: docs/feature-development/habits-section/create-habit-group.md
 const CADENCES: readonly HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
 const GROUP_TYPES: readonly HabitGroupType[] = [
   'Required',
@@ -52,7 +52,7 @@ interface NewHabitGroupFormProps {
   allowCreateHabit?: boolean;
   newHabitId?: string; // made with Create Habit; assigned when it returns
   pendingHabit?: PendingHabit; // the habit whose "+ Create Group" opened this
-  editing?: HabitGroup; // Edit Habit Group: docs/feature-development/edit-habit-group.md
+  editing?: HabitGroup; // Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
 }
 
 function initialDraft(

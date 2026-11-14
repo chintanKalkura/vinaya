@@ -4,7 +4,7 @@ export type HabitCadence = 'Day' | 'Week' | 'Month' | 'Year';
 export type HabitType = 'Checkmark' | 'Hours';
 export type HabitStatus = 'active' | 'paused' | 'archived';
 
-// Stored freeze state, updated on marking and once a day: docs/feature-development/streak-freeze.md
+// Stored freeze state, updated on marking and once a day: docs/feature-development/habits-section/streak-freeze.md
 export interface StreakFreezeState {
   available: number; // freezes held, kept after a streak breaks
   earnedAtStreak: number; // streak value of the last freeze earned in this run (0 at run start)

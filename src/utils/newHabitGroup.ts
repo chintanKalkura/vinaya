@@ -5,7 +5,7 @@ import { clampCadenceTarget } from './cadence';
 import { clampFreezeInterval } from './streakFreeze';
 import { HABIT_NAME_MAX, clampTargetHours } from './newHabit';
 
-// Create Habit Group rules: docs/feature-development/create-habit-group.md
+// Create Habit Group rules: docs/feature-development/habits-section/create-habit-group.md
 
 // Stands for the habit being created when a group is made from its form
 export const PENDING_HABIT_ID = 'pending-habit';
@@ -122,7 +122,7 @@ export function buildHabitGroup(
   return group;
 }
 
-// Edit Habit Group: docs/feature-development/edit-habit-group.md
+// Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
 export function draftFromGroup(group: HabitGroup): NewHabitGroupDraft {
   return {
     name: group.name,

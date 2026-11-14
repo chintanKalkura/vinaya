@@ -25,7 +25,7 @@ export default function HabitsHeader({
 
   return (
     <View style={styles.row}>
-      {/* Title left, controls right on one line: docs/style-choices/header-and-bottom-menu.md */}
+      {/* Title left, controls right on one line: docs/style-choices/habits-section/header-and-bottom-menu.md */}
       <Text
         testID="habits-title"
         style={styles.title}

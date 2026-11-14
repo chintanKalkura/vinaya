@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 import { SORT_KEYS, SortFilterState, SortKey } from '../../utils/sortFilter';
 
-// Screen 03: docs/feature-development/sort-filter-delete-habit.md.
+// Screen 03: docs/feature-development/habits-section/sort-filter-delete-habit.md.
 // Choices apply on Apply; the backdrop or back discards them.
 interface SortFilterSheetProps {
   visible: boolean;

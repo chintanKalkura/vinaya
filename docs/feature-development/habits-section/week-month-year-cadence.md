@@ -6,13 +6,13 @@ Status: ready for planning.
 User should be able to track and record habits and groups with week, month and year.
 
 ## Screens
-- ![07 - Create_ New Habit - Week.png](../screens/07%20-%20Create_%20New%20Habit%20-%20Week.png)
-- ![08 - Create_ New Habit - Month.png](../screens/08%20-%20Create_%20New%20Habit%20-%20Month.png)
-- ![09 - Create_ New Habit - Year.png](../screens/09%20-%20Create_%20New%20Habit%20-%20Year.png)
-- ![01 - Habits - Group view.png](../screens/01%20-%20Habits%20-%20Group%20view.png)
-- ![04 - Habits - List View.png](../screens/04%20-%20Habits%20-%20List%20View.png)
-- ![10 - Create_ New Habit - Day - Hours.png](../screens/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
-- ![11 - Create_ New Habit Group.png](../screens/11%20-%20Create_%20New%20Habit%20Group.png)
+- ![07 - Create_ New Habit - Week.png](../../screens/habits-section/07%20-%20Create_%20New%20Habit%20-%20Week.png)
+- ![08 - Create_ New Habit - Month.png](../../screens/habits-section/08%20-%20Create_%20New%20Habit%20-%20Month.png)
+- ![09 - Create_ New Habit - Year.png](../../screens/habits-section/09%20-%20Create_%20New%20Habit%20-%20Year.png)
+- ![01 - Habits - Group view.png](../../screens/habits-section/01%20-%20Habits%20-%20Group%20view.png)
+- ![04 - Habits - List View.png](../../screens/habits-section/04%20-%20Habits%20-%20List%20View.png)
+- ![10 - Create_ New Habit - Day - Hours.png](../../screens/habits-section/10%20-%20Create_%20New%20Habit%20-%20Day%20-%20Hours.png)
+- ![11 - Create_ New Habit Group.png](../../screens/habits-section/11%20-%20Create_%20New%20Habit%20Group.png)
 
 ## Scope
 - Both habits and habit groups.
@@ -59,8 +59,8 @@ User should be able to track and record habits and groups with week, month and y
    - Title, number and banner are orange while the habit or group is complete (decision 4 or 7).
    - The check icon or group selector is filled only when today is marked, or for a group, when today is complete.
    - For Day the two are the same.
-   - See `docs/style-choices/coloring-rules.md`.
-9. **Cadence filter.** One dropdown replaces the four cadence pills in the header. It offers All, Day, Week, Month and Year, and the default is All. See `docs/style-choices/cadence-filter.md`.
+   - See `../../style-choices/habits-section/coloring-rules.md`.
+9. **Cadence filter.** One dropdown replaces the four cadence pills in the header. It offers All, Day, Week, Month and Year, and the default is All. See `../../style-choices/habits-section/cadence-filter.md`.
 10. **What the filter applies to.** In group view it filters groups by the group's cadence; each group still shows all its habits. In list view it filters habits by the habit's cadence.
 11. **Sort.** Sort stays unwired in this feature. When it is built, it orders whatever the cadence filter shows, so the filter takes precedence. Built in `sort-filter-delete-habit.md`.
 
