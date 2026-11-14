@@ -153,6 +153,12 @@ Screens 01 and 04 are superseded on three points:
 - **Delete.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a menu, then a confirm step. See `docs/style-choices/banner-menu.md`.
 - Full rules: `docs/feature-development/sort-filter-delete-habit.md`.
 
+### 1.12 Header title and flush bottom menu (screens 01 and 04)
+
+- **Title.** The header starts with "Vinaya - Habits" in the phone's serif italic, white. The cadence filter moves right, just left of the group/list toggle. Screens 01 and 04 have no title and show the filter at the left.
+- **Bottom menu.** The menu bar is flush with the bottom edge, full width, in espresso brown (`#1e1510`) with a darker top border, and padded by the bottom safe-area inset. Screens 01 and 04 draw it as a floating blue-grey rounded card.
+- Full design: `docs/style-choices/header-and-bottom-menu.md`.
+
 ---
 
 ## 2. Gaps in the screens
