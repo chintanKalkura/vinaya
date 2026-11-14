@@ -938,3 +938,60 @@ describe('HabitsScreen bottom menu', () => {
     spy.mockRestore();
   });
 });
+
+describe('HabitsScreen edit', () => {
+  async function openEdit(utils: ReturnType<typeof render>, menuId: string) {
+    fireEvent.press(await utils.findByTestId(menuId));
+    fireEvent.press(utils.getByTestId(`${menuId}-edit`));
+  }
+
+  it('opens Edit Habit with the values and saves a rename', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+
+    await openEdit(utils, 'habit-row-menu-no-killing');
+    const name = await utils.findByTestId('new-habit-name');
+    const loaded = name.props.value;
+    fireEvent.changeText(name, 'Do No Harm');
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    expect([loaded, !!(await utils.findByText('Do No Harm'))]).toEqual([
+      'No Killing',
+      true,
+    ]);
+  });
+
+  it('goes back to the Habits screen without saving', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+
+    await openEdit(utils, 'habit-row-menu-no-killing');
+    fireEvent.changeText(await utils.findByTestId('new-habit-name'), 'Changed');
+    fireEvent.press(utils.getByTestId('new-habit-back'));
+
+    await waitFor(() =>
+      expect(utils.queryByTestId('new-habit-form')).toBeNull(),
+    );
+    expect([
+      utils.queryByTestId('choice-sheet'),
+      !!utils.getByText('No Killing'),
+    ]).toEqual([null, true]);
+  });
+
+  it('edits a group name from group view', async () => {
+    await seed(
+      { 'no-killing': makeHabit() },
+      { precepts: makeGroup({ requiredHabitIds: ['no-killing'] }) },
+    );
+    const utils = renderInGroupView();
+
+    await openEdit(utils, 'group-menu-precepts');
+    fireEvent.changeText(
+      await utils.findByTestId('new-group-name'),
+      'Precepts',
+    );
+    fireEvent.press(utils.getByTestId('new-group-create'));
+
+    expect(!!(await utils.findByText('Precepts'))).toBe(true);
+  });
+});

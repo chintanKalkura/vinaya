@@ -14,6 +14,7 @@ import { colors } from '../../theme';
 // Opens a dropdown (Edit, Delete), then a confirm step before deleting.
 interface BannerMenuProps {
   kind: 'habit' | 'group';
+  onEdit: () => void;
   onDelete: () => void;
   testID: string;
 }
@@ -30,6 +31,7 @@ const DEFAULT_POSITION: MenuPosition = { top: 120, right: 16 };
 
 export default function BannerMenu({
   kind,
+  onEdit,
   onDelete,
   testID,
 }: BannerMenuProps): React.JSX.Element {
@@ -85,15 +87,16 @@ export default function BannerMenu({
             { top: position.top, right: position.right },
           ]}
         >
-          {/* Editing is not built yet */}
           <Pressable
             testID={`${testID}-edit`}
             accessibilityRole="menuitem"
-            accessibilityState={{ disabled: true }}
-            disabled
-            style={[styles.option, styles.optionDisabled]}
+            onPress={() => {
+              close();
+              onEdit();
+            }}
+            style={styles.option}
           >
-            <Pencil color={colors.v2GreyText} size={16} />
+            <Pencil color={colors.v2White} size={16} />
             <Text style={[styles.optionLabel, styles.editLabel]}>Edit</Text>
           </Pressable>
           <Pressable
@@ -172,15 +175,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  optionDisabled: {
-    opacity: 0.45,
-  },
   optionLabel: {
     fontWeight: '600',
     fontSize: 15,
   },
   editLabel: {
-    color: colors.v2GreyText,
+    color: colors.v2White,
   },
   deleteLabel: {
     color: colors.v2Red,

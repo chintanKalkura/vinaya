@@ -485,6 +485,7 @@ describe('GroupCard menu', () => {
         habits={[]}
         todayKey={TODAY}
         onToggle={jest.fn()}
+        onEdit={jest.fn()}
         onDelete={onDelete}
       />,
     );
@@ -512,6 +513,7 @@ describe('GroupCard menu', () => {
         habits={[study]}
         todayKey={TODAY}
         onToggle={jest.fn()}
+        onEdit={jest.fn()}
         onDelete={jest.fn()}
       />,
     );

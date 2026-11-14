@@ -16,6 +16,7 @@ interface HabitListRowProps {
   todayKey: string;
   onPress: (habitId: string) => void;
   colorKind: ColorKind;
+  onEdit?: (habitId: string) => void; // banners only
   onDelete?: (habitId: string) => void; // banners only
 }
 
@@ -25,6 +26,7 @@ export default function HabitListRow({
   todayKey,
   onPress,
   colorKind,
+  onEdit,
   onDelete,
 }: HabitListRowProps): React.JSX.Element {
   const { status, hours } = useHabitVisual(habit, todayKey);
@@ -59,9 +61,10 @@ export default function HabitListRow({
     </>
   ) : null;
   const menu =
-    isBanner && onDelete ? (
+    isBanner && onEdit && onDelete ? (
       <BannerMenu
         kind="habit"
+        onEdit={() => onEdit(habit.id)}
         onDelete={() => onDelete(habit.id)}
         testID={`habit-row-menu-${habit.id}`}
       />

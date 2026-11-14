@@ -3,11 +3,12 @@ import { fireEvent, render } from '@testing-library/react-native';
 import BannerMenu from './BannerMenu';
 
 function renderMenu(kind: 'habit' | 'group' = 'habit') {
+  const onEdit = jest.fn();
   const onDelete = jest.fn();
   const utils = render(
-    <BannerMenu kind={kind} onDelete={onDelete} testID="m" />,
+    <BannerMenu kind={kind} onEdit={onEdit} onDelete={onDelete} testID="m" />,
   );
-  return { ...utils, onDelete };
+  return { ...utils, onEdit, onDelete };
 }
 
 describe('BannerMenu', () => {
@@ -23,12 +24,16 @@ describe('BannerMenu', () => {
     ]).toEqual([true, true, true]);
   });
 
-  it('should keep Edit disabled for now', () => {
-    const { getByTestId } = renderMenu();
-
+  it('should open the edit form from Edit and close the dropdown', () => {
+    const { getByTestId, queryByTestId, onEdit } = renderMenu();
     fireEvent.press(getByTestId('m'));
 
-    expect(getByTestId('m-edit').props.accessibilityState.disabled).toBe(true);
+    fireEvent.press(getByTestId('m-edit'));
+
+    expect([onEdit.mock.calls.length, queryByTestId('m-dropdown')]).toEqual([
+      1,
+      null,
+    ]);
   });
 
   it('should offer the same options on a group', () => {
