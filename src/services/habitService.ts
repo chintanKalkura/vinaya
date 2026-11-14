@@ -1,13 +1,66 @@
 import { Habit } from '../types/habit';
+import { HabitGroup } from '../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
 import { clampHours, habitMarkers } from '../utils/hours';
 import { withEarnedFreezes } from '../utils/streakFreeze';
-import { loadHabits, saveHabit } from '../storage/habitStorage';
+import {
+  loadHabitGroups,
+  loadHabits,
+  saveHabit,
+  saveHabitGroup,
+} from '../storage/habitStorage';
+import {
+  NewHabitDraft,
+  buildHabit,
+  canJoinGroup,
+  isDraftValid,
+} from '../utils/newHabit';
 import { syncGroupCompletion } from './habitGroupService';
 
 export class InvalidMarkError extends Error {}
+export class InvalidHabitError extends Error {}
+
+function newHabitId(createdAt: number): string {
+  return `habit-${createdAt.toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+// Saves a new habit last in sort order and joins it to its group, if any
+export async function createHabit(
+  draft: NewHabitDraft,
+  todayKey: string = toDateKey(new Date()),
+): Promise<Habit> {
+  if (!isDraftValid(draft)) {
+    throw new InvalidHabitError('A habit needs a name of 1-40 characters');
+  }
+  const [habits, groups] = await Promise.all([loadHabits(), loadHabitGroups()]);
+  let group: HabitGroup | undefined;
+  if (draft.groupId) {
+    group = groups[draft.groupId];
+    if (!group)
+      throw new InvalidHabitError(`Group not found: ${draft.groupId}`);
+    if (!canJoinGroup(draft.type, group)) {
+      throw new InvalidHabitError(
+        `A ${draft.type} habit cannot join a ${group.groupType} group`,
+      );
+    }
+  }
+
+  const createdAt = Date.now();
+  const sortOrder =
+    Math.max(-1, ...Object.values(habits).map(h => h.sortOrder)) + 1;
+  const habit = buildHabit(draft, newHabitId(createdAt), sortOrder, createdAt);
+
+  await saveHabit(habit);
+  if (group) {
+    await saveHabitGroup({ ...group, habitIds: [...group.habitIds, habit.id] });
+    await syncGroupCompletion(group.id, todayKey);
+  }
+  return habit;
+}
 
 function loadMarkableHabit(
   habits: Record<string, Habit>,
