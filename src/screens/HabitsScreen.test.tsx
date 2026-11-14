@@ -8,7 +8,12 @@ import {
   within,
 } from '@testing-library/react-native';
 import HabitsScreen from './HabitsScreen';
-import { saveHabitGroups, saveHabits } from '../storage/habitStorage';
+import {
+  loadHabitGroups,
+  loadHabits,
+  saveHabitGroups,
+  saveHabits,
+} from '../storage/habitStorage';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
@@ -27,7 +32,6 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
     cadence: 'Day',
     type: 'Checkmark',
     streakFreezeInterval: 7,
-    groupId: 'precepts',
     status: 'active',
     sortOrder: 0,
     createdAt: 0,
@@ -66,7 +70,6 @@ function hoursFixture(
         name: 'Study',
         type: 'Hours',
         targetHours: 1,
-        groupId: 'productive',
       }),
     },
     {
@@ -257,7 +260,6 @@ describe('HabitsScreen', () => {
         'drink-water': makeHabit({
           id: 'drink-water',
           name: 'Drink Water',
-          groupId: undefined,
         }),
       },
       {},
@@ -322,7 +324,6 @@ describe('HabitsScreen', () => {
         'drink-water': makeHabit({
           id: 'drink-water',
           name: 'Drink Water',
-          groupId: undefined,
         }),
       },
       { precepts: makeGroup() },
@@ -400,7 +401,7 @@ describe('HabitsScreen', () => {
 
   it('turns an Any group orange when one of its habits is marked', async () => {
     await seed(
-      { cook: makeHabit({ id: 'cook', name: 'Cook', groupId: 'eat' }) },
+      { cook: makeHabit({ id: 'cook', name: 'Cook' }) },
       {
         eat: makeGroup({
           id: 'eat',
@@ -464,12 +465,10 @@ describe('HabitsScreen', () => {
       name: 'Run',
       cadence: 'Week',
       target: 2,
-      groupId: 'fitness',
     });
     const dayInWeekGroup = makeHabit({
       id: 'stretch',
       name: 'Stretch',
-      groupId: 'fitness',
     });
     const fixtures = () =>
       seed(
@@ -559,7 +558,6 @@ describe('HabitsScreen streak freeze', () => {
   it('uses a freeze on load for a habit that missed yesterday', async () => {
     await seed({
       'no-killing': makeHabit({
-        groupId: undefined,
         recentLog: ['2024-06-13', '2024-06-12'].map(date => ({
           date,
           kind: 'marker' as const,
@@ -637,5 +635,124 @@ describe('HabitsScreen create habit', () => {
       utils.getByTestId('view-mode-toggle-group').props.accessibilityState
         .selected,
     ]).toEqual([true, true]);
+  });
+});
+
+describe('HabitsScreen habits in several groups', () => {
+  it('shows every group name in list view, in group order', async () => {
+    await seed(
+      { 'no-killing': makeHabit() },
+      {
+        precepts: makeGroup({ sortOrder: 0 }),
+        mind: makeGroup({
+          id: 'mind',
+          name: 'Mind',
+          groupType: 'Any',
+          sortOrder: 1,
+          habitIds: ['no-killing'],
+        }),
+      },
+    );
+
+    const { findByText } = render(<HabitsScreen />);
+
+    expect(!!(await findByText('8 Precepts, Mind'))).toBe(true);
+  });
+});
+
+describe('HabitsScreen create habit group', () => {
+  async function openGroupForm(utils: ReturnType<typeof render>) {
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('fab'));
+    fireEvent.press(await utils.findByTestId('choice-sheet-group'));
+    return utils.findByTestId('new-group-form');
+  }
+
+  async function assign(utils: ReturnType<typeof render>, ids: string[]) {
+    fireEvent.press(utils.getByTestId('new-group-assign'));
+    ids.forEach(id =>
+      fireEvent.press(utils.getByTestId(`assign-sheet-item-${id}`)),
+    );
+    fireEvent.press(utils.getByTestId('assign-sheet-done'));
+  }
+
+  it('creates an Any group and shows it in group view', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = renderInGroupView();
+    await openGroupForm(utils);
+
+    fireEvent.changeText(utils.getByTestId('new-group-name'), 'Mornings');
+    await assign(utils, ['no-killing']);
+    fireEvent.press(utils.getByTestId('new-group-create'));
+
+    expect(!!(await utils.findByText('Mornings'))).toBe(true);
+  });
+
+  it('goes back from the group form to the choice sheet', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+    await openGroupForm(utils);
+
+    fireEvent.press(utils.getByTestId('new-group-back'));
+
+    expect(!!(await utils.findByTestId('choice-sheet'))).toBe(true);
+  });
+
+  it('returns from Create Habit with the new habit assigned', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+    await openGroupForm(utils);
+
+    fireEvent.press(utils.getByTestId('new-group-create-habit'));
+    fireEvent.changeText(
+      await utils.findByTestId('new-habit-name'),
+      'Meditate',
+    );
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    await waitFor(() =>
+      expect(utils.queryByTestId('new-habit-form')).toBeNull(),
+    );
+    const assigned = within(utils.getByTestId('new-group-assigned'));
+    expect(!!assigned.getByText('Meditate')).toBe(true);
+  });
+
+  it('creates the habit and its new group together from + Create Group', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = renderInGroupView();
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('fab'));
+    fireEvent.press(await utils.findByTestId('choice-sheet-habit'));
+    fireEvent.changeText(
+      await utils.findByTestId('new-habit-name'),
+      'Morning run',
+    );
+
+    fireEvent.press(utils.getByTestId('new-habit-create-group'));
+    fireEvent.changeText(
+      await utils.findByTestId('new-group-name'),
+      'Mornings',
+    );
+    fireEvent.press(utils.getByTestId('new-group-create'));
+    await waitFor(() =>
+      expect(
+        utils.getByTestId('new-habit-group-pending-group').props
+          .accessibilityState.selected,
+      ).toBe(true),
+    );
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    const groups = Object.values(
+      await waitFor(async () => {
+        const g = await loadHabitGroups();
+        expect(Object.keys(g)).toHaveLength(2);
+        return g;
+      }),
+    );
+    const habits = await loadHabits();
+    const mornings = groups.find(g => g.name === 'Mornings');
+    expect(mornings?.habitIds.map(id => habits[id].name)).toEqual([
+      'Morning run',
+    ]);
   });
 });
