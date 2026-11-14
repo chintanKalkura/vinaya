@@ -3,6 +3,7 @@ import {
   InvalidHabitError,
   InvalidMarkError,
   createHabit,
+  deleteHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -448,5 +449,83 @@ describe('createHabit', () => {
     await expect(
       createHabit(draft({ type: 'Hours', groupId: 'g' }), TODAY),
     ).rejects.toBeInstanceOf(InvalidHabitError);
+  });
+});
+
+describe('deleteHabit', () => {
+  const groupWith = (
+    id: string,
+    overrides: Partial<HabitGroup> = {},
+  ): HabitGroup => ({
+    id,
+    name: id,
+    cadence: 'Day',
+    groupType: 'Required',
+    habitIds: ['habit-1', 'habit-2'],
+    requiredHabitIds: ['habit-1', 'habit-2'],
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+    ...overrides,
+  });
+
+  it('removes the habit', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await deleteHabit('habit-1', TODAY);
+
+    expect(await loadHabits()).toEqual({});
+  });
+
+  it('removes it from every group and required list', async () => {
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': makeHabit({ id: 'habit-2' }),
+    });
+    await saveHabitGroups({ g: groupWith('g'), h: groupWith('h') });
+
+    await deleteHabit('habit-1', TODAY);
+
+    const groups = await loadHabitGroups();
+    expect(
+      [groups.g, groups.h].map(g => [g.habitIds, g.requiredHabitIds]),
+    ).toEqual([
+      [['habit-2'], ['habit-2']],
+      [['habit-2'], ['habit-2']],
+    ]);
+  });
+
+  it('re-checks today, so an All group completes once an unmarked member is gone', async () => {
+    const today = { date: TODAY, kind: 'marker' as const, value: 1 };
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': makeHabit({
+        id: 'habit-2',
+        recentLog: [today],
+        history: [today],
+      }),
+    });
+    await saveHabitGroups({ g: groupWith('g', { groupType: 'All' }) });
+
+    await deleteHabit('habit-1', TODAY);
+
+    expect((await loadHabitGroups()).g.history).toEqual([today]);
+  });
+
+  it('keeps a group left with no habits', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+    await saveHabitGroups({
+      g: groupWith('g', {
+        habitIds: ['habit-1'],
+        requiredHabitIds: ['habit-1'],
+      }),
+    });
+
+    await deleteHabit('habit-1', TODAY);
+
+    expect((await loadHabitGroups()).g.habitIds).toEqual([]);
   });
 });

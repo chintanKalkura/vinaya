@@ -7,6 +7,7 @@ import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
+import BannerMenu from './BannerMenu';
 import { ColorKind, getColorScheme } from './colorRules';
 
 interface HabitListRowProps {
@@ -15,6 +16,7 @@ interface HabitListRowProps {
   todayKey: string;
   onPress: (habitId: string) => void;
   colorKind: ColorKind;
+  onDelete?: (habitId: string) => void; // banners only
 }
 
 export default function HabitListRow({
@@ -23,6 +25,7 @@ export default function HabitListRow({
   todayKey,
   onPress,
   colorKind,
+  onDelete,
 }: HabitListRowProps): React.JSX.Element {
   const { status, hours } = useHabitVisual(habit, todayKey);
   const scheme = getColorScheme(
@@ -55,6 +58,14 @@ export default function HabitListRow({
       />
     </>
   ) : null;
+  const menu =
+    isBanner && onDelete ? (
+      <BannerMenu
+        kind="habit"
+        onDelete={() => onDelete(habit.id)}
+        testID={`habit-row-menu-${habit.id}`}
+      />
+    ) : null;
   const groupLabel = groupName ? (
     <Text style={styles.groupName} numberOfLines={1}>
       {groupName}
@@ -78,6 +89,7 @@ export default function HabitListRow({
             <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
               {status.streak}
             </Text>
+            {menu}
           </View>
           {groupLabel}
           <View style={styles.hoursProgress}>
@@ -134,6 +146,7 @@ export default function HabitListRow({
           <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
             {status.streak}
           </Text>
+          {menu}
         </View>
         {groupLabel}
       </View>

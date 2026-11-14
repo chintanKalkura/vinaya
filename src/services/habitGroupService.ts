@@ -118,6 +118,13 @@ export async function syncGroupCompletion(
   return updated;
 }
 
+// Removes only the group; its habits are kept
+export async function deleteHabitGroup(groupId: string): Promise<void> {
+  const groups = await loadHabitGroups();
+  delete groups[groupId];
+  await saveHabitGroups(groups);
+}
+
 // Uses freezes on every habit and group whose streak would break today.
 // Runs once when the Habits screen loads; saves only what changed.
 export async function applyStreakFreezes(todayKey: string): Promise<void> {

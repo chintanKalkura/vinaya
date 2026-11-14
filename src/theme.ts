@@ -15,6 +15,7 @@ export const colors = {
   v2OrangeCardBackground: '#3a2a12',
   v2Blue: '#3d9be9',
   v2Ice: '#5ec8e5',
+  v2Red: '#ef5b5b',
   v2IceCardBackground: '#1f2c43',
   v2GreyText: '#8a8aa3',
   v2GreyOutline: '#4a4a6a',

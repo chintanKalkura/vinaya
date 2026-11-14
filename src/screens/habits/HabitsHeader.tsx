@@ -11,6 +11,7 @@ interface HabitsHeaderProps {
   onChangeCadenceFilter: (value: CadenceFilterValue) => void;
   viewMode: HabitsViewMode;
   onChangeViewMode: (mode: HabitsViewMode) => void;
+  onOpenSort: () => void;
 }
 
 export default function HabitsHeader({
@@ -18,6 +19,7 @@ export default function HabitsHeader({
   onChangeCadenceFilter,
   viewMode,
   onChangeViewMode,
+  onOpenSort,
 }: HabitsHeaderProps): React.JSX.Element {
   const isGroup = viewMode === 'group';
 
@@ -54,7 +56,9 @@ export default function HabitsHeader({
       </View>
       <Pressable
         testID="sort-button"
-        onPress={() => {}}
+        accessibilityRole="button"
+        accessibilityLabel="Sort and filter"
+        onPress={onOpenSort}
         style={styles.sortButton}
       >
         <ListFilter color={colors.v2White} size={18} />

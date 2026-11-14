@@ -62,7 +62,7 @@ User should be able to track and record habits and groups with week, month and y
    - See `docs/style-choices/coloring-rules.md`.
 9. **Cadence filter.** One dropdown replaces the four cadence pills in the header. It offers All, Day, Week, Month and Year, and the default is All. See `docs/style-choices/cadence-filter.md`.
 10. **What the filter applies to.** In group view it filters groups by the group's cadence; each group still shows all its habits. In list view it filters habits by the habit's cadence.
-11. **Sort.** Sort stays unwired in this feature. When it is built, it orders whatever the cadence filter shows, so the filter takes precedence.
+11. **Sort.** Sort stays unwired in this feature. When it is built, it orders whatever the cadence filter shows, so the filter takes precedence. Built in `sort-filter-delete-habit.md`.
 
 ## Fixtures
 Day offsets are relative to today (0 = today).

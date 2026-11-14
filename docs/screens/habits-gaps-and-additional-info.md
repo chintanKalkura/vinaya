@@ -143,6 +143,16 @@ Screens 01 and 04 are superseded on three points:
 - **Cross-links.** Create Habit on the group form returns with the new habit assigned. "+ Create Group" on the New Habit form returns with the new group selected, and both are saved together on Create Habit.
 - Full rules: `docs/feature-development/create-habit-group.md`.
 
+### 1.11 Sort & Filter and delete (screens 01, 03 and 04)
+
+- **Screen 03 changes.**
+  - Sort by: Streak, A–Z and Recent. Manual is removed. No chip is selected by default, which means oldest first.
+  - Show: "Marked" is renamed Completed (items complete today). Active is always selected. Paused and Archived are greyed out until those states exist.
+  - Choices apply on Apply and last for the session.
+- **Group view** sorts group cards; habits inside a card keep their order.
+- **Delete.** A ⋮ right of the streak number on habit banners (list view) and group cards (group view), never on pills. It opens a menu, then a confirm step. See `docs/style-choices/banner-menu.md`.
+- Full rules: `docs/feature-development/sort-filter-delete-habit.md`.
+
 ---
 
 ## 2. Gaps in the screens
@@ -160,7 +170,7 @@ Screens 01 and 04 are superseded on three points:
 
 ## 3. Gaps in the navigation Mermaid files
 
-1. **`01-main-views.md` only covers screen 01 for sort and hours.** Screen 04 also has a sort button and (hours-type) habit rows. Missing edges: 04 to 03 (sort) and 04 to 02 (hours modal).
+1. **`01-main-views.md` only covers screen 01 for sort and hours.** Screen 04 also has a sort button and (hours-type) habit rows. Missing edges: 04 to 03 (sort) and 04 to 02 (hours modal). Both are implemented: the sort button opens the Sort & Filter sheet from either view (`docs/feature-development/sort-filter-delete-habit.md`), and Hours rows open the Hours modal.
 2. **Return destinations are hard-coded.** Sheets and modals return to the screen that opened them, but the diagrams show fixed targets.
    - 02 Done and 03 Apply return to 01 in the diagram; they should return to 01 or 04, whichever opened them.
    - Create Habit (06-10) goes to 01 in `02-habit-creation.md`; it returns to 01 or 04, whichever the + was tapped from. Implemented by `docs/feature-development/create-habit.md`.
