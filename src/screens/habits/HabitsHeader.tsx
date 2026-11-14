@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LayoutGrid, List, ListFilter } from 'lucide-react-native';
 import { colors } from '../../theme';
 import CadenceFilter, { CadenceFilterValue } from './CadenceFilter';
@@ -25,9 +25,17 @@ export default function HabitsHeader({
 
   return (
     <View style={styles.row}>
-      <View style={styles.cadenceSlot}>
-        <CadenceFilter value={cadenceFilter} onChange={onChangeCadenceFilter} />
-      </View>
+      {/* Title left, controls right on one line: docs/style-choices/header-and-bottom-menu.md */}
+      <Text
+        testID="habits-title"
+        style={styles.title}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
+        Vinaya - Habits
+      </Text>
+      <CadenceFilter value={cadenceFilter} onChange={onChangeCadenceFilter} />
       <View style={styles.toggleGroup}>
         <Pressable
           testID="view-mode-toggle-group"
@@ -76,8 +84,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 8,
   },
-  cadenceSlot: {
+  title: {
     flex: 1,
+    color: colors.v2White,
+    fontFamily: 'serif',
+    fontStyle: 'italic',
+    fontWeight: '600',
+    fontSize: 20,
   },
   toggleGroup: {
     flexDirection: 'row',
