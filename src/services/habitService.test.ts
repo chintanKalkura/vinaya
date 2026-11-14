@@ -4,6 +4,7 @@ import {
   InvalidMarkError,
   createHabit,
   deleteHabit,
+  updateHabit,
   markHabitDone,
   setHabitHours,
   unmarkHabitDone,
@@ -527,5 +528,65 @@ describe('deleteHabit', () => {
     await deleteHabit('habit-1', TODAY);
 
     expect((await loadHabitGroups()).g.habitIds).toEqual([]);
+  });
+});
+
+describe('updateHabit', () => {
+  const edit = (overrides: Partial<NewHabitDraft> = {}): NewHabitDraft => ({
+    ...DEFAULT_DRAFT,
+    name: 'Drink Water',
+    ...overrides,
+  });
+
+  it('updates the fields and keeps the log and freezes held', async () => {
+    const today = { date: TODAY, kind: 'marker' as const, value: 1 };
+    const streakFreeze = { available: 2, earnedAtStreak: 14, frozenDates: [] };
+    await saveHabits({
+      'habit-1': makeHabit({
+        recentLog: [today],
+        history: [today],
+        streakFreeze,
+      }),
+    });
+
+    await updateHabit(
+      'habit-1',
+      edit({
+        name: ' Hydrate ',
+        cadence: 'Week',
+        target: 9,
+        streakFreezeInterval: 3,
+      }),
+    );
+
+    expect((await loadHabits())['habit-1']).toMatchObject({
+      name: 'Hydrate',
+      cadence: 'Week',
+      target: 6,
+      streakFreezeInterval: 3,
+      history: [today],
+      streakFreeze,
+    });
+  });
+
+  it('removes the target when switching to Day', async () => {
+    await saveHabits({
+      'habit-1': makeHabit({ cadence: 'Week', target: 3 }),
+    });
+
+    await updateHabit('habit-1', edit({ cadence: 'Day' }));
+
+    expect((await loadHabits())['habit-1'].target).toBeUndefined();
+  });
+
+  it('rejects a type change and an empty name', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await expect(
+      updateHabit('habit-1', edit({ type: 'Hours' })),
+    ).rejects.toBeInstanceOf(InvalidHabitError);
+    await expect(
+      updateHabit('habit-1', edit({ name: ' ' })),
+    ).rejects.toBeInstanceOf(InvalidHabitError);
   });
 });

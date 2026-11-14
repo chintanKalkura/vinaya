@@ -18,8 +18,11 @@ import {
   NewHabitDraft,
   buildHabit,
   canJoinGroup,
+  clampTargetHours,
   isDraftValid,
 } from '../utils/newHabit';
+import { clampCadenceTarget } from '../utils/cadence';
+import { clampFreezeInterval } from '../utils/streakFreeze';
 import { syncGroupCompletion } from './habitGroupService';
 
 export class InvalidMarkError extends Error {}
@@ -167,6 +170,38 @@ export async function setHabitHours(
   }
 
   return saveAndSync(updated, todayKey);
+}
+
+// Saves edited fields; the log, type and freezes held are kept. Group results
+// don't depend on these fields, so groups need no re-check.
+export async function updateHabit(
+  habitId: string,
+  draft: NewHabitDraft,
+): Promise<Habit> {
+  const habits = await loadHabits();
+  const habit = habits[habitId];
+  if (!habit) throw new InvalidHabitError(`Habit not found: ${habitId}`);
+  if (!isDraftValid(draft)) {
+    throw new InvalidHabitError('A habit needs a name of 1-40 characters');
+  }
+  if (draft.type !== habit.type) {
+    throw new InvalidHabitError("A habit's type can't be changed");
+  }
+
+  const updated: Habit = {
+    ...habit,
+    name: draft.name.trim(),
+    cadence: draft.cadence,
+    streakFreezeInterval: clampFreezeInterval(draft.streakFreezeInterval),
+  };
+  if (draft.cadence === 'Day') delete updated.target;
+  else updated.target = clampCadenceTarget(draft.cadence, draft.target);
+  if (habit.type === 'Hours') {
+    updated.targetHours = clampTargetHours(draft.targetHours);
+  }
+
+  await saveHabit(updated);
+  return updated;
 }
 
 // Removes the habit and every assignment of it, then re-checks those groups.

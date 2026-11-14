@@ -118,6 +118,51 @@ export async function syncGroupCompletion(
   return updated;
 }
 
+// Saves edited fields; the type and past completion log are kept, and today
+// is re-checked against the new members and rules
+export async function updateHabitGroup(
+  groupId: string,
+  draft: NewHabitGroupDraft,
+  todayKey: string = toDateKey(new Date()),
+): Promise<HabitGroup> {
+  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
+  const group = groups[groupId];
+  if (!group) throw new InvalidHabitGroupError(`Group not found: ${groupId}`);
+  if (draft.groupType !== group.groupType) {
+    throw new InvalidHabitGroupError("A group's type can't be changed");
+  }
+  if (!isGroupDraftValid(draft)) {
+    throw new InvalidHabitGroupError(
+      'A group needs a name, at least one habit and, for Required, a required habit',
+    );
+  }
+  for (const habitId of draft.habitIds) {
+    const habit = habits[habitId];
+    if (!habit) throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
+    if (!canTakeHabit(group.groupType, habit.type)) {
+      throw new InvalidHabitGroupError(
+        `A ${group.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+      );
+    }
+  }
+
+  const built = buildHabitGroup(
+    draft,
+    group.id,
+    group.sortOrder,
+    group.createdAt,
+  );
+  const updated: HabitGroup = {
+    ...built,
+    status: group.status,
+    recentLog: group.recentLog,
+    history: group.history,
+    ...(group.streakFreeze ? { streakFreeze: group.streakFreeze } : {}),
+  };
+  await saveHabitGroup(updated);
+  return (await syncGroupCompletion(groupId, todayKey)) ?? updated;
+}
+
 // Removes only the group; its habits are kept
 export async function deleteHabitGroup(groupId: string): Promise<void> {
   const groups = await loadHabitGroups();

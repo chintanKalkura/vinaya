@@ -4,6 +4,7 @@ import {
   applyStreakFreezes,
   createHabitGroup,
   deleteHabitGroup,
+  updateHabitGroup,
   getGroupStatus,
   syncGroupCompletion,
 } from './habitGroupService';
@@ -470,5 +471,73 @@ describe('deleteHabitGroup', () => {
       await loadHabitGroups(),
       Object.keys(await loadHabits()).sort(),
     ]).toEqual([{}, ['a', 'b']]);
+  });
+});
+
+describe('updateHabitGroup', () => {
+  const edit = (
+    overrides: Partial<NewHabitGroupDraft> = {},
+  ): NewHabitGroupDraft => ({
+    ...DEFAULT_GROUP_DRAFT,
+    name: 'G',
+    habitIds: ['a', 'b'],
+    ...overrides,
+  });
+
+  it('updates the fields and members and keeps the log', async () => {
+    const yesterday = marker(addDays(TODAY, -1));
+    await seed(
+      [makeHabit('a'), makeHabit('b')],
+      makeGroup('Any', { history: [yesterday], recentLog: [yesterday] }),
+    );
+
+    await updateHabitGroup(
+      'g',
+      edit({ name: 'Evenings', cadence: 'Week', target: 2, habitIds: ['a'] }),
+      TODAY,
+    );
+
+    expect((await loadHabitGroups()).g).toMatchObject({
+      name: 'Evenings',
+      cadence: 'Week',
+      target: 2,
+      habitIds: ['a'],
+      history: [yesterday],
+    });
+  });
+
+  it('re-checks today against the new members', async () => {
+    await seed(
+      [
+        makeHabit('a', {
+          recentLog: [marker(TODAY)],
+          history: [marker(TODAY)],
+        }),
+        makeHabit('b'),
+      ],
+      makeGroup('All'),
+    );
+
+    await updateHabitGroup(
+      'g',
+      edit({ groupType: 'All', habitIds: ['a'] }),
+      TODAY,
+    );
+
+    expect((await loadHabitGroups()).g.history).toEqual([marker(TODAY)]);
+  });
+
+  it('rejects a type change and incompatible habits', async () => {
+    await seed(
+      [makeHabit('a'), makeHabit('b'), makeHabit('h', { type: 'Hours' })],
+      makeGroup('Any'),
+    );
+
+    await expect(
+      updateHabitGroup('g', edit({ groupType: 'All' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+    await expect(
+      updateHabitGroup('g', edit({ habitIds: ['a', 'h'] }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
   });
 });
