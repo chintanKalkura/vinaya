@@ -14,6 +14,7 @@ import {
   loadHabits,
   loadHabitGroups,
   saveHabitGroups,
+  StorageReadError,
 } from '../storage/habitStorage';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
@@ -390,6 +391,17 @@ describe('createHabit', () => {
     recentLog: [],
     history: [],
     ...overrides,
+  });
+
+  it('should throw and save nothing when the stored habits cannot be read', async () => {
+    await AsyncStorage.setItem('habits_v2', '{not json');
+    const setItem = jest.spyOn(AsyncStorage, 'setItem');
+    setItem.mockClear();
+
+    await expect(createHabit(draft(), TODAY)).rejects.toBeInstanceOf(
+      StorageReadError,
+    );
+    expect(setItem.mock.calls.map(([key]) => key)).not.toContain('habits_v2');
   });
 
   it('saves the habit with the defaults', async () => {

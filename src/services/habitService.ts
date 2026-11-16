@@ -13,6 +13,7 @@ import {
   saveHabitGroup,
   saveHabitGroups,
   saveHabits,
+  withStorageQueue,
 } from '../storage/habitStorage';
 import {
   NewHabitDraft,
@@ -23,7 +24,7 @@ import {
 } from '../utils/newHabit';
 import { clampCadenceTarget } from '../utils/cadence';
 import { clampFreezeInterval } from '../utils/streakFreeze';
-import { syncGroupCompletion } from './habitGroupService';
+import { syncGroupCompletionInQueue } from './habitGroupService';
 
 export class InvalidMarkError extends Error {}
 export class InvalidHabitError extends Error {}
@@ -35,37 +36,50 @@ function newHabitId(createdAt: number): string {
 }
 
 // Saves a new habit last in sort order and joins it to its group, if any
-export async function createHabit(
+export function createHabit(
   draft: NewHabitDraft,
   todayKey: string = toDateKey(new Date()),
 ): Promise<Habit> {
-  if (!isDraftValid(draft)) {
-    throw new InvalidHabitError('A habit needs a name of 1-40 characters');
-  }
-  const [habits, groups] = await Promise.all([loadHabits(), loadHabitGroups()]);
-  let group: HabitGroup | undefined;
-  if (draft.groupId) {
-    group = groups[draft.groupId];
-    if (!group)
-      throw new InvalidHabitError(`Group not found: ${draft.groupId}`);
-    if (!canJoinGroup(draft.type, group)) {
-      throw new InvalidHabitError(
-        `A ${draft.type} habit cannot join a ${group.groupType} group`,
-      );
+  return withStorageQueue(async () => {
+    if (!isDraftValid(draft)) {
+      throw new InvalidHabitError('A habit needs a name of 1-40 characters');
     }
-  }
+    const [habits, groups] = await Promise.all([
+      loadHabits(),
+      loadHabitGroups(),
+    ]);
+    let group: HabitGroup | undefined;
+    if (draft.groupId) {
+      group = groups[draft.groupId];
+      if (!group)
+        throw new InvalidHabitError(`Group not found: ${draft.groupId}`);
+      if (!canJoinGroup(draft.type, group)) {
+        throw new InvalidHabitError(
+          `A ${draft.type} habit cannot join a ${group.groupType} group`,
+        );
+      }
+    }
 
-  const createdAt = Date.now();
-  const sortOrder =
-    Math.max(-1, ...Object.values(habits).map(h => h.sortOrder)) + 1;
-  const habit = buildHabit(draft, newHabitId(createdAt), sortOrder, createdAt);
+    const createdAt = Date.now();
+    const sortOrder =
+      Math.max(-1, ...Object.values(habits).map(h => h.sortOrder)) + 1;
+    const habit = buildHabit(
+      draft,
+      newHabitId(createdAt),
+      sortOrder,
+      createdAt,
+    );
 
-  await saveHabit(habit);
-  if (group) {
-    await saveHabitGroup({ ...group, habitIds: [...group.habitIds, habit.id] });
-    await syncGroupCompletion(group.id, todayKey);
-  }
-  return habit;
+    await saveHabit(habit);
+    if (group) {
+      await saveHabitGroup({
+        ...group,
+        habitIds: [...group.habitIds, habit.id],
+      });
+      await syncGroupCompletionInQueue(group.id, todayKey);
+    }
+    return habit;
+  });
 }
 
 function loadMarkableHabit(
@@ -89,151 +103,164 @@ async function saveAndSync(habit: Habit, todayKey: string): Promise<Habit> {
   await saveHabit(updated);
   const groupIds = groupIdsByHabit(await loadHabitGroups())[updated.id] ?? [];
   for (const groupId of groupIds) {
-    await syncGroupCompletion(groupId, todayKey);
+    await syncGroupCompletionInQueue(groupId, todayKey);
   }
   return updated;
 }
 
-export async function markHabitDone(
+export function markHabitDone(
   habitId: string,
   todayKey: string = toDateKey(new Date()),
 ): Promise<Habit> {
-  const habits = await loadHabits();
-  const habit = loadMarkableHabit(habits, habitId);
+  return withStorageQueue(async () => {
+    const habits = await loadHabits();
+    const habit = loadMarkableHabit(habits, habitId);
 
-  if (habit.recentLog.some(entry => entry.date === todayKey)) {
-    return habit;
-  }
+    if (habit.recentLog.some(entry => entry.date === todayKey)) {
+      return habit;
+    }
 
-  const entry: LogEntry = { date: todayKey, kind: 'marker', value: 1 };
-  const updated: Habit = {
-    ...habit,
-    recentLog: [entry, ...habit.recentLog].slice(
-      0,
-      DEFAULT_HABIT_LIMITS.recentLogSize,
-    ),
-    history: [...habit.history, entry],
-  };
+    const entry: LogEntry = { date: todayKey, kind: 'marker', value: 1 };
+    const updated: Habit = {
+      ...habit,
+      recentLog: [entry, ...habit.recentLog].slice(
+        0,
+        DEFAULT_HABIT_LIMITS.recentLogSize,
+      ),
+      history: [...habit.history, entry],
+    };
 
-  return saveAndSync(updated, todayKey);
+    return saveAndSync(updated, todayKey);
+  });
 }
 
-export async function unmarkHabitDone(
+export function unmarkHabitDone(
   habitId: string,
   todayKey: string = toDateKey(new Date()),
 ): Promise<Habit> {
-  const habits = await loadHabits();
-  const habit = loadMarkableHabit(habits, habitId);
+  return withStorageQueue(async () => {
+    const habits = await loadHabits();
+    const habit = loadMarkableHabit(habits, habitId);
 
-  if (!habit.recentLog.some(entry => entry.date === todayKey)) {
-    return habit;
-  }
+    if (!habit.recentLog.some(entry => entry.date === todayKey)) {
+      return habit;
+    }
 
-  const updated: Habit = {
-    ...habit,
-    recentLog: habit.recentLog.filter(entry => entry.date !== todayKey),
-    history: habit.history.filter(entry => entry.date !== todayKey),
-  };
+    const updated: Habit = {
+      ...habit,
+      recentLog: habit.recentLog.filter(entry => entry.date !== todayKey),
+      history: habit.history.filter(entry => entry.date !== todayKey),
+    };
 
-  return saveAndSync(updated, todayKey);
+    return saveAndSync(updated, todayKey);
+  });
 }
 
-export async function setHabitHours(
+export function setHabitHours(
   habitId: string,
   hours: number,
   todayKey: string = toDateKey(new Date()),
 ): Promise<Habit> {
-  const habits = await loadHabits();
-  const habit = habits[habitId];
-  if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
-  if (habit.type !== 'Hours') {
-    throw new InvalidMarkError('Only Hours habits can log hours');
-  }
+  return withStorageQueue(async () => {
+    const habits = await loadHabits();
+    const habit = habits[habitId];
+    if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
+    if (habit.type !== 'Hours') {
+      throw new InvalidMarkError('Only Hours habits can log hours');
+    }
 
-  const value = clampHours(hours);
-  const recentLog = habit.recentLog.filter(entry => entry.date !== todayKey);
-  const history = habit.history.filter(entry => entry.date !== todayKey);
+    const value = clampHours(hours);
+    const recentLog = habit.recentLog.filter(entry => entry.date !== todayKey);
+    const history = habit.history.filter(entry => entry.date !== todayKey);
 
-  let updated: Habit;
-  if (value > 0) {
-    const entry: LogEntry = { date: todayKey, kind: 'hours', value };
-    updated = {
-      ...habit,
-      recentLog: [entry, ...recentLog].slice(
-        0,
-        DEFAULT_HABIT_LIMITS.recentLogSize,
-      ),
-      history: [...history, entry],
-    };
-  } else {
-    updated = { ...habit, recentLog, history };
-  }
+    let updated: Habit;
+    if (value > 0) {
+      const entry: LogEntry = { date: todayKey, kind: 'hours', value };
+      updated = {
+        ...habit,
+        recentLog: [entry, ...recentLog].slice(
+          0,
+          DEFAULT_HABIT_LIMITS.recentLogSize,
+        ),
+        history: [...history, entry],
+      };
+    } else {
+      updated = { ...habit, recentLog, history };
+    }
 
-  return saveAndSync(updated, todayKey);
+    return saveAndSync(updated, todayKey);
+  });
 }
 
 // Saves edited fields; the log, type and freezes held are kept. Group results
 // don't depend on these fields, so groups need no re-check.
-export async function updateHabit(
+export function updateHabit(
   habitId: string,
   draft: NewHabitDraft,
 ): Promise<Habit> {
-  const habits = await loadHabits();
-  const habit = habits[habitId];
-  if (!habit) throw new InvalidHabitError(`Habit not found: ${habitId}`);
-  if (!isDraftValid(draft)) {
-    throw new InvalidHabitError('A habit needs a name of 1-40 characters');
-  }
-  if (draft.type !== habit.type) {
-    throw new InvalidHabitError("A habit's type can't be changed");
-  }
+  return withStorageQueue(async () => {
+    const habits = await loadHabits();
+    const habit = habits[habitId];
+    if (!habit) throw new InvalidHabitError(`Habit not found: ${habitId}`);
+    if (!isDraftValid(draft)) {
+      throw new InvalidHabitError('A habit needs a name of 1-40 characters');
+    }
+    if (draft.type !== habit.type) {
+      throw new InvalidHabitError("A habit's type can't be changed");
+    }
 
-  const updated: Habit = {
-    ...habit,
-    name: draft.name.trim(),
-    cadence: draft.cadence,
-    streakFreezeInterval: clampFreezeInterval(draft.streakFreezeInterval),
-  };
-  if (draft.cadence === 'Day') delete updated.target;
-  else updated.target = clampCadenceTarget(draft.cadence, draft.target);
-  if (habit.type === 'Hours') {
-    updated.targetHours = clampTargetHours(draft.targetHours);
-  }
+    const updated: Habit = {
+      ...habit,
+      name: draft.name.trim(),
+      cadence: draft.cadence,
+      streakFreezeInterval: clampFreezeInterval(draft.streakFreezeInterval),
+    };
+    if (draft.cadence === 'Day') delete updated.target;
+    else updated.target = clampCadenceTarget(draft.cadence, draft.target);
+    if (habit.type === 'Hours') {
+      updated.targetHours = clampTargetHours(draft.targetHours);
+    }
 
-  await saveHabit(updated);
-  return updated;
+    await saveHabit(updated);
+    return updated;
+  });
 }
 
 // Removes the habit and every assignment of it, then re-checks those groups.
 // Groups left with no habits stay; they can't complete until habits are added.
-export async function deleteHabit(
+export function deleteHabit(
   habitId: string,
   todayKey: string = toDateKey(new Date()),
 ): Promise<void> {
-  const [habits, groups] = await Promise.all([loadHabits(), loadHabitGroups()]);
-  const groupIds = groupIdsByHabit(groups)[habitId] ?? [];
+  return withStorageQueue(async () => {
+    const [habits, groups] = await Promise.all([
+      loadHabits(),
+      loadHabitGroups(),
+    ]);
+    const groupIds = groupIdsByHabit(groups)[habitId] ?? [];
 
-  delete habits[habitId];
-  for (const groupId of groupIds) {
-    const group = groups[groupId];
-    groups[groupId] = {
-      ...group,
-      habitIds: group.habitIds.filter(id => id !== habitId),
-      ...(group.requiredHabitIds
-        ? {
-            requiredHabitIds: group.requiredHabitIds.filter(
-              id => id !== habitId,
-            ),
-          }
-        : {}),
-    };
-  }
+    delete habits[habitId];
+    for (const groupId of groupIds) {
+      const group = groups[groupId];
+      groups[groupId] = {
+        ...group,
+        habitIds: group.habitIds.filter(id => id !== habitId),
+        ...(group.requiredHabitIds
+          ? {
+              requiredHabitIds: group.requiredHabitIds.filter(
+                id => id !== habitId,
+              ),
+            }
+          : {}),
+      };
+    }
 
-  await saveHabits(habits);
-  await saveHabitGroups(groups);
-  for (const groupId of groupIds) {
-    await syncGroupCompletion(groupId, todayKey);
-  }
+    await saveHabits(habits);
+    await saveHabitGroups(groups);
+    for (const groupId of groupIds) {
+      await syncGroupCompletionInQueue(groupId, todayKey);
+    }
+  });
 }
 
 export async function assignHabitToGroup(
