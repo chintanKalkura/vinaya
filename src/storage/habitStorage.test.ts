@@ -63,7 +63,7 @@ describe('withStorageQueue', () => {
     const events: string[] = [];
     const op = (name: string) => async () => {
       events.push(`${name} start`);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 0));
       events.push(`${name} end`);
     };
 
