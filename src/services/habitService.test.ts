@@ -590,3 +590,54 @@ describe('updateHabit', () => {
     ).rejects.toBeInstanceOf(InvalidHabitError);
   });
 });
+
+describe('concurrent saves', () => {
+  it('should save both marks when two habits are marked at once', async () => {
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': makeHabit({ id: 'habit-2' }),
+    });
+
+    await Promise.all([
+      markHabitDone('habit-1', TODAY),
+      markHabitDone('habit-2', TODAY),
+    ]);
+
+    const habits = await loadHabits();
+    expect(
+      [habits['habit-1'], habits['habit-2']].map(h => h.history.length),
+    ).toEqual([1, 1]);
+  });
+
+  it('should save a mark and an hours entry in the same group and complete it', async () => {
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': makeHabit({ id: 'habit-2', type: 'Hours', targetHours: 1 }),
+    });
+    await saveHabitGroups({
+      g: {
+        id: 'g',
+        name: 'g',
+        cadence: 'Day',
+        groupType: 'All',
+        habitIds: ['habit-1', 'habit-2'],
+        streakFreezeInterval: 7,
+        status: 'active',
+        sortOrder: 0,
+        createdAt: 0,
+        recentLog: [],
+        history: [],
+      },
+    });
+
+    await Promise.all([
+      markHabitDone('habit-1', TODAY),
+      setHabitHours('habit-2', 2, TODAY),
+    ]);
+
+    const groups = await loadHabitGroups();
+    expect(groups.g.history).toEqual([
+      { date: TODAY, kind: 'marker', value: 1 },
+    ]);
+  });
+});
