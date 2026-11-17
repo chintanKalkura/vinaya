@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 import { BOTTOM_MENU_HEIGHT } from './BottomMenu';
 
-// Non-blocking "Couldn't save" above the FAB: docs/style-choices/habits-section/storage-error-messages.md
+// Non-blocking "Couldn't save" above the FAB, or at the bottom of an open
+// form: docs/style-choices/habits-section/storage-error-messages.md
 export const SAVE_ERROR_HIDE_MS = 4000;
 // FAB: 16 above the bottom menu, 56 tall; the snackbar sits 12 above it
 const FAB_TOP = 16 + 56 + 12;
@@ -12,12 +13,14 @@ const FAB_TOP = 16 + 56 + 12;
 interface SaveErrorSnackbarProps {
   visible: boolean;
   onDismiss: () => void;
+  inForm?: boolean; // a form covers the FAB and bottom menu
 }
 
 // A new failure remounts it (keyed by the screen), restarting the timer
 export default function SaveErrorSnackbar({
   visible,
   onDismiss,
+  inForm = false,
 }: SaveErrorSnackbarProps): React.JSX.Element | null {
   const insets = useSafeAreaInsets();
 
@@ -35,7 +38,9 @@ export default function SaveErrorSnackbar({
       onPress={onDismiss}
       style={[
         styles.snackbar,
-        { bottom: BOTTOM_MENU_HEIGHT + FAB_TOP + insets.bottom },
+        {
+          bottom: (inForm ? 16 : BOTTOM_MENU_HEIGHT + FAB_TOP) + insets.bottom,
+        },
       ]}
     >
       <Text style={styles.text}>Couldn't save. Try again.</Text>

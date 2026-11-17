@@ -62,4 +62,14 @@ describe('SaveErrorSnackbar', () => {
       backgroundColor: colors.v2CardBackground,
     });
   });
+
+  it('should sit 16 above the bottom edge inside a form', () => {
+    const { getByTestId } = render(
+      <SaveErrorSnackbar visible inForm onDismiss={() => {}} />,
+    );
+
+    expect(
+      StyleSheet.flatten(getByTestId('save-error').props.style).bottom,
+    ).toBe(16);
+  });
 });
