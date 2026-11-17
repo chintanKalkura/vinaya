@@ -16,6 +16,7 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/native-modules.md` — Android native modules and SharedPreferences namespace
 - `docs/source-control.md` — branching and commits
 - `docs/start-app.md` — commands
+- `docs/google-cloud-setup.md` — Google Cloud project, OAuth clients and the `drive.appdata` scope for sign-in and Drive backup
 - `docs/testing.md` — testing libraries, coverage, conventions
 - `docs/bug-fixes.md` — bug fix process
 - `docs/feature-development/habits-section/` — Habits feature specs
@@ -27,3 +28,4 @@ Read the relevant doc in `docs/` before working on its area.
 - `docs/style-choices/habits-section/banner-menu.md` — ⋮ right of the streak number on habit banners and group cards, opening an Edit/Delete dropdown (Edit opens the edit forms) and a delete confirm modal, implemented in `src/screens/habits/BannerMenu.tsx`
 - `docs/style-choices/habits-section/header-and-bottom-menu.md` — "Vinaya - Habits" title in serif italic with the cadence filter, toggle and sort on one row, and the flush espresso-brown bottom menu padded by the bottom inset, implemented in `src/screens/habits/HabitsHeader.tsx` and `src/screens/habits/BottomMenu.tsx`
 - `docs/style-choices/habits-section/storage-error-messages.md` — "Couldn't load your habits" message with a red-outlined Retry in place of the list, and the "Couldn't save. Try again." snackbar above the + (or at the bottom of an open form), implemented in `src/screens/habits/LoadErrorMessage.tsx` and `src/screens/habits/SaveErrorSnackbar.tsx`
+- `docs/style-choices/profile/account-and-backup.md` — Profile tab's Account & backup card (not-signed-in message, Sign in with Google, last backup or error, Back up now, Sign out, Delete backup and sign out) with the restore-result and delete-confirm dialogs, implemented in `src/screens/profile/AccountSection.tsx` and `src/screens/ProfileScreen.tsx`
