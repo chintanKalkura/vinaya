@@ -1,9 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Habit} from '../types/habit';
-import {HabitGroup} from '../types/habitGroup';
+import { Habit } from '../types/habit';
+import { HabitGroup } from '../types/habitGroup';
+import { Tombstone } from '../types/backup';
+import { withTombstone } from '../utils/tombstones';
 
 const HABITS_KEY = 'habits_v2';
 const HABIT_GROUPS_KEY = 'habit_groups_v2';
+const TOMBSTONES_KEY = 'tombstones_v2';
 
 export class StorageReadError extends Error {}
 export class StorageWriteError extends Error {}
@@ -70,19 +73,38 @@ export function saveHabitGroups(
   return writeCollection(HABIT_GROUPS_KEY, groups);
 }
 
+export function loadTombstones(): Promise<Record<string, Tombstone>> {
+  return readCollection<Tombstone>(TOMBSTONES_KEY);
+}
+
+export function saveTombstones(
+  tombstones: Record<string, Tombstone>,
+): Promise<void> {
+  return writeCollection(TOMBSTONES_KEY, tombstones);
+}
+
 // Queued read for the screen, so a reload never sees a half-finished save
 export function loadHabitsAndGroups(): Promise<
   [Record<string, Habit>, Record<string, HabitGroup>]
 > {
-  return withStorageQueue(() =>
-    Promise.all([loadHabits(), loadHabitGroups()]),
-  );
+  return withStorageQueue(() => Promise.all([loadHabits(), loadHabitGroups()]));
 }
 
 export async function saveHabit(habit: Habit): Promise<void> {
   const habits = await loadHabits();
   habits[habit.id] = habit;
   await saveHabits(habits);
+}
+
+// Unqueued; called inside a queued delete
+export async function recordTombstone(
+  id: string,
+  kind: Tombstone['kind'],
+): Promise<void> {
+  const tombstones = await loadTombstones();
+  await saveTombstones(
+    withTombstone(tombstones, { id, kind, deletedAt: Date.now() }),
+  );
 }
 
 export async function saveHabitGroup(group: HabitGroup): Promise<void> {

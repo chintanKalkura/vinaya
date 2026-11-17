@@ -8,6 +8,7 @@ import {
   saveHabitGroup,
   saveHabitGroups,
   saveHabits,
+  recordTombstone,
   withStorageQueue,
 } from '../storage/habitStorage';
 import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
@@ -190,6 +191,7 @@ export function deleteHabitGroup(groupId: string): Promise<void> {
     const groups = await loadHabitGroups();
     delete groups[groupId];
     await saveHabitGroups(groups);
+    await recordTombstone(groupId, 'group');
   });
 }
 

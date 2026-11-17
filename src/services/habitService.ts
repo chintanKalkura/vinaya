@@ -13,6 +13,7 @@ import {
   saveHabitGroup,
   saveHabitGroups,
   saveHabits,
+  recordTombstone,
   withStorageQueue,
 } from '../storage/habitStorage';
 import {
@@ -257,6 +258,7 @@ export function deleteHabit(
 
     await saveHabits(habits);
     await saveHabitGroups(groups);
+    await recordTombstone(habitId, 'habit');
     for (const groupId of groupIds) {
       await syncGroupCompletionInQueue(groupId, todayKey);
     }
