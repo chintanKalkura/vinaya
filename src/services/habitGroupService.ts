@@ -198,30 +198,32 @@ export function deleteHabitGroup(groupId: string): Promise<void> {
 // Uses freezes on every habit and group whose streak would break today.
 // Runs once when the Habits screen loads; saves only what changed.
 export function applyStreakFreezes(todayKey: string): Promise<void> {
-  return withStorageQueue(async () => {
-    const [groups, habits] = await Promise.all([
-      loadHabitGroups(),
-      loadHabits(),
-    ]);
-    let habitsChanged = false;
-    let groupsChanged = false;
+  return withStorageQueue(() => applyStreakFreezesInQueue(todayKey));
+}
 
-    for (const habit of Object.values(habits)) {
-      const next = withAppliedFreezes(habit, habitMarkers(habit), todayKey);
-      if (next !== habit) {
-        habits[habit.id] = next;
-        habitsChanged = true;
-      }
-    }
-    for (const group of Object.values(groups)) {
-      const next = withAppliedFreezes(group, group.history, todayKey);
-      if (next !== group) {
-        groups[group.id] = next;
-        groupsChanged = true;
-      }
-    }
+// Unqueued; for operations already running in the storage queue
+export async function applyStreakFreezesInQueue(
+  todayKey: string,
+): Promise<void> {
+  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
+  let habitsChanged = false;
+  let groupsChanged = false;
 
-    if (habitsChanged) await saveHabits(habits);
-    if (groupsChanged) await saveHabitGroups(groups);
-  });
+  for (const habit of Object.values(habits)) {
+    const next = withAppliedFreezes(habit, habitMarkers(habit), todayKey);
+    if (next !== habit) {
+      habits[habit.id] = next;
+      habitsChanged = true;
+    }
+  }
+  for (const group of Object.values(groups)) {
+    const next = withAppliedFreezes(group, group.history, todayKey);
+    if (next !== group) {
+      groups[group.id] = next;
+      groupsChanged = true;
+    }
+  }
+
+  if (habitsChanged) await saveHabits(habits);
+  if (groupsChanged) await saveHabitGroups(groups);
 }
