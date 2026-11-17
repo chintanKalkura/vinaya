@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     color: colors.v2Orange,
   },
   done: {
-    height: 52,
+    minHeight: 52,
     borderRadius: 14,
     backgroundColor: colors.v2Orange,
     alignItems: 'center',

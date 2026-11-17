@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   button48: {
-    height: 46,
+    minHeight: 46,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',

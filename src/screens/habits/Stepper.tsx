@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   // 48dp to tap: docs/style-choices/habits-section/tap-targets.md
   stepButton: {
     width: 48,
-    height: 48,
+    minHeight: 48,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.v2GreyOutline,
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 48,
+    minHeight: 48,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.v2Orange,
