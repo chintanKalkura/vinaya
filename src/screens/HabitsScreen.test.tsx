@@ -995,3 +995,62 @@ describe('HabitsScreen edit', () => {
     expect(!!(await utils.findByText('Precepts'))).toBe(true);
   });
 });
+
+describe('HabitsScreen storage errors', () => {
+  it('shows the load message and hides the list and + when habits cannot be read', async () => {
+    await AsyncStorage.setItem('habits_v2', '{not json');
+
+    const utils = render(<HabitsScreen />);
+
+    expect([
+      !!(await utils.findByText("Couldn't load your habits")),
+      utils.queryByTestId('fab'),
+    ]).toEqual([true, null]);
+  });
+
+  it('loads the habits again on Retry', async () => {
+    await AsyncStorage.setItem('habits_v2', '{not json');
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('load-error');
+
+    await seed({ 'no-killing': makeHabit() });
+    fireEvent.press(utils.getByText('Retry'));
+
+    expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
+  });
+
+  it('shows the save message and keeps the habit unmarked when a mark fails', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = renderInGroupView();
+    const pill = await utils.findByTestId('habit-pill-no-killing');
+    jest
+      .spyOn(AsyncStorage, 'setItem')
+      .mockRejectedValueOnce(new Error('disk full'));
+
+    fireEvent.press(pill);
+
+    expect([
+      !!(await utils.findByText("Couldn't save. Try again.")),
+      pill.props.accessibilityState.checked,
+    ]).toEqual([true, false]);
+  });
+
+  it('keeps the new habit form open and shows the save message when creating fails', async () => {
+    await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
+    const utils = render(<HabitsScreen />);
+    fireEvent.press(await utils.findByTestId('fab'));
+    fireEvent.press(await utils.findByTestId('choice-sheet-habit'));
+    const form = await utils.findByTestId('new-habit-form');
+    fireEvent.changeText(utils.getByTestId('new-habit-name'), 'Morning run');
+    jest
+      .spyOn(AsyncStorage, 'setItem')
+      .mockRejectedValueOnce(new Error('disk full'));
+
+    fireEvent.press(utils.getByTestId('new-habit-create'));
+
+    expect([
+      !!(await within(form).findByText("Couldn't save. Try again.")),
+      utils.getByTestId('new-habit-name').props.value,
+    ]).toEqual([true, 'Morning run']);
+  });
+});
