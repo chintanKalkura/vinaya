@@ -6,10 +6,10 @@ function channel(value: number): number {
 }
 
 export function relativeLuminance(hex: string): number {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const r = channel((n >> 16) & 0xff);
-  const g = channel((n >> 8) & 0xff);
-  const b = channel(n & 0xff);
+  const digits = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i =>
+    channel(parseInt(digits.slice(i, i + 2), 16)),
+  );
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
