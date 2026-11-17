@@ -578,14 +578,23 @@ describe('HabitListRow menu', () => {
       />,
     );
 
+    // The ⋮ is drawn after the streak; its 48dp target sits over the banner's
+    // right edge
     const nameRow = getByTestId('habit-row-streak-habit-1').parent?.parent;
-    const ids = nameRow?.children.map(
-      child => (child as ReactTestInstance).props.testID,
+    const last = nameRow?.children[nameRow.children.length - 1] as
+      | ReactTestInstance
+      | undefined;
+    const target = StyleSheet.flatten(
+      getByTestId('habit-row-menu-habit-1').props.style,
     );
-    expect(ids?.slice(-2)).toEqual([
-      'habit-row-streak-habit-1',
-      'habit-row-menu-habit-1',
-    ]);
+
+    expect([
+      StyleSheet.flatten(last?.props.style).width,
+      target.position,
+      target.right,
+      target.minWidth,
+      target.minHeight,
+    ]).toEqual([24, 'absolute', 0, 48, 48]);
   });
 
   it('never shows the menu on a pill', () => {

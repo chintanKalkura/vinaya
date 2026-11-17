@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Snowflake } from 'lucide-react-native';
 import { Habit } from '../../types/habit';
@@ -7,7 +7,10 @@ import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
-import BannerMenu from './BannerMenu';
+import BannerMenu, {
+  BANNER_MENU_SPACE,
+  bannerMenuTargetStyle,
+} from './BannerMenu';
 import { ColorKind, getColorScheme } from './colorRules';
 import { checkmarkLabel, hoursLabel } from './a11yLabels';
 
@@ -47,6 +50,9 @@ export default function HabitListRow({
     { color: scheme.numberColor },
   ];
   const freeze = { frozen: scheme.frozen, freezesLeft: status.freezesLeft };
+  // Where the name row's centre is in the banner, for the ⋮ target
+  const [textColumnY, setTextColumnY] = useState(0);
+  const [nameRowCenter, setNameRowCenter] = useState(0);
   // Pills never show the freeze label. Decorative: the tap target's label says it.
   const cadenceLabel = isBanner ? (
     <View
@@ -66,15 +72,17 @@ export default function HabitListRow({
       />
     </View>
   ) : null;
-  const menu =
-    isBanner && onEdit && onDelete ? (
-      <BannerMenu
-        kind="habit"
-        onEdit={() => onEdit(habit.id)}
-        onDelete={() => onDelete(habit.id)}
-        testID={`habit-row-menu-${habit.id}`}
-      />
-    ) : null;
+  const hasMenu = isBanner && onEdit && onDelete;
+  // Drawn in the name row, tapped through a 48dp target over the banner
+  const menu = hasMenu ? (
+    <BannerMenu
+      kind="habit"
+      onEdit={() => onEdit(habit.id)}
+      onDelete={() => onDelete(habit.id)}
+      testID={`habit-row-menu-${habit.id}`}
+      targetStyle={bannerMenuTargetStyle(textColumnY + nameRowCenter)}
+    />
+  ) : null;
   const groupLabel = groupName ? (
     <Text
       importantForAccessibility="no"
@@ -85,7 +93,14 @@ export default function HabitListRow({
     </Text>
   ) : null;
   const nameRow = (
-    <View style={styles.nameRow}>
+    <View
+      style={styles.nameRow}
+      onLayout={e =>
+        setNameRowCenter(
+          e.nativeEvent.layout.y + e.nativeEvent.layout.height / 2,
+        )
+      }
+    >
       <Text
         importantForAccessibility="no"
         style={[styles.name, { color: scheme.titleColor }]}
@@ -99,9 +114,11 @@ export default function HabitListRow({
       >
         {status.streak}
       </Text>
-      {menu}
+      {hasMenu ? <View style={styles.menuSpace} /> : null}
     </View>
   );
+  const onTextColumnLayout = (e: { nativeEvent: { layout: { y: number } } }) =>
+    setTextColumnY(e.nativeEvent.layout.y);
 
   // Only the check (or the Hours bar) is tappable; the rest of the banner
   // will open the detail page (habit-group-detail-page.md):
@@ -109,7 +126,7 @@ export default function HabitListRow({
   if (hours) {
     return (
       <View testID={`habit-row-${habit.id}`} style={rowStyle}>
-        <View style={styles.textColumn}>
+        <View style={styles.textColumn} onLayout={onTextColumnLayout}>
           {nameRow}
           {groupLabel}
           <Pressable
@@ -135,6 +152,7 @@ export default function HabitListRow({
           </Pressable>
         </View>
         {cadenceLabel}
+        {menu}
       </View>
     );
   }
@@ -176,11 +194,12 @@ export default function HabitListRow({
           </View>
         )}
       </Pressable>
-      <View style={styles.textColumn}>
+      <View style={styles.textColumn} onLayout={onTextColumnLayout}>
         {nameRow}
         {groupLabel}
       </View>
       {cadenceLabel}
+      {menu}
     </View>
   );
 }
@@ -220,6 +239,9 @@ const styles = StyleSheet.create({
   },
   textColumn: {
     flex: 1,
+  },
+  menuSpace: {
+    width: BANNER_MENU_SPACE,
   },
   nameRow: {
     flexDirection: 'row',

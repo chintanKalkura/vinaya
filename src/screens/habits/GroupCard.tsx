@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
@@ -12,7 +12,10 @@ import HabitPill from './HabitPill';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
-import BannerMenu from './BannerMenu';
+import BannerMenu, {
+  BANNER_MENU_SPACE,
+  bannerMenuTargetStyle,
+} from './BannerMenu';
 import { groupLabel } from './a11yLabels';
 
 interface GroupCardProps {
@@ -45,13 +48,23 @@ export default function GroupCard({
     0,
   );
   const hoursTarget = group.targetHours ?? 0;
+  // The header's centre in the card, for the ⋮ target
+  const [headerCenter, setHeaderCenter] = useState(0);
+  const hasMenu = onEdit && onDelete;
 
   return (
     <View
       testID={`group-card-${group.id}`}
       style={[styles.card, scheme.container]}
     >
-      <View style={styles.header}>
+      <View
+        style={styles.header}
+        onLayout={e =>
+          setHeaderCenter(
+            e.nativeEvent.layout.y + e.nativeEvent.layout.height / 2,
+          )
+        }
+      >
         {/* Read as one item; the ⋮ stays separate */}
         <View
           testID={`group-header-${group.id}`}
@@ -114,14 +127,7 @@ export default function GroupCard({
             {status.streak}
           </Text>
         </View>
-        {onEdit && onDelete ? (
-          <BannerMenu
-            kind="group"
-            onEdit={() => onEdit(group.id)}
-            onDelete={() => onDelete(group.id)}
-            testID={`group-menu-${group.id}`}
-          />
-        ) : null}
+        {hasMenu ? <View style={styles.menuSpace} /> : null}
       </View>
       {isHoursGroup ? (
         <View style={styles.hoursProgress}>
@@ -173,6 +179,16 @@ export default function GroupCard({
         cadence={group.cadence}
         testID={`group-cadence-${group.id}`}
       />
+      {/* Drawn in the header, tapped through a 48dp target over the card */}
+      {onEdit && onDelete ? (
+        <BannerMenu
+          kind="group"
+          onEdit={() => onEdit(group.id)}
+          onDelete={() => onDelete(group.id)}
+          testID={`group-menu-${group.id}`}
+          targetStyle={bannerMenuTargetStyle(headerCenter)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -190,6 +206,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  menuSpace: {
+    width: BANNER_MENU_SPACE,
   },
   headerInfo: {
     flex: 1,
