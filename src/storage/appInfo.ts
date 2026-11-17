@@ -10,3 +10,14 @@ export async function getAppLastUpdateTime(): Promise<number | null> {
     return null;
   }
 }
+
+// versionName from build.gradle, e.g. "1.0"; null when unavailable
+export async function getAppVersionName(): Promise<string | null> {
+  const appInfo = NativeModules.AppInfo;
+  if (!appInfo?.getVersionName) return null;
+  try {
+    return await appInfo.getVersionName();
+  } catch {
+    return null;
+  }
+}
