@@ -12,6 +12,7 @@ import { Habit, HabitCadence, HabitType } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
 import { colors } from '../../theme';
+import TouchTarget from './TouchTarget';
 import { clampCadenceTarget } from '../../utils/cadence';
 import {
   DEFAULT_DRAFT,
@@ -204,40 +205,44 @@ export default function NewHabitForm({
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chips}
             >
-              <Pressable
+              <TouchTarget
                 testID="new-habit-create-group"
                 accessibilityRole="button"
                 onPress={() => onCreateGroup?.(draft)}
-                style={formStyles.chip}
               >
-                <Text style={formStyles.chipLabel}>+ Create Group</Text>
-              </Pressable>
+                <View style={formStyles.chip}>
+                  <Text style={formStyles.chipLabel}>+ Create Group</Text>
+                </View>
+              </TouchTarget>
               {groupChips.map(group => {
                 const enabled = canTakeHabit(group.groupType, draft.type);
                 const selected = draft.groupId === group.id;
                 return (
-                  <Pressable
+                  <TouchTarget
                     key={group.id}
                     testID={`new-habit-group-${group.id}`}
                     accessibilityRole="radio"
                     accessibilityState={{ selected, disabled: !enabled }}
                     disabled={!enabled}
                     onPress={() => toggleGroup(group.id)}
-                    style={[
-                      formStyles.chip,
-                      selected && formStyles.chipSelected,
-                      !enabled && formStyles.chipDisabled,
-                    ]}
                   >
-                    <Text
+                    <View
                       style={[
-                        formStyles.chipLabel,
-                        selected && formStyles.chipLabelSelected,
+                        formStyles.chip,
+                        selected && formStyles.chipSelected,
+                        !enabled && formStyles.chipDisabled,
                       ]}
                     >
-                      {group.name}
-                    </Text>
-                  </Pressable>
+                      <Text
+                        style={[
+                          formStyles.chipLabel,
+                          selected && formStyles.chipLabelSelected,
+                        ]}
+                      >
+                        {group.name}
+                      </Text>
+                    </View>
+                  </TouchTarget>
                 );
               })}
             </ScrollView>

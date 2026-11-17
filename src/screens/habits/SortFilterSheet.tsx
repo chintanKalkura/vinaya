@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
+import TouchTarget from './TouchTarget';
 import { SORT_KEYS, SortFilterState, SortKey } from '../../utils/sortFilter';
 
 // Screen 03: docs/feature-development/habits-section/sort-filter-delete-habit.md.
@@ -81,23 +82,24 @@ export default function SortFilterSheet({
           {SORT_KEYS.map(sort => {
             const selected = draft.sort === sort;
             return (
-              <Pressable
+              <TouchTarget
                 key={sort}
                 testID={`sort-option-${sort}`}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 onPress={() => toggleSort(sort)}
-                style={[styles.chip, selected && styles.chipSelected]}
               >
-                <Text
-                  style={[
-                    styles.chipLabel,
-                    selected && styles.chipLabelSelected,
-                  ]}
-                >
-                  {sort}
-                </Text>
-              </Pressable>
+                <View style={[styles.chip, selected && styles.chipSelected]}>
+                  <Text
+                    style={[
+                      styles.chipLabel,
+                      selected && styles.chipLabelSelected,
+                    ]}
+                  >
+                    {sort}
+                  </Text>
+                </View>
+              </TouchTarget>
             );
           })}
         </View>

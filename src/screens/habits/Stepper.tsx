@@ -74,9 +74,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  // 48dp to tap: docs/style-choices/habits-section/tap-targets.md
   stepButton: {
-    width: 46,
-    height: 36,
+    width: 48,
+    height: 48,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.v2GreyOutline,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 44,
+    height: 48,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.v2Orange,
