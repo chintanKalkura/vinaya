@@ -53,7 +53,15 @@ function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export default function HabitsScreen(): React.JSX.Element {
+interface HabitsScreenProps {
+  onOpenProfile?: () => void;
+  dataVersion?: number; // bumped when a backup or restore changed the data
+}
+
+export default function HabitsScreen({
+  onOpenProfile,
+  dataVersion = 0,
+}: HabitsScreenProps): React.JSX.Element {
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
@@ -107,6 +115,12 @@ export default function HabitsScreen(): React.JSX.Element {
   useEffect(() => {
     loadScreen();
   }, [loadScreen]);
+
+  // A restore or backup merge changed the stored data while the screen stayed open
+  useEffect(() => {
+    if (dataVersion === 0) return;
+    reload().catch(() => setLoadError(true));
+  }, [dataVersion, reload]);
 
   // The screen shows what was saved: it reloads after a save, and on a failed
   // save keeps what it showed and says so. Returns whether the save worked.
@@ -386,7 +400,11 @@ export default function HabitsScreen(): React.JSX.Element {
         </Pressable>
       )}
       {saveErrorIn(false)}
-      <BottomMenu />
+      <BottomMenu
+        onSelect={tab => {
+          if (tab === 'Profile') onOpenProfile?.();
+        }}
+      />
       <HoursEntryModal
         visible={hoursHabit !== undefined}
         habitName={hoursHabit?.name ?? ''}
