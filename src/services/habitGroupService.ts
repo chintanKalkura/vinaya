@@ -8,6 +8,7 @@ import {
   saveHabitGroup,
   saveHabitGroups,
   saveHabits,
+  withStorageQueue,
 } from '../storage/habitStorage';
 import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
 import { isGroupComplete } from '../utils/groupCompletion';
@@ -31,37 +32,43 @@ function newGroupId(createdAt: number): string {
 
 // Saves a new group last in sort order, then counts today if its members
 // already complete it
-export async function createHabitGroup(
+export function createHabitGroup(
   draft: NewHabitGroupDraft,
   todayKey: string = toDateKey(new Date()),
 ): Promise<HabitGroup> {
-  if (!isGroupDraftValid(draft)) {
-    throw new InvalidHabitGroupError(
-      'A group needs a name, at least one habit and, for Required, a required habit',
-    );
-  }
-  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
-  for (const habitId of draft.habitIds) {
-    const habit = habits[habitId];
-    if (!habit) throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
-    if (!canTakeHabit(draft.groupType, habit.type)) {
+  return withStorageQueue(async () => {
+    if (!isGroupDraftValid(draft)) {
       throw new InvalidHabitGroupError(
-        `A ${draft.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+        'A group needs a name, at least one habit and, for Required, a required habit',
       );
     }
-  }
+    const [groups, habits] = await Promise.all([
+      loadHabitGroups(),
+      loadHabits(),
+    ]);
+    for (const habitId of draft.habitIds) {
+      const habit = habits[habitId];
+      if (!habit)
+        throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
+      if (!canTakeHabit(draft.groupType, habit.type)) {
+        throw new InvalidHabitGroupError(
+          `A ${draft.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+        );
+      }
+    }
 
-  const createdAt = Date.now();
-  const sortOrder =
-    Math.max(-1, ...Object.values(groups).map(g => g.sortOrder)) + 1;
-  const group = buildHabitGroup(
-    draft,
-    newGroupId(createdAt),
-    sortOrder,
-    createdAt,
-  );
-  await saveHabitGroup(group);
-  return (await syncGroupCompletion(group.id, todayKey)) ?? group;
+    const createdAt = Date.now();
+    const sortOrder =
+      Math.max(-1, ...Object.values(groups).map(g => g.sortOrder)) + 1;
+    const group = buildHabitGroup(
+      draft,
+      newGroupId(createdAt),
+      sortOrder,
+      createdAt,
+    );
+    await saveHabitGroup(group);
+    return (await syncGroupCompletionInQueue(group.id, todayKey)) ?? group;
+  });
 }
 
 // The group log holds one marker per day the group-type rule was met
@@ -78,7 +85,15 @@ export function getGroupStatus(
   );
 }
 
-export async function syncGroupCompletion(
+export function syncGroupCompletion(
+  groupId: string,
+  todayKey: string,
+): Promise<HabitGroup | undefined> {
+  return withStorageQueue(() => syncGroupCompletionInQueue(groupId, todayKey));
+}
+
+// Unqueued; for service operations already running in the storage queue
+export async function syncGroupCompletionInQueue(
   groupId: string,
   todayKey: string,
 ): Promise<HabitGroup | undefined> {
@@ -120,78 +135,91 @@ export async function syncGroupCompletion(
 
 // Saves edited fields; the type and past completion log are kept, and today
 // is re-checked against the new members and rules
-export async function updateHabitGroup(
+export function updateHabitGroup(
   groupId: string,
   draft: NewHabitGroupDraft,
   todayKey: string = toDateKey(new Date()),
 ): Promise<HabitGroup> {
-  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
-  const group = groups[groupId];
-  if (!group) throw new InvalidHabitGroupError(`Group not found: ${groupId}`);
-  if (draft.groupType !== group.groupType) {
-    throw new InvalidHabitGroupError("A group's type can't be changed");
-  }
-  if (!isGroupDraftValid(draft)) {
-    throw new InvalidHabitGroupError(
-      'A group needs a name, at least one habit and, for Required, a required habit',
-    );
-  }
-  for (const habitId of draft.habitIds) {
-    const habit = habits[habitId];
-    if (!habit) throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
-    if (!canTakeHabit(group.groupType, habit.type)) {
+  return withStorageQueue(async () => {
+    const [groups, habits] = await Promise.all([
+      loadHabitGroups(),
+      loadHabits(),
+    ]);
+    const group = groups[groupId];
+    if (!group) throw new InvalidHabitGroupError(`Group not found: ${groupId}`);
+    if (draft.groupType !== group.groupType) {
+      throw new InvalidHabitGroupError("A group's type can't be changed");
+    }
+    if (!isGroupDraftValid(draft)) {
       throw new InvalidHabitGroupError(
-        `A ${group.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+        'A group needs a name, at least one habit and, for Required, a required habit',
       );
     }
-  }
+    for (const habitId of draft.habitIds) {
+      const habit = habits[habitId];
+      if (!habit)
+        throw new InvalidHabitGroupError(`Habit not found: ${habitId}`);
+      if (!canTakeHabit(group.groupType, habit.type)) {
+        throw new InvalidHabitGroupError(
+          `A ${group.groupType} group cannot take the ${habit.type} habit ${habit.name}`,
+        );
+      }
+    }
 
-  const built = buildHabitGroup(
-    draft,
-    group.id,
-    group.sortOrder,
-    group.createdAt,
-  );
-  const updated: HabitGroup = {
-    ...built,
-    status: group.status,
-    recentLog: group.recentLog,
-    history: group.history,
-    ...(group.streakFreeze ? { streakFreeze: group.streakFreeze } : {}),
-  };
-  await saveHabitGroup(updated);
-  return (await syncGroupCompletion(groupId, todayKey)) ?? updated;
+    const built = buildHabitGroup(
+      draft,
+      group.id,
+      group.sortOrder,
+      group.createdAt,
+    );
+    const updated: HabitGroup = {
+      ...built,
+      status: group.status,
+      recentLog: group.recentLog,
+      history: group.history,
+      ...(group.streakFreeze ? { streakFreeze: group.streakFreeze } : {}),
+    };
+    await saveHabitGroup(updated);
+    return (await syncGroupCompletionInQueue(groupId, todayKey)) ?? updated;
+  });
 }
 
 // Removes only the group; its habits are kept
-export async function deleteHabitGroup(groupId: string): Promise<void> {
-  const groups = await loadHabitGroups();
-  delete groups[groupId];
-  await saveHabitGroups(groups);
+export function deleteHabitGroup(groupId: string): Promise<void> {
+  return withStorageQueue(async () => {
+    const groups = await loadHabitGroups();
+    delete groups[groupId];
+    await saveHabitGroups(groups);
+  });
 }
 
 // Uses freezes on every habit and group whose streak would break today.
 // Runs once when the Habits screen loads; saves only what changed.
-export async function applyStreakFreezes(todayKey: string): Promise<void> {
-  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
-  let habitsChanged = false;
-  let groupsChanged = false;
+export function applyStreakFreezes(todayKey: string): Promise<void> {
+  return withStorageQueue(async () => {
+    const [groups, habits] = await Promise.all([
+      loadHabitGroups(),
+      loadHabits(),
+    ]);
+    let habitsChanged = false;
+    let groupsChanged = false;
 
-  for (const habit of Object.values(habits)) {
-    const next = withAppliedFreezes(habit, habitMarkers(habit), todayKey);
-    if (next !== habit) {
-      habits[habit.id] = next;
-      habitsChanged = true;
+    for (const habit of Object.values(habits)) {
+      const next = withAppliedFreezes(habit, habitMarkers(habit), todayKey);
+      if (next !== habit) {
+        habits[habit.id] = next;
+        habitsChanged = true;
+      }
     }
-  }
-  for (const group of Object.values(groups)) {
-    const next = withAppliedFreezes(group, group.history, todayKey);
-    if (next !== group) {
-      groups[group.id] = next;
-      groupsChanged = true;
+    for (const group of Object.values(groups)) {
+      const next = withAppliedFreezes(group, group.history, todayKey);
+      if (next !== group) {
+        groups[group.id] = next;
+        groupsChanged = true;
+      }
     }
-  }
 
-  if (habitsChanged) await saveHabits(habits);
-  if (groupsChanged) await saveHabitGroups(groups);
+    if (habitsChanged) await saveHabits(habits);
+    if (groupsChanged) await saveHabitGroups(groups);
+  });
 }

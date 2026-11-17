@@ -19,6 +19,7 @@ interface FormScreenProps {
   backTestID: string;
   onBack: () => void;
   children: React.ReactNode;
+  saveError?: React.ReactNode; // the form covers the screen's save message
 }
 
 export default function FormScreen({
@@ -28,6 +29,7 @@ export default function FormScreen({
   backTestID,
   onBack,
   children,
+  saveError,
 }: FormScreenProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
 
@@ -64,6 +66,7 @@ export default function FormScreen({
         >
           {children}
         </ScrollView>
+        {saveError}
       </View>
     </Modal>
   );

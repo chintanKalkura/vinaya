@@ -48,6 +48,7 @@ interface NewHabitFormProps {
   pendingGroup?: PendingGroup; // made with "+ Create Group", saved with the habit
   hideGroupRow?: boolean; // opened from the group form
   editing?: Habit; // Edit Habit: docs/feature-development/habits-section/edit-habit-group.md
+  saveError?: React.ReactNode;
 }
 
 export default function NewHabitForm({
@@ -59,6 +60,7 @@ export default function NewHabitForm({
   pendingGroup,
   hideGroupRow = false,
   editing,
+  saveError,
 }: NewHabitFormProps): React.JSX.Element {
   const [draft, setDraft] = useState<NewHabitDraft>(DEFAULT_DRAFT);
 
@@ -133,6 +135,7 @@ export default function NewHabitForm({
       testID="new-habit-form"
       backTestID="new-habit-back"
       onBack={onBack}
+      saveError={saveError}
     >
       <Text style={formStyles.label}>NAME</Text>
       <TextInput

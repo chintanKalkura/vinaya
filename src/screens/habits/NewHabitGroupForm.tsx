@@ -53,6 +53,7 @@ interface NewHabitGroupFormProps {
   newHabitId?: string; // made with Create Habit; assigned when it returns
   pendingHabit?: PendingHabit; // the habit whose "+ Create Group" opened this
   editing?: HabitGroup; // Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
+  saveError?: React.ReactNode;
 }
 
 function initialDraft(
@@ -78,6 +79,7 @@ export default function NewHabitGroupForm({
   newHabitId,
   pendingHabit,
   editing,
+  saveError,
 }: NewHabitGroupFormProps): React.JSX.Element {
   const [draft, setDraft] = useState<NewHabitGroupDraft>(
     initialDraft(pendingHabit, editing),
@@ -164,6 +166,7 @@ export default function NewHabitGroupForm({
       testID="new-group-form"
       backTestID="new-group-back"
       onBack={onBack}
+      saveError={saveError}
     >
       <Text style={formStyles.label}>NAME</Text>
       <TextInput
