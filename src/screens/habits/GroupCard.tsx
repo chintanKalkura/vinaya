@@ -146,7 +146,6 @@ export default function GroupCard({
               todayKey={todayKey}
               onPress={onToggle}
               required={group.requiredHabitIds?.includes(habit.id) ?? false}
-              shape={isRequiredGroup ? 'round' : 'square'}
             />
           ))}
         </View>

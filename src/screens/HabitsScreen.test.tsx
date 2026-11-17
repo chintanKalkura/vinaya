@@ -135,7 +135,7 @@ describe('HabitsScreen', () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { findByTestId } = renderInGroupView();
-    const pill = await findByTestId('habit-pill-no-killing');
+    const pill = await findByTestId('habit-pill-check-no-killing');
 
     fireEvent.press(pill);
 
@@ -155,7 +155,7 @@ describe('HabitsScreen', () => {
     );
 
     const { findByTestId } = renderInGroupView();
-    const pill = await findByTestId('habit-pill-no-killing');
+    const pill = await findByTestId('habit-pill-check-no-killing');
     await waitFor(() =>
       expect(pill.props.accessibilityState.checked).toBe(true),
     );
@@ -365,7 +365,7 @@ describe('HabitsScreen', () => {
     );
 
     const { findByTestId } = renderInGroupView();
-    const pill = await findByTestId('habit-pill-no-killing');
+    const pill = await findByTestId('habit-pill-check-no-killing');
     const card = await findByTestId('group-card-precepts');
     await waitFor(() =>
       expect(StyleSheet.flatten(card.props.style).borderColor).toBe(
@@ -395,7 +395,7 @@ describe('HabitsScreen', () => {
     );
 
     const { findByTestId } = renderInGroupView();
-    const pill = await findByTestId('habit-pill-no-killing');
+    const pill = await findByTestId('habit-pill-check-no-killing');
     const number = await findByTestId('group-number-precepts');
     await waitFor(() => expect(number.props.children).toBe(1));
 
@@ -418,7 +418,7 @@ describe('HabitsScreen', () => {
     );
 
     const { findByTestId } = renderInGroupView();
-    const pill = await findByTestId('habit-pill-cook');
+    const pill = await findByTestId('habit-pill-check-cook');
     const card = await findByTestId('group-card-eat');
     expect(StyleSheet.flatten(card.props.style).borderColor).toBe(
       colors.v2Border,
@@ -449,7 +449,7 @@ describe('HabitsScreen', () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const first = renderInGroupView();
-    const pill = await first.findByTestId('habit-pill-no-killing');
+    const pill = await first.findByTestId('habit-pill-check-no-killing');
     fireEvent.press(pill);
     await waitFor(() =>
       expect(pill.props.accessibilityState.checked).toBe(true),
@@ -457,7 +457,7 @@ describe('HabitsScreen', () => {
     first.unmount();
 
     const second = renderInGroupView();
-    const reloadedPill = await second.findByTestId('habit-pill-no-killing');
+    const reloadedPill = await second.findByTestId('habit-pill-check-no-killing');
 
     await waitFor(() => {
       expect(reloadedPill.props.accessibilityState.checked).toBe(true);
@@ -548,7 +548,7 @@ describe('HabitsScreen', () => {
     it('marks a Week habit when tapped', async () => {
       await fixtures();
       const utils = renderInGroupView();
-      const pill = await utils.findByTestId('habit-pill-run');
+      const pill = await utils.findByTestId('habit-pill-check-run');
 
       fireEvent.press(pill);
 
@@ -1031,7 +1031,7 @@ describe('HabitsScreen storage errors', () => {
   it('shows the save message and keeps the habit unmarked when a mark fails', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
     const utils = renderInGroupView();
-    const pill = await utils.findByTestId('habit-pill-no-killing');
+    const pill = await utils.findByTestId('habit-pill-check-no-killing');
     jest
       .spyOn(AsyncStorage, 'setItem')
       .mockRejectedValueOnce(new Error('disk full'));
@@ -1090,11 +1090,11 @@ describe('HabitsScreen day change', () => {
     resumeApp();
     await waitFor(() =>
       expect(
-        utils.getByTestId('habit-pill-no-killing').props.accessibilityState
+        utils.getByTestId('habit-pill-check-no-killing').props.accessibilityState
           .checked,
       ).toBe(false),
     );
-    fireEvent.press(utils.getByTestId('habit-pill-no-killing'));
+    fireEvent.press(utils.getByTestId('habit-pill-check-no-killing'));
 
     await waitFor(async () =>
       expect(

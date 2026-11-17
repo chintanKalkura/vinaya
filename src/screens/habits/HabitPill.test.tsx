@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, userEvent } from '@testing-library/react-native';
 import HabitPill from './HabitPill';
 import { Habit } from '../../types/habit';
 import { colors } from '../../theme';
@@ -35,7 +35,9 @@ describe('HabitPill', () => {
       <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
     );
 
-    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+    expect(
+      getByTestId('habit-pill-check-habit-1').props.accessibilityState,
+    ).toEqual({
       checked: true,
     });
   });
@@ -48,7 +50,9 @@ describe('HabitPill', () => {
       <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
     );
 
-    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+    expect(
+      getByTestId('habit-pill-check-habit-1').props.accessibilityState,
+    ).toEqual({
       checked: false,
     });
     expect(getByText('1')).toBeTruthy();
@@ -62,7 +66,9 @@ describe('HabitPill', () => {
       <HabitPill habit={habit} todayKey={TODAY} onPress={jest.fn()} />,
     );
 
-    expect(getByTestId('habit-pill-habit-1').props.accessibilityState).toEqual({
+    expect(
+      getByTestId('habit-pill-check-habit-1').props.accessibilityState,
+    ).toEqual({
       checked: false,
     });
     expect(getByText('0')).toBeTruthy();
@@ -75,7 +81,7 @@ describe('HabitPill', () => {
       <HabitPill habit={habit} todayKey={TODAY} onPress={onPress} />,
     );
 
-    fireEvent.press(getByTestId('habit-pill-habit-1'));
+    fireEvent.press(getByTestId('habit-pill-check-habit-1'));
 
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
@@ -91,7 +97,7 @@ describe('HabitPill', () => {
       <HabitPill habit={habit} todayKey={TODAY} onPress={onPress} />,
     );
 
-    fireEvent.press(getByTestId('habit-pill-habit-1'));
+    fireEvent.press(getByTestId('habit-pill-check-habit-1'));
 
     expect([onPress.mock.calls.length, !!getByText('1')]).toEqual([1, true]);
   });
@@ -110,7 +116,7 @@ describe('HabitPill', () => {
     );
 
     expect([
-      getByTestId('habit-pill-habit-1').props.accessibilityState.checked,
+      getByTestId('habit-pill-check-habit-1').props.accessibilityState.checked,
       StyleSheet.flatten(getByText('No Killing').props.style).color,
     ]).toEqual([false, colors.v2Orange]);
   });
@@ -181,5 +187,55 @@ describe('HabitPill streak freeze', () => {
     );
 
     expect(queryByText(/freeze/)).toBeNull();
+  });
+});
+
+describe('HabitPill tap target and label', () => {
+  const renderPill = (onPress = jest.fn()) =>
+    render(
+      <HabitPill
+        habit={makeHabit({ name: 'Run' })}
+        todayKey={TODAY}
+        onPress={onPress}
+      />,
+    );
+
+  it('should not mark when the pill body is pressed', async () => {
+    const onPress = jest.fn();
+    const { getByText } = renderPill(onPress);
+
+    await userEvent.press(getByText('Run'));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('should show a round check', () => {
+    const { getByTestId } = renderPill();
+
+    expect(
+      StyleSheet.flatten(getByTestId('habit-pill-icon-habit-1').props.style)
+        .borderRadius,
+    ).toBe(9);
+  });
+
+  it('should label the check with the name and streak', () => {
+    const check = renderPill().getByTestId('habit-pill-check-habit-1');
+
+    expect([
+      check.props.accessibilityRole,
+      check.props.accessibilityLabel,
+    ]).toEqual(['checkbox', 'Run, 0 day streak']);
+  });
+
+  it('should give the check a 48dp target inside a 48dp pill', () => {
+    const { getByTestId } = renderPill();
+    const { hitSlop } = getByTestId('habit-pill-check-habit-1').props;
+
+    expect([
+      18 + hitSlop.left + hitSlop.right,
+      18 + hitSlop.top + hitSlop.bottom,
+      StyleSheet.flatten(getByTestId('habit-pill-habit-1').props.style)
+        .minHeight,
+    ]).toEqual([48, 48, 48]);
   });
 });
