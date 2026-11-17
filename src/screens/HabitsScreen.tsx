@@ -5,7 +5,7 @@ import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
 import { toDateKey } from '../utils/dates';
-import { loadHabits, loadHabitGroups } from '../storage/habitStorage';
+import { loadHabitsAndGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
   createHabit,
@@ -43,6 +43,8 @@ import NewHabitForm, { PendingGroup } from './habits/NewHabitForm';
 import NewHabitGroupForm, { PendingHabit } from './habits/NewHabitGroupForm';
 import { NewHabitDraft, PENDING_GROUP_ID } from '../utils/newHabit';
 import { NewHabitGroupDraft, PENDING_HABIT_ID } from '../utils/newHabitGroup';
+import LoadErrorMessage from './habits/LoadErrorMessage';
+import SaveErrorSnackbar from './habits/SaveErrorSnackbar';
 
 // The + flow from docs/navigation/habits-section/02-habit-creation.md and 03-group-creation.md
 type CreateStep = 'none' | 'choice' | 'habit' | 'group';
@@ -74,24 +76,59 @@ export default function HabitsScreen(): React.JSX.Element {
   const [groupNewHabitId, setGroupNewHabitId] = useState<string | undefined>(
     undefined,
   );
+  // Storage errors: docs/feature-development/release-1-readiness/storage-write-safety.md
+  const [loadError, setLoadError] = useState(false);
+  // Counts failures so each one restarts the snackbar's timer
+  const [saveErrorCount, setSaveErrorCount] = useState(0);
+  const [saveErrorVisible, setSaveErrorVisible] = useState(false);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
   // The app draws edge-to-edge, so the header clears the status bar here
   const insets = useSafeAreaInsets();
 
+  const reload = useCallback(async () => {
+    const [h, g] = await loadHabitsAndGroups();
+    setHabits(h);
+    setGroups(g);
+  }, []);
+
+  // Nothing is shown, so nothing can be saved, until the habits are read
+  const loadScreen = useCallback(async () => {
+    try {
+      await seedDevFixturesIfNeeded();
+      await applyStreakFreezes(todayKey);
+      await reload();
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    }
+  }, [todayKey, reload]);
+
   useEffect(() => {
-    let mounted = true;
-    seedDevFixturesIfNeeded()
-      .then(() => applyStreakFreezes(todayKey))
-      .then(() => Promise.all([loadHabits(), loadHabitGroups()]))
-      .then(([h, g]) => {
-        if (!mounted) return;
-        setHabits(h);
-        setGroups(g);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [todayKey]);
+    loadScreen();
+  }, [loadScreen]);
+
+  // The screen shows what was saved: it reloads after a save, and on a failed
+  // save keeps what it showed and says so. Returns whether the save worked.
+  const runSave = useCallback(
+    async (op: () => Promise<unknown>): Promise<boolean> => {
+      try {
+        await op();
+      } catch {
+        setSaveErrorCount(n => n + 1);
+        setSaveErrorVisible(true);
+        return false;
+      }
+      try {
+        await reload();
+      } catch {
+        setLoadError(true);
+      }
+      return true;
+    },
+    [reload],
+  );
+
+  const dismissSaveError = useCallback(() => setSaveErrorVisible(false), []);
 
   const handleToggleHabit = useCallback(
     async (habitId: string) => {
@@ -103,14 +140,13 @@ export default function HabitsScreen(): React.JSX.Element {
       }
 
       const isMarked = habit.recentLog.some(entry => entry.date === todayKey);
-      const updated = isMarked
-        ? await unmarkHabitDone(habitId, todayKey)
-        : await markHabitDone(habitId, todayKey);
-
-      setHabits(prev => ({ ...prev, [habitId]: updated }));
-      setGroups(await loadHabitGroups());
+      await runSave(() =>
+        isMarked
+          ? unmarkHabitDone(habitId, todayKey)
+          : markHabitDone(habitId, todayKey),
+      );
     },
-    [habits, todayKey],
+    [habits, todayKey, runSave],
   );
 
   const handleHoursDone = useCallback(
@@ -118,18 +154,10 @@ export default function HabitsScreen(): React.JSX.Element {
       if (!hoursHabitId) return;
       const habitId = hoursHabitId;
       setHoursHabitId(null);
-      const updated = await setHabitHours(habitId, hours, todayKey);
-      setHabits(prev => ({ ...prev, [habitId]: updated }));
-      setGroups(await loadHabitGroups());
+      await runSave(() => setHabitHours(habitId, hours, todayKey));
     },
-    [hoursHabitId, todayKey],
+    [hoursHabitId, todayKey, runSave],
   );
-
-  const reload = useCallback(async () => {
-    const [h, g] = await Promise.all([loadHabits(), loadHabitGroups()]);
-    setHabits(h);
-    setGroups(g);
-  }, []);
 
   const closeCreate = useCallback(() => {
     setCreateStep('none');
@@ -139,89 +167,102 @@ export default function HabitsScreen(): React.JSX.Element {
 
   // Returns to the view the + was tapped from; viewMode is left unchanged.
   // A group made with "+ Create Group" is saved after the habit, with it.
+  // Forms close only once saved, so a failed save keeps what was typed.
   const handleCreateHabit = useCallback(
     async (draft: NewHabitDraft) => {
-      if (draft.groupId === PENDING_GROUP_ID && pendingGroupDraft) {
-        const habit = await createHabit(
-          { ...draft, groupId: undefined },
-          todayKey,
-        );
-        const withHabit = (ids: string[]) =>
-          ids.map(id => (id === PENDING_HABIT_ID ? habit.id : id));
-        await createHabitGroup(
-          {
-            ...pendingGroupDraft,
-            habitIds: withHabit(pendingGroupDraft.habitIds),
-            requiredHabitIds: withHabit(pendingGroupDraft.requiredHabitIds),
-          },
-          todayKey,
-        );
-      } else {
-        await createHabit(draft, todayKey);
-      }
-      await reload();
-      closeCreate();
+      const saved = await runSave(async () => {
+        if (draft.groupId === PENDING_GROUP_ID && pendingGroupDraft) {
+          const habit = await createHabit(
+            { ...draft, groupId: undefined },
+            todayKey,
+          );
+          const withHabit = (ids: string[]) =>
+            ids.map(id => (id === PENDING_HABIT_ID ? habit.id : id));
+          await createHabitGroup(
+            {
+              ...pendingGroupDraft,
+              habitIds: withHabit(pendingGroupDraft.habitIds),
+              requiredHabitIds: withHabit(pendingGroupDraft.requiredHabitIds),
+            },
+            todayKey,
+          );
+        } else {
+          await createHabit(draft, todayKey);
+        }
+      });
+      if (saved) closeCreate();
     },
-    [pendingGroupDraft, todayKey, reload, closeCreate],
+    [pendingGroupDraft, todayKey, runSave, closeCreate],
   );
 
   const handleCreateGroup = useCallback(
     async (draft: NewHabitGroupDraft) => {
-      await createHabitGroup(draft, todayKey);
-      await reload();
-      closeCreate();
+      if (await runSave(() => createHabitGroup(draft, todayKey))) {
+        closeCreate();
+      }
     },
-    [todayKey, reload, closeCreate],
+    [todayKey, runSave, closeCreate],
   );
 
   const handleCreateHabitForGroup = useCallback(
     async (draft: NewHabitDraft) => {
-      const habit = await createHabit(
-        { ...draft, groupId: undefined },
-        todayKey,
-      );
-      await reload();
-      setGroupNewHabitId(habit.id);
+      let habitId: string | undefined;
+      const saved = await runSave(async () => {
+        habitId = (
+          await createHabit({ ...draft, groupId: undefined }, todayKey)
+        ).id;
+      });
+      if (!saved) return;
+      setGroupNewHabitId(habitId);
       setHabitForGroup(false);
     },
-    [todayKey, reload],
+    [todayKey, runSave],
   );
 
   const handleSaveHabit = useCallback(
     async (draft: NewHabitDraft) => {
       if (!editingHabitId) return;
-      await updateHabit(editingHabitId, draft);
-      await reload();
-      setEditingHabitId(null);
+      if (await runSave(() => updateHabit(editingHabitId, draft))) {
+        setEditingHabitId(null);
+      }
     },
-    [editingHabitId, reload],
+    [editingHabitId, runSave],
   );
 
   const handleSaveGroup = useCallback(
     async (draft: NewHabitGroupDraft) => {
       if (!editingGroupId) return;
-      await updateHabitGroup(editingGroupId, draft, todayKey);
-      await reload();
+      const saved = await runSave(() =>
+        updateHabitGroup(editingGroupId, draft, todayKey),
+      );
+      if (!saved) return;
       setEditingGroupId(null);
       setGroupNewHabitId(undefined);
     },
-    [editingGroupId, todayKey, reload],
+    [editingGroupId, todayKey, runSave],
   );
 
   const handleDeleteHabit = useCallback(
     async (habitId: string) => {
-      await deleteHabit(habitId, todayKey);
-      await reload();
+      await runSave(() => deleteHabit(habitId, todayKey));
     },
-    [todayKey, reload],
+    [todayKey, runSave],
   );
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
-      await deleteHabitGroup(groupId);
-      await reload();
+      await runSave(() => deleteHabitGroup(groupId));
     },
-    [reload],
+    [runSave],
+  );
+
+  const saveErrorIn = (inForm: boolean) => (
+    <SaveErrorSnackbar
+      key={saveErrorCount}
+      visible={saveErrorVisible}
+      inForm={inForm}
+      onDismiss={dismissSaveError}
+    />
   );
 
   const pendingGroup = useMemo<PendingGroup | undefined>(
@@ -295,48 +336,55 @@ export default function HabitsScreen(): React.JSX.Element {
         onOpenSort={() => setSortOpen(true)}
       />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {viewMode === 'list'
-          ? listHabits.map(habit => (
-              <HabitListRow
-                key={habit.id}
-                habit={habit}
-                groupName={groupNamesByHabit[habit.id]}
-                todayKey={todayKey}
-                onPress={handleToggleHabit}
-                colorKind="banner"
-                onEdit={setEditingHabitId}
-                onDelete={handleDeleteHabit}
-              />
-            ))
-          : sortedGroups.map(group => {
-              const groupHabits = allHabits.filter(h =>
-                group.habitIds.includes(h.id),
-              );
-              return (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  habits={groupHabits}
+      {loadError ? (
+        <LoadErrorMessage onRetry={loadScreen} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.content}>
+          {viewMode === 'list'
+            ? listHabits.map(habit => (
+                <HabitListRow
+                  key={habit.id}
+                  habit={habit}
+                  groupName={groupNamesByHabit[habit.id]}
                   todayKey={todayKey}
-                  onToggle={handleToggleHabit}
-                  onEdit={setEditingGroupId}
-                  onDelete={handleDeleteGroup}
+                  onPress={handleToggleHabit}
+                  colorKind="banner"
+                  onEdit={setEditingHabitId}
+                  onDelete={handleDeleteHabit}
                 />
-              );
-            })}
-      </ScrollView>
+              ))
+            : sortedGroups.map(group => {
+                const groupHabits = allHabits.filter(h =>
+                  group.habitIds.includes(h.id),
+                );
+                return (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    habits={groupHabits}
+                    todayKey={todayKey}
+                    onToggle={handleToggleHabit}
+                    onEdit={setEditingGroupId}
+                    onDelete={handleDeleteGroup}
+                  />
+                );
+              })}
+        </ScrollView>
+      )}
 
-      <Pressable
-        testID="fab"
-        onPress={() => setCreateStep('choice')}
-        style={[
-          styles.fab,
-          { bottom: BOTTOM_MENU_HEIGHT + 16 + insets.bottom },
-        ]}
-      >
-        <Text style={styles.fabIcon}>+</Text>
-      </Pressable>
+      {!loadError && (
+        <Pressable
+          testID="fab"
+          onPress={() => setCreateStep('choice')}
+          style={[
+            styles.fab,
+            { bottom: BOTTOM_MENU_HEIGHT + 16 + insets.bottom },
+          ]}
+        >
+          <Text style={styles.fabIcon}>+</Text>
+        </Pressable>
+      )}
+      {saveErrorIn(false)}
       <BottomMenu />
       <HoursEntryModal
         visible={hoursHabit !== undefined}
@@ -361,6 +409,7 @@ export default function HabitsScreen(): React.JSX.Element {
         onClose={closeCreate}
       />
       <NewHabitForm
+        saveError={saveErrorIn(true)}
         visible={createStep === 'habit'}
         groups={joinableGroups}
         onBack={() => {
@@ -374,6 +423,7 @@ export default function HabitsScreen(): React.JSX.Element {
         pendingGroup={pendingGroup}
       />
       <NewHabitGroupForm
+        saveError={saveErrorIn(true)}
         visible={groupForHabit !== null}
         habits={assignableHabits}
         pendingHabit={groupForHabit ?? undefined}
@@ -385,6 +435,7 @@ export default function HabitsScreen(): React.JSX.Element {
         }}
       />
       <NewHabitGroupForm
+        saveError={saveErrorIn(true)}
         visible={createStep === 'group'}
         habits={assignableHabits}
         newHabitId={groupNewHabitId}
@@ -396,6 +447,7 @@ export default function HabitsScreen(): React.JSX.Element {
         onCreateHabit={() => setHabitForGroup(true)}
       />
       <NewHabitForm
+        saveError={saveErrorIn(true)}
         visible={editingHabitId !== null}
         groups={[]}
         editing={editingHabitId ? habits[editingHabitId] : undefined}
@@ -403,6 +455,7 @@ export default function HabitsScreen(): React.JSX.Element {
         onCreate={handleSaveHabit}
       />
       <NewHabitGroupForm
+        saveError={saveErrorIn(true)}
         visible={editingGroupId !== null}
         habits={assignableHabits}
         editing={editingGroupId ? groups[editingGroupId] : undefined}
@@ -415,6 +468,7 @@ export default function HabitsScreen(): React.JSX.Element {
         onCreateHabit={() => setHabitForGroup(true)}
       />
       <NewHabitForm
+        saveError={saveErrorIn(true)}
         visible={habitForGroup}
         groups={[]}
         hideGroupRow
