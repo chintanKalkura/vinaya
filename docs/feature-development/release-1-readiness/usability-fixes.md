@@ -1,6 +1,6 @@
 # Feature: Usability fixes from testing observations.
 
-Status: ready for planning.
+Status: done except decision 1 (keyboard bug), which is **NOT DONE: parked, not reproducible**.
 
 ## Goal
 Fix the defect and the tap-target issues found while testing v2.
@@ -14,8 +14,8 @@ Fix the defect and the tap-target issues found while testing v2.
 1. **Keyboard on return (bug). NOT DONE: parked, can't be reproduced (17 Nov 2026).** Seen once on the owner's phone (Android 16, Gboard): type a group name in New Habit Group (from +), tap Create Habit, create the habit, and the keyboard showed on return. It doesn't reproduce on that phone any more, nor on the emulator (API 37, Gboard) with the same steps and four variations (back arrow, typing in the habit form, the keyboard up or hidden when tapping Create Habit). No code was changed for it. Reopen with a device that shows it, then follow the original plan below.
    Original plan: Returning from Create Habit (opened by "Create Habit" on the group form) to the group form must not open the keyboard. The group name field keeps its value but not focus. Follow `docs/bug-fixes.md`: find the root cause (likely focus restored to the last `TextInput` when the stacked form `Modal` closes), write the failing test first.
 2. **Mark only from the checkmark.** On Checkmark habit banners (list view) and pills (group view), only the check circle area marks or unmarks. The area is at least 48×48dp (`accessibility-fixes.md`). The rest of the banner does nothing until the detail page exists; then it opens the detail page (`habit-group-detail-page.md`).
-3. **Hours habits.** Same rule: only the progress bar area opens the Hours modal. Design decision required on whether a separate "+" log button is clearer.
-4. **Group completion icon.** The group card icon is a status indicator, not a control. It must not look like the habit check circle: no circular outline when not complete. New look: design decision required (e.g. a small filled dot or badge style). It has no press handler and no `checkbox` role.
+3. **Hours habits.** Same rule: only the progress bar area opens the Hours modal. Decided: the progress bar row (bar and `2/4h` label) with a 48dp tap area; no separate "+" button. See `../../style-choices/habits-section/tap-targets.md`.
+4. **Group completion icon.** The group card icon is a status indicator, not a control. It must not look like the habit check circle: no circular outline when not complete. Decided: a small solid shape, circle for Required and All, square for Any, orange when complete and grey when not. Pill checks inside group cards are round in every group type (group view only). See `../../style-choices/habits-section/tap-targets.md`. It has no press handler and no `checkbox` role.
 
 ## Out of scope
 - Detail page itself

@@ -43,7 +43,7 @@ Pills appear only in group view. List view shows only banners.
 | Check icon | follows marked today: orange fill with a check, or grey outline | |
 | Card | unchanged | unchanged |
 
-Unchanged: the blue border on required habits, the round or square check shape, and the Hours progress bar and its hours label (see `hours-progress.md`).
+Unchanged: the blue border on required habits, and the Hours progress bar and its hours label (see `hours-progress.md`). Pill checks are round in every group type (`tap-targets.md`).
 
 ## 4. Banner rules
 
@@ -52,7 +52,8 @@ Unchanged: the blue border on required habits, the round or square check shape, 
 | Border and background | orange 2px border, orange card background | grey border, grey card background |
 | Title | white | white |
 | Streak number | orange | grey |
-| Icon (group selector, list-row check) | follows marked today: orange fill, or grey outline | |
+| Icon (list-row check, pill check) | follows marked today: orange fill, or grey outline | |
+| Group status icon | a small solid shape (circle for Required and All, square for Any): orange when the group is complete, grey (`v2GreyOutline`) when not. No outline. See `tap-targets.md` | |
 | Hours chart icon (group header) | follows marked today: orange, or grey | |
 
 Unchanged in both states:
