@@ -1098,4 +1098,74 @@ describe('HabitsScreen day change', () => {
       ).toEqual([TODAY, TOMORROW]),
     );
   });
+
+  it('uses a freeze for the new day when the day changes', async () => {
+    await seed({
+      'no-killing': makeHabit({
+        recentLog: ['2024-06-14', '2024-06-13'].map(date => ({
+          date,
+          kind: 'marker' as const,
+          value: 1,
+        })),
+        streakFreeze: { available: 1, earnedAtStreak: 0, frozenDates: [] },
+      }),
+    });
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('habit-row-no-killing');
+
+    mockToday = TOMORROW;
+    resumeApp();
+
+    expect(
+      (await utils.findByTestId('habit-row-freeze-no-killing')).props.children,
+    ).toBe('0 freezes left');
+  });
+
+  describe('with the Hours modal open', () => {
+    async function openModalAcrossDayChange() {
+      await seed(
+        {
+          study: makeHabit({
+            id: 'study',
+            name: 'Study',
+            type: 'Hours',
+            targetHours: 1,
+            recentLog: [{ date: TODAY, kind: 'hours', value: 3 }],
+          }),
+        },
+        {},
+      );
+      const utils = render(<HabitsScreen />);
+      fireEvent.press(await utils.findByTestId('habit-row-study'));
+      await utils.findByTestId('hours-modal');
+      mockToday = TOMORROW;
+      resumeApp();
+      return utils;
+    }
+
+    it("resets the value to the new day's hours", async () => {
+      const utils = await openModalAcrossDayChange();
+
+      await waitFor(() =>
+        expect(utils.getByTestId('hours-modal-input').props.value).toBe('0'),
+      );
+    });
+
+    it('saves Done to the new day and keeps the old day', async () => {
+      const utils = await openModalAcrossDayChange();
+      await waitFor(() =>
+        expect(utils.getByTestId('hours-modal-input').props.value).toBe('0'),
+      );
+
+      fireEvent.changeText(utils.getByTestId('hours-modal-input'), '2');
+      fireEvent.press(utils.getByTestId('hours-modal-done'));
+
+      await waitFor(async () =>
+        expect((await loadHabits()).study.history).toEqual([
+          { date: TODAY, kind: 'hours', value: 3 },
+          { date: TOMORROW, kind: 'hours', value: 2 },
+        ]),
+      );
+    });
+  });
 });
