@@ -9,19 +9,30 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 
+export type Tab = 'Habits' | 'Profile';
+
 const ITEMS = [
   { label: 'Habits', Icon: ListChecks },
   { label: 'Journal', Icon: FilePen },
   { label: 'Level-Up', Icon: TrendingUp },
   { label: 'Profile', Icon: CircleUser },
 ];
-const SELECTED = 'Habits';
+// Journal and Level-Up do nothing until bottom-tab-navigation.md
+const TABS: string[] = ['Habits', 'Profile'];
 
 // Flush with the screen's bottom edge, padded by the bottom inset so it clears
 // the gesture or 3-button bar: docs/style-choices/habits-section/header-and-bottom-menu.md
 export const BOTTOM_MENU_HEIGHT = 60;
 
-export default function BottomMenu(): React.JSX.Element {
+interface BottomMenuProps {
+  selected?: Tab;
+  onSelect?: (tab: Tab) => void;
+}
+
+export default function BottomMenu({
+  selected = 'Habits',
+  onSelect,
+}: BottomMenuProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
 
   return (
@@ -30,13 +41,17 @@ export default function BottomMenu(): React.JSX.Element {
       style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}
     >
       {ITEMS.map(item => {
-        const color =
-          item.label === SELECTED ? colors.v2Orange : colors.v2White;
+        const isSelected = item.label === selected;
+        const color = isSelected ? colors.v2Orange : colors.v2White;
         return (
           <Pressable
             key={item.label}
             testID={`bottom-menu-${item.label}`}
-            onPress={() => {}}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isSelected }}
+            onPress={() => {
+              if (TABS.includes(item.label)) onSelect?.(item.label as Tab);
+            }}
             style={styles.item}
           >
             <item.Icon color={color} size={22} />

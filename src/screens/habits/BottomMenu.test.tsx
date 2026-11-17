@@ -23,6 +23,35 @@ describe('BottomMenu', () => {
   });
 });
 
+describe('BottomMenu tabs', () => {
+  it('should highlight the selected tab', () => {
+    const { getByTestId } = render(<BottomMenu selected="Profile" />);
+
+    expect(
+      getByTestId('bottom-menu-Profile').props.accessibilityState.selected,
+    ).toBe(true);
+  });
+
+  it('should open Profile when it is pressed', () => {
+    const onSelect = jest.fn();
+    const { getByTestId } = render(<BottomMenu onSelect={onSelect} />);
+
+    fireEvent.press(getByTestId('bottom-menu-Profile'));
+
+    expect(onSelect).toHaveBeenCalledWith('Profile');
+  });
+
+  it('should ignore Journal and Level-Up', () => {
+    const onSelect = jest.fn();
+    const { getByTestId } = render(<BottomMenu onSelect={onSelect} />);
+
+    fireEvent.press(getByTestId('bottom-menu-Journal'));
+    fireEvent.press(getByTestId('bottom-menu-Level-Up'));
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
 describe('BottomMenu layout', () => {
   it('sits flush: full width, no rounded corners, a top border only', () => {
     const { getByTestId } = render(<BottomMenu />);
