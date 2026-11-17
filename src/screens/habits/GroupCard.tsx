@@ -13,6 +13,7 @@ import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
 import BannerMenu from './BannerMenu';
+import { groupLabel } from './a11yLabels';
 
 interface GroupCardProps {
   group: HabitGroup;
@@ -31,7 +32,6 @@ export default function GroupCard({
   onEdit,
   onDelete,
 }: GroupCardProps): React.JSX.Element {
-  const isRequiredGroup = group.groupType === 'Required';
   const isHoursGroup = group.groupType === 'Hours';
   const status = getGroupStatus(group, todayKey);
   const scheme = getColorScheme(
@@ -52,55 +52,68 @@ export default function GroupCard({
       style={[styles.card, scheme.container]}
     >
       <View style={styles.header}>
-        {scheme.iconFrozen ? (
-          <Snowflake
-            testID={`group-frozen-${group.id}`}
-            style={styles.frozenIcon}
-            color={scheme.iconColor}
-            size={isHoursGroup ? 26 : 22}
-            strokeWidth={2.5}
-          />
-        ) : isHoursGroup ? (
-          <View
-            testID={`group-hours-icon-${group.id}`}
-            style={styles.hoursIcon}
-          >
-            <ChartNoAxesColumnIncreasing
+        {/* Read as one item; the ⋮ stays separate */}
+        <View
+          testID={`group-header-${group.id}`}
+          accessible
+          accessibilityLabel={groupLabel(
+            group.name,
+            group.groupType,
+            status.complete,
+            status.streak,
+            { frozen: scheme.frozen, freezesLeft: status.freezesLeft },
+          )}
+          style={styles.headerInfo}
+        >
+          {scheme.iconFrozen ? (
+            <Snowflake
+              testID={`group-frozen-${group.id}`}
+              style={styles.frozenIcon}
               color={scheme.iconColor}
-              size={26}
-              strokeWidth={3}
+              size={isHoursGroup ? 26 : 22}
+              strokeWidth={2.5}
             />
-          </View>
-        ) : (
-          <View
-            testID={`group-selector-${group.id}`}
-            style={[
-              styles.selector,
-              isRequiredGroup ? styles.selectorRound : styles.selectorSquare,
-              { borderColor: scheme.iconColor },
-            ]}
-          >
-            {scheme.iconFilled ? (
+          ) : isHoursGroup ? (
+            <View
+              testID={`group-hours-icon-${group.id}`}
+              style={styles.hoursIcon}
+            >
+              <ChartNoAxesColumnIncreasing
+                color={scheme.iconColor}
+                size={26}
+                strokeWidth={3}
+              />
+            </View>
+          ) : (
+            // A status, not a control: a small solid shape, round for Required
+            // and All, square for Any: docs/style-choices/habits-section/tap-targets.md
+            <View style={styles.statusSlot}>
               <View
+                testID={`group-selector-${group.id}`}
                 style={[
-                  styles.selectorFill,
-                  isRequiredGroup
-                    ? styles.selectorFillRound
-                    : styles.selectorFillSquare,
+                  styles.status,
+                  group.groupType === 'Any'
+                    ? styles.statusSquare
+                    : styles.statusRound,
+                  {
+                    backgroundColor: status.complete
+                      ? colors.v2Orange
+                      : colors.v2GreyOutline,
+                  },
                 ]}
               />
-            ) : null}
-          </View>
-        )}
-        <Text style={[styles.title, { color: scheme.titleColor }]}>
-          {group.name}
-        </Text>
-        <Text
-          testID={`group-number-${group.id}`}
-          style={[styles.number, { color: scheme.numberColor }]}
-        >
-          {status.streak}
-        </Text>
+            </View>
+          )}
+          <Text style={[styles.title, { color: scheme.titleColor }]}>
+            {group.name}
+          </Text>
+          <Text
+            testID={`group-number-${group.id}`}
+            style={[styles.number, { color: scheme.numberColor }]}
+          >
+            {status.streak}
+          </Text>
+        </View>
         {onEdit && onDelete ? (
           <BannerMenu
             kind="group"
@@ -178,31 +191,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  selector: {
+  headerInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  // Keeps the title where the old 22px selector put it
+  statusSlot: {
     width: 22,
     height: 22,
-    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
-  selectorRound: {
-    borderRadius: 11,
-  },
-  selectorSquare: {
-    borderRadius: 3,
-  },
-  selectorFill: {
-    backgroundColor: colors.v2Orange,
-  },
-  selectorFillRound: {
+  status: {
     width: 10,
     height: 10,
+  },
+  statusRound: {
     borderRadius: 5,
   },
-  selectorFillSquare: {
-    width: 10,
-    height: 10,
+  statusSquare: {
     borderRadius: 2,
   },
   title: {

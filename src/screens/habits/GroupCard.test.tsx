@@ -136,8 +136,8 @@ describe('GroupCard', () => {
     );
   });
 
-  it('shows a round selector for Required groups and a square one for Any', () => {
-    const selectorRadius = (groupType: 'Required' | 'Any') =>
+  it('shows a round status for Required and All groups and a square one for Any', () => {
+    const selectorRadius = (groupType: 'Required' | 'All' | 'Any') =>
       StyleSheet.flatten(
         render(
           <GroupCard
@@ -149,8 +149,9 @@ describe('GroupCard', () => {
         ).getByTestId('group-selector-group-1').props.style,
       ).borderRadius;
 
-    expect(selectorRadius('Required')).toBe(11);
-    expect(selectorRadius('Any')).toBe(3);
+    expect((['Required', 'All', 'Any'] as const).map(selectorRadius)).toEqual([
+      5, 5, 2,
+    ]);
   });
 
   it('gives a blue border only to habits in requiredHabitIds', () => {
@@ -198,13 +199,16 @@ describe('GroupCard', () => {
       ).toBe(colors.v2White);
     });
 
-    it('shows the selector as a grey outline when not complete', () => {
-      expect(
-        StyleSheet.flatten(
-          renderCard(false, 'Required').getByTestId('group-selector-group-1')
-            .props.style,
-        ).borderColor,
-      ).toBe(colors.v2GreyOutline);
+    it('shows the status as a solid grey shape with no outline when not complete', () => {
+      const style = StyleSheet.flatten(
+        renderCard(false, 'Required').getByTestId('group-selector-group-1')
+          .props.style,
+      );
+
+      expect([style.backgroundColor, style.borderWidth]).toEqual([
+        colors.v2GreyOutline,
+        undefined,
+      ]);
     });
 
     it('shows the Hours chart icon grey when not complete', () => {
@@ -350,14 +354,14 @@ describe('GroupCard', () => {
       ).toBe(colors.v2Orange);
     });
 
-    it('leaves the selector empty when today is not complete', () => {
+    it('shows the status orange while its window meets the target', () => {
       expect(
         StyleSheet.flatten(
           renderWeek(['2024-06-13', '2024-06-11']).getByTestId(
             'group-selector-group-1',
           ).props.style,
-        ).borderColor,
-      ).toBe(colors.v2GreyOutline);
+        ).backgroundColor,
+      ).toBe(colors.v2Orange);
     });
 
     it('is grey below its target', () => {
@@ -519,5 +523,34 @@ describe('GroupCard menu', () => {
     );
 
     expect(queryByTestId('habit-row-menu-study')).toBeNull();
+  });
+});
+
+describe('GroupCard status icon and label', () => {
+  const renderGroup = (overrides: Partial<HabitGroup> = {}) =>
+    render(
+      <GroupCard
+        group={makeGroup({ name: 'Fitness', ...overrides })}
+        habits={[]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+      />,
+    );
+
+  it('should not make the status icon a control', () => {
+    const icon = renderGroup().getByTestId('group-selector-group-1');
+
+    expect([
+      icon.props.onPress,
+      icon.props.accessibilityRole,
+      icon.props.accessible,
+    ]).toEqual([undefined, undefined, undefined]);
+  });
+
+  it('should label the header with name, type, completion and streak', () => {
+    expect(
+      renderGroup({ groupType: 'Any' }).getByTestId('group-header-group-1')
+        .props.accessibilityLabel,
+    ).toBe('Fitness, Any group, not complete, 0 day streak');
   });
 });
