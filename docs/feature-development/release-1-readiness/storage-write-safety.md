@@ -1,6 +1,6 @@
 # Bug: Storage can lose habits on quick taps or a failed read.
 
-Status: ready for planning.
+Status: done.
 
 ## Goal
 No mark, hours entry, edit or delete is ever lost or silently overwritten, and the user is told when a save fails.
@@ -20,7 +20,7 @@ No mark, hours entry, edit or delete is ever lost or silently overwritten, and t
 2. **Read errors are errors.** A missing key still returns `{}`. A read that throws, or JSON that fails to parse, throws a `StorageReadError`. Nothing is written after a failed read in the same operation.
 3. **Write errors are errors.** `saveHabits` / `saveHabitGroups` rethrow as `StorageWriteError` instead of swallowing.
 4. **Screen state follows storage.** After any operation the screen reloads from storage (or uses the returned saved value), so what is shown is what was saved. If the operation fails, the screen keeps the previous state.
-5. **Message.** A failed load shows a full-screen message ("Couldn't load your habits") with a Retry button, and the list is not shown, so nothing can be saved over unread data. A failed save shows a short non-blocking message ("Couldn't save. Try again.") and the item stays as it was. Exact wording and look: design decision required.
+5. **Message.** A failed load shows a full-screen message ("Couldn't load your habits") with a Retry button, and the list is not shown, so nothing can be saved over unread data. A failed save shows a short non-blocking message ("Couldn't save. Try again.") and the item stays as it was. Wording and look: `../../style-choices/habits-section/storage-error-messages.md`. Inside an open create or edit form, the save message shows at the form's bottom edge and the form stays open.
 6. **Corrupt data is kept.** When parsing fails, the raw stored string is copied to a separate key (`habits_v2_corrupt_<timestamp>`) before anything else happens, so it can be recovered later.
 
 ## Out of scope

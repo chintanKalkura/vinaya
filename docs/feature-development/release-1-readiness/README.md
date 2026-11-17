@@ -6,7 +6,7 @@ Work them in this order. Within a step, any order.
 
 | Step | Spec | Status |
 |---|---|---|
-| 1. Data integrity | `storage-write-safety.md` | ready for planning |
+| 1. Data integrity | `storage-write-safety.md` | done |
 | | `date-rollover.md` | ready for planning |
 | 2. Keeping data | `google-drive-backup.md` | ready for planning |
 | 3. Small UI fixes | `accessibility-fixes.md` | ready (new colour values: design decision) |
