@@ -25,3 +25,19 @@ jest.mock('@notifee/react-native', () => ({
   AndroidImportance: {HIGH: 4},
   TriggerType: {TIMESTAMP: 0},
 }));
+
+jest.mock('react-native-nitro-google-signin', () => ({
+  GoogleOneTapSignIn: {
+    configure: jest.fn(),
+    signIn: jest.fn(),
+    createAccount: jest.fn(),
+    requestScopes: jest.fn().mockResolvedValue({accessToken: 'token'}),
+    getTokens: jest.fn().mockResolvedValue({idToken: 'id', accessToken: 'token'}),
+    clearCachedAccessToken: jest.fn().mockResolvedValue(undefined),
+    signOut: jest.fn().mockResolvedValue(undefined),
+    revokeAccess: jest.fn().mockResolvedValue(undefined),
+  },
+  isSuccessResponse: response => response.type === 'success' && !!response.data,
+  isErrorWithCode: error => !!error && typeof error.code === 'string',
+  statusCodes: {SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED'},
+}));
