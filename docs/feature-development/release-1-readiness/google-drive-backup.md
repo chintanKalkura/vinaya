@@ -1,6 +1,6 @@
 # Feature: Google sign-in with backup to the user's Google Drive.
 
-Status: ready for planning.
+Status: done in the app. Outside the code: the web account-deletion page, the Play App Signing SHA-1 and moving the consent screen to In production (`play-store-release-checklist.md`).
 
 ## Goal
 Users who sign in with Google get a weekly backup of their habits to their own Google Drive and can bring that data to a new phone. Signing in is optional. The backup format is the contract for a later move to Vinaya's own backend, which will use the same Google account as identity.

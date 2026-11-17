@@ -1169,3 +1169,25 @@ describe('HabitsScreen day change', () => {
     });
   });
 });
+
+describe('HabitsScreen profile and backups', () => {
+  it('opens Profile from the bottom menu', async () => {
+    const onOpenProfile = jest.fn();
+    const utils = render(<HabitsScreen onOpenProfile={onOpenProfile} />);
+    await utils.findByTestId('fab');
+
+    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
+
+    expect(onOpenProfile).toHaveBeenCalled();
+  });
+
+  it('reloads when a backup or restore changed the data', async () => {
+    const utils = render(<HabitsScreen dataVersion={0} />);
+    await utils.findByTestId('fab');
+
+    await seed({ 'no-killing': makeHabit() });
+    utils.rerender(<HabitsScreen dataVersion={1} />);
+
+    expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
+  });
+});
