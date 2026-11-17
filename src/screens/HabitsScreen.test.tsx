@@ -1,7 +1,8 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet } from 'react-native';
+import { AppState, StyleSheet } from 'react-native';
 import {
+  act,
   fireEvent,
   render,
   waitFor,
@@ -18,12 +19,15 @@ import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
 
+// Tests move the day forward by setting mockToday
+let mockToday = '2024-06-15';
 jest.mock('../utils/dates', () => {
   const actual = jest.requireActual('../utils/dates');
-  return { ...actual, toDateKey: () => '2024-06-15' };
+  return { ...actual, toDateKey: () => mockToday };
 });
 
 const TODAY = '2024-06-15';
+const TOMORROW = '2024-06-16';
 
 function makeHabit(overrides: Partial<Habit> = {}): Habit {
   return {
@@ -100,6 +104,7 @@ async function seed(
 }
 
 beforeEach(async () => {
+  mockToday = TODAY;
   await AsyncStorage.clear();
 });
 
@@ -1052,5 +1057,45 @@ describe('HabitsScreen storage errors', () => {
       !!(await within(form).findByText("Couldn't save. Try again.")),
       utils.getByTestId('new-habit-name').props.value,
     ]).toEqual([true, 'Morning run']);
+  });
+});
+
+describe('HabitsScreen day change', () => {
+  // Calls the newest AppState listener, as when the app returns to the foreground
+  function resumeApp() {
+    const changeCalls = (
+      AppState.addEventListener as jest.Mock
+    ).mock.calls.filter(([type]) => type === 'change');
+    const [, handler] = changeCalls[changeCalls.length - 1];
+    act(() => handler('active'));
+  }
+
+  it("shows yesterday's mark as unmarked after resuming on a new day, and a tap marks the new day", async () => {
+    await seed(
+      {
+        'no-killing': makeHabit({
+          recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+        }),
+      },
+      { precepts: makeGroup() },
+    );
+    const utils = renderInGroupView();
+    await utils.findByTestId('habit-pill-no-killing');
+
+    mockToday = TOMORROW;
+    resumeApp();
+    await waitFor(() =>
+      expect(
+        utils.getByTestId('habit-pill-no-killing').props.accessibilityState
+          .checked,
+      ).toBe(false),
+    );
+    fireEvent.press(utils.getByTestId('habit-pill-no-killing'));
+
+    await waitFor(async () =>
+      expect(
+        (await loadHabits())['no-killing'].history.map(entry => entry.date),
+      ).toEqual([TODAY, TOMORROW]),
+    );
   });
 });
