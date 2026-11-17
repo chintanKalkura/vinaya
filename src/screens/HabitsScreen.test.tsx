@@ -173,7 +173,7 @@ describe('HabitsScreen', () => {
     const { findByTestId, queryByTestId } = renderInGroupView();
     expect(queryByTestId('hours-modal')).toBeNull();
 
-    fireEvent.press(await findByTestId('habit-row-study'));
+    fireEvent.press(await findByTestId('habit-row-hours-study'));
 
     expect(await findByTestId('hours-modal')).toBeTruthy();
   });
@@ -182,7 +182,7 @@ describe('HabitsScreen', () => {
     await seed(...hoursFixture(4));
 
     const { findByTestId, findByText, getByTestId } = renderInGroupView();
-    fireEvent.press(await findByTestId('habit-row-study'));
+    fireEvent.press(await findByTestId('habit-row-hours-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '2');
     fireEvent.press(getByTestId('hours-modal-done'));
 
@@ -194,7 +194,7 @@ describe('HabitsScreen', () => {
 
     const { findByTestId, getByTestId } = renderInGroupView();
     const card = await findByTestId('group-card-productive');
-    fireEvent.press(await findByTestId('habit-row-study'));
+    fireEvent.press(await findByTestId('habit-row-hours-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
     fireEvent.press(getByTestId('hours-modal-done'));
 
@@ -209,7 +209,7 @@ describe('HabitsScreen', () => {
     await seed(...hoursFixture(4));
 
     const { findByTestId, getByTestId, getByText } = renderInGroupView();
-    fireEvent.press(await findByTestId('habit-row-study'));
+    fireEvent.press(await findByTestId('habit-row-hours-study'));
     fireEvent.changeText(await findByTestId('hours-modal-input'), '4');
     fireEvent.press(getByTestId('hours-modal-close'));
 
@@ -275,23 +275,23 @@ describe('HabitsScreen', () => {
     const row = await findByTestId('habit-row-drink-water');
 
     const texts = within(row)
-      .getAllByText(/.+/)
+      .getAllByText(/.+/, { includeHiddenElements: true })
       .map(node => node.props.children);
 
     expect(texts).toEqual(['Drink Water', 0, 'Daily']);
   });
 
-  it('marks a habit when its list row is tapped', async () => {
+  it('marks a habit when its list row check is tapped', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
-    const row = await findByTestId('habit-row-no-killing');
+    const check = await findByTestId('habit-row-check-no-killing');
 
-    fireEvent.press(row);
+    fireEvent.press(check);
 
     await waitFor(() =>
-      expect(row.props.accessibilityState.checked).toBe(true),
+      expect(check.props.accessibilityState.checked).toBe(true),
     );
   });
 
@@ -302,7 +302,7 @@ describe('HabitsScreen', () => {
     fireEvent.press(getByTestId('view-mode-toggle-list'));
     const row = await findByTestId('habit-row-no-killing');
 
-    fireEvent.press(row);
+    fireEvent.press(getByTestId('habit-row-check-no-killing'));
 
     await waitFor(() =>
       expect(StyleSheet.flatten(row.props.style).backgroundColor).toBe(
@@ -317,7 +317,7 @@ describe('HabitsScreen', () => {
     const { getByTestId, findByTestId } = renderInGroupView();
     fireEvent.press(getByTestId('view-mode-toggle-list'));
 
-    fireEvent.press(await findByTestId('habit-row-study'));
+    fireEvent.press(await findByTestId('habit-row-hours-study'));
 
     expect(await findByTestId('hours-modal')).toBeTruthy();
   });
@@ -575,7 +575,11 @@ describe('HabitsScreen streak freeze', () => {
     const { findByTestId } = render(<HabitsScreen />);
 
     expect(
-      (await findByTestId('habit-row-freeze-no-killing')).props.children,
+      (
+        await findByTestId('habit-row-freeze-no-killing', {
+          includeHiddenElements: true,
+        })
+      ).props.children,
     ).toBe('0 freezes left');
   });
 });
@@ -1117,7 +1121,11 @@ describe('HabitsScreen day change', () => {
     resumeApp();
 
     expect(
-      (await utils.findByTestId('habit-row-freeze-no-killing')).props.children,
+      (
+        await utils.findByTestId('habit-row-freeze-no-killing', {
+          includeHiddenElements: true,
+        })
+      ).props.children,
     ).toBe('0 freezes left');
   });
 
@@ -1136,7 +1144,7 @@ describe('HabitsScreen day change', () => {
         {},
       );
       const utils = render(<HabitsScreen />);
-      fireEvent.press(await utils.findByTestId('habit-row-study'));
+      fireEvent.press(await utils.findByTestId('habit-row-hours-study'));
       await utils.findByTestId('hours-modal');
       mockToday = TOMORROW;
       resumeApp();

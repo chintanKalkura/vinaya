@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, userEvent } from '@testing-library/react-native';
 import { ReactTestInstance } from 'react-test-renderer';
 import HabitListRow from './HabitListRow';
 import { Habit } from '../../types/habit';
@@ -68,7 +68,9 @@ describe('HabitListRow', () => {
       />,
     );
 
-    expect(getByTestId('habit-row-habit-1').props.accessibilityState).toEqual({
+    expect(
+      getByTestId('habit-row-check-habit-1').props.accessibilityState,
+    ).toEqual({
       checked: true,
     });
   });
@@ -86,7 +88,9 @@ describe('HabitListRow', () => {
       />,
     );
 
-    expect(getByTestId('habit-row-habit-1').props.accessibilityState).toEqual({
+    expect(
+      getByTestId('habit-row-check-habit-1').props.accessibilityState,
+    ).toEqual({
       checked: false,
     });
     expect(getByText('1')).toBeTruthy();
@@ -103,7 +107,7 @@ describe('HabitListRow', () => {
       />,
     );
 
-    fireEvent.press(getByTestId('habit-row-habit-1'));
+    fireEvent.press(getByTestId('habit-row-check-habit-1'));
 
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
@@ -119,7 +123,7 @@ describe('HabitListRow', () => {
       />,
     );
 
-    fireEvent.press(getByTestId('habit-row-habit-1'));
+    fireEvent.press(getByTestId('habit-row-check-habit-1'));
 
     expect(onPress).toHaveBeenCalledWith('habit-1');
   });
@@ -141,7 +145,7 @@ describe('HabitListRow', () => {
     const row = getByTestId('habit-row-habit-1');
 
     expect([
-      row.props.accessibilityState.checked,
+      getByTestId('habit-row-check-habit-1').props.accessibilityState.checked,
       StyleSheet.flatten(row.props.style).borderColor,
     ]).toEqual([false, colors.v2Orange]);
   });
@@ -265,7 +269,7 @@ describe('HabitListRow', () => {
       const onPress = jest.fn();
       const { getByTestId } = renderHours(1, onPress);
 
-      fireEvent.press(getByTestId('habit-row-habit-1'));
+      fireEvent.press(getByTestId('habit-row-hours-habit-1'));
 
       expect(onPress).toHaveBeenCalledWith('habit-1');
     });
@@ -405,13 +409,16 @@ describe('HabitListRow', () => {
     });
 
     it('shows the cadence label on a banner', () => {
-      expect(renderAs('banner').getByText('Weekly')).toBeTruthy();
+      expect(
+        renderAs('banner').getByText('Weekly', { includeHiddenElements: true }),
+      ).toBeTruthy();
     });
 
     it('shows the cadence label on an Hours banner', () => {
       expect(
         renderAs('banner', { type: 'Hours', targetHours: 1 }).getByText(
           'Weekly',
+          { includeHiddenElements: true },
         ),
       ).toBeTruthy();
     });
@@ -420,6 +427,7 @@ describe('HabitListRow', () => {
       expect(
         renderAs('pill', { type: 'Hours', targetHours: 1 }).queryByText(
           'Weekly',
+          { includeHiddenElements: true },
         ),
       ).toBeNull();
     });
@@ -457,9 +465,10 @@ describe('HabitListRow streak freeze', () => {
   it('shows "n freezes left" on a banner frozen today', () => {
     const { getByTestId } = renderRow(frozenHabit(), 'banner');
 
-    expect(getByTestId('habit-row-freeze-habit-1').props.children).toBe(
-      '2 freezes left',
-    );
+    expect(
+      getByTestId('habit-row-freeze-habit-1', { includeHiddenElements: true })
+        .props.children,
+    ).toBe('2 freezes left');
   });
 
   it('keeps the streak and shows the Snowflake on a frozen banner', () => {
@@ -488,7 +497,11 @@ describe('HabitListRow streak freeze', () => {
   it('never shows the freeze label on a pill', () => {
     const { queryByTestId } = renderRow(frozenHabit(), 'pill');
 
-    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+    expect(
+      queryByTestId('habit-row-freeze-habit-1', {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
   });
 
   it('hides the freeze label once marked today', () => {
@@ -501,7 +514,11 @@ describe('HabitListRow streak freeze', () => {
       'banner',
     );
 
-    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+    expect(
+      queryByTestId('habit-row-freeze-habit-1', {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
   });
 
   it('hides the freeze label on later days', () => {
@@ -517,7 +534,11 @@ describe('HabitListRow streak freeze', () => {
       'banner',
     );
 
-    expect(queryByTestId('habit-row-freeze-habit-1')).toBeNull();
+    expect(
+      queryByTestId('habit-row-freeze-habit-1', {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
   });
 
   it('turns the Hours bar icy when frozen', () => {
@@ -600,5 +621,94 @@ describe('HabitListRow menu', () => {
     fireEvent.press(getByTestId('habit-row-menu-habit-1-confirm-delete'));
 
     expect(onDelete).toHaveBeenCalledWith('habit-1');
+  });
+});
+
+describe('HabitListRow tap targets and labels', () => {
+  const H = { includeHiddenElements: true };
+  const renderRow = (overrides: Partial<Habit> = {}, onPress = jest.fn()) =>
+    render(
+      <HabitListRow
+        habit={makeHabit({ name: 'Run', ...overrides })}
+        groupName="Fitness"
+        todayKey={TODAY}
+        onPress={onPress}
+        colorKind="banner"
+      />,
+    );
+  const hoursRow = { type: 'Hours' as const, targetHours: 4 };
+
+  it('should not mark when the banner body is pressed', async () => {
+    const onPress = jest.fn();
+    const { getByText } = renderRow({}, onPress);
+
+    await userEvent.press(getByText('Run', H));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('should not open the Hours modal when the banner outside the bar is pressed', async () => {
+    const onPress = jest.fn();
+    const { getByText } = renderRow(hoursRow, onPress);
+
+    await userEvent.press(getByText('Run', H));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('should label the check with the name and streak', () => {
+    const { getByTestId } = renderRow({
+      recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+    });
+
+    const check = getByTestId('habit-row-check-habit-1');
+
+    expect([
+      check.props.accessibilityRole,
+      check.props.accessibilityLabel,
+    ]).toEqual(['checkbox', 'Run, 1 day streak']);
+  });
+
+  it('should label the Hours bar as a button with hours, target and streak and no checked state', () => {
+    const { getByTestId } = renderRow({
+      ...hoursRow,
+      recentLog: [{ date: TODAY, kind: 'hours', value: 2 }],
+    });
+    const bar = getByTestId('habit-row-hours-habit-1');
+
+    expect([
+      bar.props.accessibilityRole,
+      bar.props.accessibilityLabel,
+      bar.props.accessibilityState?.checked,
+    ]).toEqual(['button', 'Run, 2 of 4 hours today, 0 day streak', undefined]);
+  });
+
+  it('should hide the name, group and streak text from TalkBack', () => {
+    const { getByText, getByTestId } = renderRow();
+
+    expect(
+      [
+        getByText('Run'),
+        getByText('Fitness'),
+        getByTestId('habit-row-streak-habit-1'),
+      ].map(node => node.props.importantForAccessibility),
+    ).toEqual(['no', 'no', 'no']);
+  });
+
+  it('should give the check a 48dp target', () => {
+    const { getByTestId } = renderRow();
+    const { hitSlop } = getByTestId('habit-row-check-habit-1').props;
+
+    expect([
+      20 + hitSlop.left + hitSlop.right,
+      20 + hitSlop.top + hitSlop.bottom,
+    ]).toEqual([48, 48]);
+  });
+
+  it('should give the Hours bar a target at least 48dp tall', () => {
+    const { getByTestId } = renderRow(hoursRow);
+    const { hitSlop } = getByTestId('habit-row-hours-habit-1').props;
+
+    expect(16 + hitSlop.top + hitSlop.bottom).toBeGreaterThanOrEqual(48);
   });
 });
