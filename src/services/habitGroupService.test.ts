@@ -12,6 +12,7 @@ import { markHabitDone, unmarkHabitDone } from './habitService';
 import {
   loadHabitGroups,
   loadHabits,
+  loadTombstones,
   saveHabitGroups,
   saveHabits,
 } from '../storage/habitStorage';
@@ -471,6 +472,18 @@ describe('deleteHabitGroup', () => {
       await loadHabitGroups(),
       Object.keys(await loadHabits()).sort(),
     ]).toEqual([{}, ['a', 'b']]);
+  });
+
+  it('records a tombstone for the deleted group', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1000);
+    await seed([makeHabit('a')], makeGroup('Any'));
+
+    await deleteHabitGroup('g');
+
+    expect(await loadTombstones()).toEqual({
+      g: { id: 'g', kind: 'group', deletedAt: 1000 },
+    });
+    jest.restoreAllMocks();
   });
 });
 

@@ -17,3 +17,7 @@ export const DEFAULT_HABIT_LIMITS: HabitLimitsConfig = {
   streakFreezeIntervalMax: 100,
   recentLogSize: 90,
 };
+
+// Tombstones older than this are dropped: a backup that old could bring a
+// deleted item back
+export const TOMBSTONE_DAYS = 180;

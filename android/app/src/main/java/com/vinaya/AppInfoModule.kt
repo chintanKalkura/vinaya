@@ -20,4 +20,15 @@ class AppInfoModule(private val reactContext: ReactApplicationContext) :
             promise.reject("APP_INFO_ERROR", e)
         }
     }
+
+    // versionName from build.gradle, written into backups
+    @ReactMethod
+    fun getVersionName(promise: Promise) {
+        try {
+            val info = reactContext.packageManager.getPackageInfo(reactContext.packageName, 0)
+            promise.resolve(info.versionName)
+        } catch (e: Exception) {
+            promise.reject("APP_INFO_ERROR", e)
+        }
+    }
 }

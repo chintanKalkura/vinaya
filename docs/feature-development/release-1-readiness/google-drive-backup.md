@@ -12,7 +12,7 @@ Users who sign in with Google get a weekly backup of their habits to their own G
 - The same Google account will be the identity on the future backend.
 
 ## Decisions
-1. **Sign-in.** "Sign in with Google" using Android Credential Manager (e.g. `@react-native-google-signin/google-signin`). Only the `drive.appdata` scope is requested: it is non-sensitive, so only basic OAuth verification is needed. No email or profile data is stored by the app beyond the account's display name and email shown in Profile.
+1. **Sign-in.** "Sign in with Google" using Android Credential Manager, through `react-native-nitro-google-signin` (MIT, free): Credential Manager signs the user in and Google's AuthorizationClient grants the `drive.appdata` access token. The free version of `@react-native-google-signin/google-signin` uses Google's deprecated legacy SDK, and its Credential Manager version is paid. Drive is called with `fetch` to the Drive v3 REST API; no Drive SDK. Only the `drive.appdata` scope is requested: it is non-sensitive, so only basic OAuth verification is needed. No email or profile data is stored by the app beyond the account's display name and email shown in Profile.
 2. **Where the backup lives.** The Drive app-data folder: hidden from the user's Drive file list and readable only by Vinaya. It counts against the user's Drive storage.
 3. **Backup file.** One JSON file, `vinaya-backup.json`, plus the previous one kept as `vinaya-backup.prev.json` so a broken upload never leaves the user with nothing.
    ```
@@ -22,7 +22,7 @@ Users who sign in with Google get a weekly backup of their habits to their own G
      settings: DisplaySettings }
    ```
    `schemaVersion` increases on any breaking change, and the restore code migrates older versions forward.
-4. **Tombstones.** Deleting a habit or group records `{ id, kind, deletedAt }` locally. Without them, a merge would bring deleted items back from an older backup. Tombstones older than 180 days are dropped (design decision required on the period).
+4. **Tombstones.** Deleting a habit or group records `{ id, kind, deletedAt }` locally. Without them, a merge would bring deleted items back from an older backup. Tombstones older than 180 days are dropped.
 5. **Merge rules** (one pure function, `mergeBackup(local, remote)`, unit-tested and reusable on the backend):
    - Item only on the phone → kept.
    - Item only in the backup → added, unless a local tombstone has its id. Added items go after local items in sort order.
@@ -36,7 +36,7 @@ Users who sign in with Google get a weekly backup of their habits to their own G
    - Every backup first downloads the existing backup, merges it with local data (rule 5, local wins), then uploads. This stops an old phone from overwriting a newer phone's data.
    - Profile shows "Last backed up <date>" or the last error.
 7. **When it restores.** Right after sign-in, if a backup exists, the app merges it. On a new phone with no local data, this is a full restore. The user sees a confirmation of what was added ("Added 12 habits and 3 groups from your backup").
-8. **Not signed in.** Profile shows: "You're not signed in. Your habits are only on this phone: they won't be backed up or moved to a new phone." Same line in the first-launch walkthrough (`how-to-use.md`). Exact wording can be adjusted.
+8. **Not signed in.** Profile shows: "You're not signed in. Sign in with your Google account to back up your data, so that you don't lose your progress. 🙂" Same line in the first-launch walkthrough (`how-to-use.md`).
 9. **Sign out** keeps local data and stops backups. The backup in Drive stays.
 10. **Delete account data** (required by Play, because Google sign-in counts as an app account):
     - In-app: Profile → "Delete backup and sign out" deletes both backup files from the app-data folder, revokes the app's access, and signs out. Local data on the phone stays. Confirmation step names what is deleted.

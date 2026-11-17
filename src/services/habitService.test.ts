@@ -13,6 +13,7 @@ import {
   saveHabits,
   loadHabits,
   loadHabitGroups,
+  loadTombstones,
   saveHabitGroups,
   StorageReadError,
 } from '../storage/habitStorage';
@@ -483,6 +484,18 @@ describe('deleteHabit', () => {
     recentLog: [],
     history: [],
     ...overrides,
+  });
+
+  it('records a tombstone for the deleted habit', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1000);
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await deleteHabit('habit-1', TODAY);
+
+    expect(await loadTombstones()).toEqual({
+      'habit-1': { id: 'habit-1', kind: 'habit', deletedAt: 1000 },
+    });
+    jest.restoreAllMocks();
   });
 
   it('removes the habit', async () => {
