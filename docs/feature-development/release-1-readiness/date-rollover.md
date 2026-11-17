@@ -1,6 +1,6 @@
 # Bug: Today's date is fixed when the Habits screen first loads.
 
-Status: ready for planning.
+Status: done.
 
 ## Goal
 Marks, hours, streaks and freezes always use the real current day, even if the app stays open or in the background across midnight.
@@ -16,7 +16,7 @@ Marks, hours, streaks and freezes always use the real current day, even if the a
 1. **A `useToday()` hook** returns the current date key. It updates when the app returns to the foreground (`AppState` → `active`) and at the next local midnight while the app is open (timer re-armed each day).
 2. **Day change.** When the key changes, the screen runs `applyStreakFreezes(newKey)` and reloads habits and groups, through the storage write queue (`storage-write-safety.md`).
 3. **Open sheets and forms** stay open across a day change; anything they save uses the new day.
-4. **Hours modal.** If the day changes while the Hours modal is open, Done saves to the new day and the modal's starting value is not reused for it. Design decision required if a visible notice is wanted.
+4. **Hours modal.** If the day changes while the Hours modal is open, Done saves to the new day and the modal's starting value is not reused for it: the value resets to the new day's hours. No visible notice is shown.
 5. **Time zone or clock changes** are handled the same way: the key is recomputed on resume.
 
 ## Out of scope

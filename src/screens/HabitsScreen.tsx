@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
-import { toDateKey } from '../utils/dates';
+import { useToday } from '../hooks/useToday';
 import { loadHabitsAndGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
 import {
@@ -81,7 +81,8 @@ export default function HabitsScreen(): React.JSX.Element {
   // Counts failures so each one restarts the snackbar's timer
   const [saveErrorCount, setSaveErrorCount] = useState(0);
   const [saveErrorVisible, setSaveErrorVisible] = useState(false);
-  const todayKey = useMemo(() => toDateKey(new Date()), []);
+  // A day change reruns the screen load: freezes for the new day, then a reload
+  const todayKey = useToday();
   // The app draws edge-to-edge, so the header clears the status bar here
   const insets = useSafeAreaInsets();
 

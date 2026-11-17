@@ -10,6 +10,13 @@ export function parseDate(key: string): Date {
   return new Date(y, m - 1, d);
 }
 
+// Local midnight, so it follows the device's time zone and daylight saving
+export function msUntilNextMidnight(now: Date): number {
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight.getTime() - now.getTime();
+}
+
 export function addDays(key: string, days: number): string {
   const date = parseDate(key);
   date.setDate(date.getDate() + days);
@@ -48,7 +55,10 @@ export function getDaysLeft(
   const endDate = getEndDate(startDate, totalDays);
   const end = parseDate(endDate);
   const current = parseDate(dateKey);
-  return Math.max(0, Math.floor((end.getTime() - current.getTime()) / 86400000));
+  return Math.max(
+    0,
+    Math.floor((end.getTime() - current.getTime()) / 86400000),
+  );
 }
 
 export function clampDateKey(
