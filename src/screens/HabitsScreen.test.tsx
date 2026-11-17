@@ -457,7 +457,9 @@ describe('HabitsScreen', () => {
     first.unmount();
 
     const second = renderInGroupView();
-    const reloadedPill = await second.findByTestId('habit-pill-check-no-killing');
+    const reloadedPill = await second.findByTestId(
+      'habit-pill-check-no-killing',
+    );
 
     await waitFor(() => {
       expect(reloadedPill.props.accessibilityState.checked).toBe(true);
@@ -1090,8 +1092,8 @@ describe('HabitsScreen day change', () => {
     resumeApp();
     await waitFor(() =>
       expect(
-        utils.getByTestId('habit-pill-check-no-killing').props.accessibilityState
-          .checked,
+        utils.getByTestId('habit-pill-check-no-killing').props
+          .accessibilityState.checked,
       ).toBe(false),
     );
     fireEvent.press(utils.getByTestId('habit-pill-check-no-killing'));
@@ -1197,5 +1199,20 @@ describe('HabitsScreen profile and backups', () => {
     utils.rerender(<HabitsScreen dataVersion={1} />);
 
     expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
+  });
+});
+
+describe('HabitsScreen font scaling', () => {
+  it('keeps the + above a bottom menu that grew with the font size', async () => {
+    const utils = render(<HabitsScreen />);
+    await utils.findByTestId('fab');
+
+    fireEvent(utils.getByTestId('bottom-menu'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 110 } },
+    });
+
+    expect(
+      StyleSheet.flatten(utils.getByTestId('fab').props.style).bottom,
+    ).toBe(126);
   });
 });

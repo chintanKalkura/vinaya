@@ -93,6 +93,11 @@ export default function HabitsScreen({
   const todayKey = useToday();
   // The app draws edge-to-edge, so the header clears the status bar here
   const insets = useSafeAreaInsets();
+  // The bottom menu grows with the font size; the FAB and snackbar sit above it
+  const [measuredMenuHeight, setMeasuredMenuHeight] = useState<number | null>(
+    null,
+  );
+  const menuHeight = measuredMenuHeight ?? BOTTOM_MENU_HEIGHT + insets.bottom;
 
   const reload = useCallback(async () => {
     const [h, g] = await loadHabitsAndGroups();
@@ -276,6 +281,7 @@ export default function HabitsScreen({
       key={saveErrorCount}
       visible={saveErrorVisible}
       inForm={inForm}
+      menuHeight={menuHeight}
       onDismiss={dismissSaveError}
     />
   );
@@ -391,10 +397,7 @@ export default function HabitsScreen({
         <Pressable
           testID="fab"
           onPress={() => setCreateStep('choice')}
-          style={[
-            styles.fab,
-            { bottom: BOTTOM_MENU_HEIGHT + 16 + insets.bottom },
-          ]}
+          style={[styles.fab, { bottom: menuHeight + 16 }]}
         >
           <Text style={styles.fabIcon}>+</Text>
         </Pressable>
@@ -404,6 +407,7 @@ export default function HabitsScreen({
         onSelect={tab => {
           if (tab === 'Profile') onOpenProfile?.();
         }}
+        onHeightChange={setMeasuredMenuHeight}
       />
       <HoursEntryModal
         visible={hoursHabit !== undefined}

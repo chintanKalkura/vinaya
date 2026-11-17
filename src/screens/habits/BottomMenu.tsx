@@ -21,23 +21,28 @@ const ITEMS = [
 const TABS: string[] = ['Habits', 'Profile'];
 
 // Flush with the screen's bottom edge, padded by the bottom inset so it clears
-// the gesture or 3-button bar: docs/style-choices/habits-section/header-and-bottom-menu.md
+// the gesture or 3-button bar: docs/style-choices/habits-section/header-and-bottom-menu.md.
+// It grows with the system font size, so its height is measured; this is only
+// the starting value (without the inset) until the first layout.
 export const BOTTOM_MENU_HEIGHT = 60;
 
 interface BottomMenuProps {
   selected?: Tab;
   onSelect?: (tab: Tab) => void;
+  onHeightChange?: (height: number) => void; // includes the bottom inset
 }
 
 export default function BottomMenu({
   selected = 'Habits',
   onSelect,
+  onHeightChange,
 }: BottomMenuProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
 
   return (
     <View
       testID="bottom-menu"
+      onLayout={e => onHeightChange?.(e.nativeEvent.layout.height)}
       style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}
     >
       {ITEMS.map(item => {

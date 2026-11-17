@@ -73,3 +73,15 @@ describe('SaveErrorSnackbar', () => {
     ).toBe(16);
   });
 });
+
+describe('SaveErrorSnackbar menu height', () => {
+  it('should sit above the + over a measured bottom menu', () => {
+    const { getByTestId } = render(
+      <SaveErrorSnackbar visible menuHeight={110} onDismiss={() => {}} />,
+    );
+
+    expect(
+      StyleSheet.flatten(getByTestId('save-error').props.style).bottom,
+    ).toBe(110 + 16 + 56 + 12);
+  });
+});
