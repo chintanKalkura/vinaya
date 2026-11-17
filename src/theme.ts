@@ -19,8 +19,8 @@ export const colors = {
   v2MenuBackground: '#1e1510', // espresso: bottom menu bar
   v2MenuBorder: '#130d09', // bitter coffee: bottom menu top edge
   v2IceCardBackground: '#1f2c43',
-  v2GreyText: '#8a8aa3',
-  v2GreyOutline: '#4a4a6a',
+  v2GreyText: '#9393aa', // 4.6:1 or more on every card: accessibility-fixes.md
+  v2GreyOutline: '#70709b', // 3:1 or more on the card, for icons
   v2White: '#f5f5fa',
 };
 
