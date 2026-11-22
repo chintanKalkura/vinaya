@@ -28,7 +28,7 @@ Vinaya - Habits        [All ⌄] [▦|☰] [⚟]
 | Padding | 10dp at the top; 10dp plus the bottom safe-area inset at the bottom |
 | Items | unchanged: Habits, Journal, Level-Up, Profile |
 
-The + button sits 16dp above the menu: its bottom offset is the menu height (60dp) + 16dp + the bottom inset.
+The + button sits 16dp above the menu: its bottom offset is the menu's measured height (which includes the bottom inset and grows with the system font size) + 16dp. Until the menu is first laid out, 60dp + the bottom inset is used. The header's controls have 48dp tap areas; its top padding is 8dp so it keeps its height (`tap-targets.md`).
 
 ## Why
 

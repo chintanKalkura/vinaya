@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   primary: {
-    height: 46,
+    minHeight: 46,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   dialogButton: {
-    height: 46,
+    minHeight: 46,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',

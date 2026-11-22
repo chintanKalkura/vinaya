@@ -1,6 +1,6 @@
 # Feature: Accessibility fixes for the Habits screen.
 
-Status: ready for planning.
+Status: done.
 
 ## Goal
 The Habits screen meets WCAG 2.2 AA contrast and Android touch-target guidance, reads correctly in TalkBack, and stays usable at the largest system font size.
@@ -14,7 +14,7 @@ The Habits screen meets WCAG 2.2 AA contrast and Android touch-target guidance, 
 - Fixed font sizes (11–32) and a fixed 60px bottom menu; no handling for large system fonts.
 
 ## Decisions
-1. **Contrast.** Raise `v2GreyOutline` (used for the unchecked circle and not-complete icons) to at least 3:1 on `v2CardBackground`, and `v2GreyText` to at least 4.6:1 for margin. New values: design decision required (keep the current look as close as possible).
+1. **Contrast.** Raise `v2GreyOutline` (used for the unchecked circle and not-complete icons) to at least 3:1 on `v2CardBackground`, and `v2GreyText` to at least 4.6:1 for margin. Decided (same hue, slightly lighter): `v2GreyOutline` `#70709b` (3.24:1 on the card) and `v2GreyText` `#9393aa` (5.06:1 on the card, and at least 4.6:1 on every card the Habits screen uses, including the orange complete card and the icy frozen card, where the old grey was 4.11:1). Checked by `src/theme.contrast.test.ts`.
 2. **Touch targets.** Every tappable element is at least 48×48dp, through size or `hitSlop`: the ⋮, the checkmark area (see `usability-fixes.md`), cadence filter, view toggle, sort button, steppers, sheet chips.
 3. **Labels.**
    - Checkmark habit: role `checkbox`, label "<name>, <n> day streak", checked state.
@@ -22,7 +22,7 @@ The Habits screen meets WCAG 2.2 AA contrast and Android touch-target guidance, 
    - Group card: label "<group name>, <type> group, complete/not complete, <n> day streak".
    - Frozen state adds ", streak freeze used today, <n> freezes left".
    - Decorative icons are hidden from TalkBack.
-4. **Font scaling.** Layouts grow with text: no fixed heights on rows, menu or buttons; the bottom menu height is measured, not a constant. `maxFontSizeMultiplier` capped at 2 on dense labels (cadence label, streak, chips) only if needed after testing.
+4. **Font scaling.** Layouts grow with text: no fixed heights on rows, menu or buttons; the bottom menu height is measured, not a constant. `maxFontSizeMultiplier` capped at 2 on dense labels (cadence label, streak, chips) only if needed after testing. Tested at font scale 2.0 on the emulator (Habits list and group view, sort sheet, New Habit form, Hours modal, Profile): nothing clipped or overlapped, so no cap was added.
 
 ## Out of scope
 - Light theme contrast (handled with `display-settings.md`)

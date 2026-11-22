@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: 64,
-    height: 40,
+    minHeight: 40,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.v2Orange,

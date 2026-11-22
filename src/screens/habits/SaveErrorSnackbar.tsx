@@ -14,6 +14,7 @@ interface SaveErrorSnackbarProps {
   visible: boolean;
   onDismiss: () => void;
   inForm?: boolean; // a form covers the FAB and bottom menu
+  menuHeight?: number; // measured bottom menu height, with the bottom inset
 }
 
 // A new failure remounts it (keyed by the screen), restarting the timer
@@ -21,6 +22,7 @@ export default function SaveErrorSnackbar({
   visible,
   onDismiss,
   inForm = false,
+  menuHeight,
 }: SaveErrorSnackbarProps): React.JSX.Element | null {
   const insets = useSafeAreaInsets();
 
@@ -39,7 +41,9 @@ export default function SaveErrorSnackbar({
       style={[
         styles.snackbar,
         {
-          bottom: (inForm ? 16 : BOTTOM_MENU_HEIGHT + FAB_TOP) + insets.bottom,
+          bottom: inForm
+            ? 16 + insets.bottom
+            : (menuHeight ?? BOTTOM_MENU_HEIGHT + insets.bottom) + FAB_TOP,
         },
       ]}
     >

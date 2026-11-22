@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   stepButton: {
     width: 58,
-    height: 58,
+    minHeight: 58,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.v2GreyOutline,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 58,
+    minHeight: 58,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.v2Orange,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   doneButton: {
-    height: 46,
+    minHeight: 46,
     borderRadius: 12,
     backgroundColor: colors.v2Orange,
     alignItems: 'center',

@@ -57,7 +57,7 @@ export const formStyles = StyleSheet.create({
     color: colors.v2Orange,
   },
   createButton: {
-    height: 52,
+    minHeight: 52,
     borderRadius: 14,
     backgroundColor: colors.v2Orange,
     alignItems: 'center',

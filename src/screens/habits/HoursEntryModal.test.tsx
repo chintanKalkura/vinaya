@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import HoursEntryModal from './HoursEntryModal';
 
@@ -90,5 +91,24 @@ describe('HoursEntryModal', () => {
     expect([onClose.mock.calls.length, onDone.mock.calls.length]).toEqual([
       1, 0,
     ]);
+  });
+});
+
+describe('HoursEntryModal font scaling', () => {
+  it('should let the Done button grow with the text', () => {
+    const { getByTestId } = render(
+      <HoursEntryModal
+        visible
+        habitName="Study"
+        initialHours={0}
+        onDone={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    const style = StyleSheet.flatten(
+      getByTestId('hours-modal-done').props.style,
+    );
+
+    expect([style.height, style.minHeight]).toEqual([undefined, 46]);
   });
 });

@@ -9,7 +9,7 @@ Work them in this order. Within a step, any order.
 | 1. Data integrity | `storage-write-safety.md` | done |
 | | `date-rollover.md` | done |
 | 2. Keeping data | `google-drive-backup.md` | done (web deletion page and Play setup outside the code) |
-| 3. Small UI fixes | `accessibility-fixes.md` | in progress |
+| 3. Small UI fixes | `accessibility-fixes.md` | done |
 | | `usability-fixes.md` | done, except the keyboard bug: **not done**, parked, not reproducible |
 | 4. Release config and cleanup | `release-build-config.md` | ready for planning |
 | | `tech-debt-cleanup.md` | ready (`src_v1_backup/`: owner's decision) |

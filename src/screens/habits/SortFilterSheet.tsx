@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   apply: {
-    height: 52,
+    minHeight: 52,
     borderRadius: 14,
     backgroundColor: colors.v2Orange,
     alignItems: 'center',
