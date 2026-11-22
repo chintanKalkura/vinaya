@@ -1216,3 +1216,25 @@ describe('HabitsScreen font scaling', () => {
     ).toBe(126);
   });
 });
+
+describe('HabitsScreen form mounting', () => {
+  const NewHabitForm = require('./habits/NewHabitForm').default;
+  const NewHabitGroupForm = require('./habits/NewHabitGroupForm').default;
+  const mountedForms = (utils: ReturnType<typeof render>) =>
+    utils.UNSAFE_queryAllByType(NewHabitForm).length +
+    utils.UNSAFE_queryAllByType(NewHabitGroupForm).length;
+
+  it('mounts no form until one is opened, then only that one', async () => {
+    const utils = render(<HabitsScreen />);
+    const atRest = mountedForms(utils);
+    fireEvent.press(await utils.findByTestId('fab'));
+    fireEvent.press(await utils.findByTestId('choice-sheet-habit'));
+    await utils.findByTestId('new-habit-form');
+
+    expect([
+      atRest,
+      utils.UNSAFE_queryAllByType(NewHabitForm).length,
+      utils.UNSAFE_queryAllByType(NewHabitGroupForm).length,
+    ]).toEqual([0, 1, 0]);
+  });
+});
