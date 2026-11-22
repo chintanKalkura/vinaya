@@ -3,12 +3,15 @@ import {
   Dimensions,
   Modal,
   Pressable,
+  StyleProp,
   StyleSheet,
   Text,
   View,
+  ViewStyle,
 } from 'react-native';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
 import { colors } from '../../theme';
+import TouchTarget, { MIN_TOUCH_SIZE } from './TouchTarget';
 
 // ⋮ right of a banner's streak number: docs/style-choices/habits-section/banner-menu.md.
 // Opens a dropdown (Edit, Delete), then a confirm step before deleting.
@@ -17,7 +20,13 @@ interface BannerMenuProps {
   onEdit: () => void;
   onDelete: () => void;
   testID: string;
+  // Where the 48dp target sits: the parent places it over its name row, since
+  // the row itself is too short to hold it (tap-targets.md)
+  targetStyle?: StyleProp<ViewStyle>;
 }
+
+// Kept in the name row where the ⋮ is drawn, so the title and streak stay put
+export const BANNER_MENU_SPACE = 6 + 18;
 
 type Step = 'closed' | 'dropdown' | 'confirm';
 
@@ -34,6 +43,7 @@ export default function BannerMenu({
   onEdit,
   onDelete,
   testID,
+  targetStyle,
 }: BannerMenuProps): React.JSX.Element {
   const buttonRef = useRef<View>(null);
   const [step, setStep] = useState<Step>('closed');
@@ -53,20 +63,21 @@ export default function BannerMenu({
 
   return (
     <>
-      <Pressable
-        ref={buttonRef}
+      <TouchTarget
         testID={testID}
         accessibilityRole="button"
         accessibilityLabel={
           kind === 'habit' ? 'Habit options' : 'Group options'
         }
         accessibilityState={{ expanded: step === 'dropdown' }}
-        hitSlop={10}
         onPress={open}
-        style={styles.button}
+        style={targetStyle}
       >
-        <EllipsisVertical color={colors.v2GreyText} size={18} />
-      </Pressable>
+        {/* Measured for the dropdown: the icon, not the 48dp target */}
+        <View ref={buttonRef}>
+          <EllipsisVertical color={colors.v2GreyText} size={18} />
+        </View>
+      </TouchTarget>
 
       {/* Not drawn under the status bar, so window coordinates line up */}
       <Modal
@@ -156,9 +167,6 @@ export default function BannerMenu({
 }
 
 const styles = StyleSheet.create({
-  button: {
-    marginLeft: 6,
-  },
   dropdown: {
     position: 'absolute',
     minWidth: 150,
@@ -238,3 +246,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+// Puts the 48dp target over the ⋮ drawn at the right end of a name row whose
+// vertical centre is `centerY` in the parent's coordinates
+export function bannerMenuTargetStyle(centerY: number): ViewStyle {
+  return {
+    position: 'absolute',
+    right: 0,
+    top: Math.max(0, centerY - MIN_TOUCH_SIZE / 2),
+  };
+}

@@ -112,3 +112,19 @@ describe('HabitsHeader', () => {
     expect([...new Set(order)]).toEqual(wanted);
   });
 });
+
+describe('HabitsHeader touch targets', () => {
+  it.each([
+    'cadence-filter',
+    'view-mode-toggle-group',
+    'view-mode-toggle-list',
+    'sort-button',
+  ])('should give %s a target of at least 48dp', testID => {
+    const { getByTestId } = renderHeader();
+
+    expect(StyleSheet.flatten(getByTestId(testID).props.style)).toMatchObject({
+      minWidth: 48,
+      minHeight: 48,
+    });
+  });
+});

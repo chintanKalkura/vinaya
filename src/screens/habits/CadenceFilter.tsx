@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { HabitCadence } from '../../types/habit';
 import { colors } from '../../theme';
+import TouchTarget from './TouchTarget';
 
 // Design: docs/style-choices/habits-section/cadence-filter.md
 export type CadenceFilterValue = 'All' | HabitCadence;
@@ -47,24 +48,28 @@ export default function CadenceFilter({
 
   return (
     <>
-      <Pressable
-        ref={triggerRef}
+      <TouchTarget
         testID="cadence-filter"
         accessibilityRole="button"
+        accessibilityLabel={`Cadence filter, ${value}`}
         accessibilityState={{ expanded: isOpen }}
         onPress={open}
-        style={styles.trigger}
       >
-        <Text style={styles.triggerLabel}>{value}</Text>
-        <Chevron
-          testID={
-            isOpen ? 'cadence-filter-chevron-up' : 'cadence-filter-chevron-down'
-          }
-          color={colors.v2Background}
-          size={16}
-          strokeWidth={2.5}
-        />
-      </Pressable>
+        {/* Measured for the menu position: the pill, not the 48dp target */}
+        <View ref={triggerRef} style={styles.trigger}>
+          <Text style={styles.triggerLabel}>{value}</Text>
+          <Chevron
+            testID={
+              isOpen
+                ? 'cadence-filter-chevron-up'
+                : 'cadence-filter-chevron-down'
+            }
+            color={colors.v2Background}
+            size={16}
+            strokeWidth={2.5}
+          />
+        </View>
+      </TouchTarget>
       <Modal
         visible={isOpen}
         transparent

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Snowflake } from 'lucide-react-native';
 import { Habit } from '../../types/habit';
@@ -7,8 +7,12 @@ import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
-import BannerMenu from './BannerMenu';
+import BannerMenu, {
+  BANNER_MENU_SPACE,
+  bannerMenuTargetStyle,
+} from './BannerMenu';
 import { ColorKind, getColorScheme } from './colorRules';
+import { checkmarkLabel, hoursLabel } from './a11yLabels';
 
 interface HabitListRowProps {
   habit: Habit;
@@ -45,9 +49,17 @@ export default function HabitListRow({
     isBanner && styles.streakRight,
     { color: scheme.numberColor },
   ];
-  // Pills never show the freeze label
+  const freeze = { frozen: scheme.frozen, freezesLeft: status.freezesLeft };
+  // Where the name row's centre is in the banner, for the ⋮ target
+  const [textColumnY, setTextColumnY] = useState(0);
+  const [nameRowCenter, setNameRowCenter] = useState(0);
+  // Pills never show the freeze label. Decorative: the tap target's label says it.
   const cadenceLabel = isBanner ? (
-    <>
+    <View
+      pointerEvents="none"
+      importantForAccessibility="no-hide-descendants"
+      style={StyleSheet.absoluteFill}
+    >
       {scheme.frozen ? (
         <FreezeLabel
           freezesLeft={status.freezesLeft}
@@ -58,105 +70,147 @@ export default function HabitListRow({
         cadence={habit.cadence}
         testID={`habit-row-cadence-${habit.id}`}
       />
-    </>
+    </View>
   ) : null;
-  const menu =
-    isBanner && onEdit && onDelete ? (
-      <BannerMenu
-        kind="habit"
-        onEdit={() => onEdit(habit.id)}
-        onDelete={() => onDelete(habit.id)}
-        testID={`habit-row-menu-${habit.id}`}
-      />
-    ) : null;
+  const hasMenu = isBanner && onEdit && onDelete;
+  // Drawn in the name row, tapped through a 48dp target over the banner
+  const menu = hasMenu ? (
+    <BannerMenu
+      kind="habit"
+      onEdit={() => onEdit(habit.id)}
+      onDelete={() => onDelete(habit.id)}
+      testID={`habit-row-menu-${habit.id}`}
+      targetStyle={bannerMenuTargetStyle(textColumnY + nameRowCenter)}
+    />
+  ) : null;
   const groupLabel = groupName ? (
-    <Text style={styles.groupName} numberOfLines={1}>
+    <Text
+      importantForAccessibility="no"
+      style={styles.groupName}
+      numberOfLines={1}
+    >
       {groupName}
     </Text>
   ) : null;
+  const nameRow = (
+    <View
+      style={styles.nameRow}
+      onLayout={e =>
+        setNameRowCenter(
+          e.nativeEvent.layout.y + e.nativeEvent.layout.height / 2,
+        )
+      }
+    >
+      <Text
+        importantForAccessibility="no"
+        style={[styles.name, { color: scheme.titleColor }]}
+      >
+        {habit.name}
+      </Text>
+      <Text
+        testID={`habit-row-streak-${habit.id}`}
+        importantForAccessibility="no"
+        style={streakStyle}
+      >
+        {status.streak}
+      </Text>
+      {hasMenu ? <View style={styles.menuSpace} /> : null}
+    </View>
+  );
+  const onTextColumnLayout = (e: { nativeEvent: { layout: { y: number } } }) =>
+    setTextColumnY(e.nativeEvent.layout.y);
 
+  // Only the check (or the Hours bar) is tappable; the rest of the banner
+  // will open the detail page (habit-group-detail-page.md):
+  // docs/style-choices/habits-section/tap-targets.md
   if (hours) {
     return (
-      <Pressable
-        testID={`habit-row-${habit.id}`}
-        accessibilityRole="button"
-        accessibilityState={{ checked: status.markedToday }}
-        onPress={() => onPress(habit.id)}
-        style={rowStyle}
-      >
-        <View style={styles.textColumn}>
-          <View style={styles.nameRow}>
-            <Text style={[styles.name, { color: scheme.titleColor }]}>
-              {habit.name}
-            </Text>
-            <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
-              {status.streak}
-            </Text>
-            {menu}
-          </View>
+      <View testID={`habit-row-${habit.id}`} style={rowStyle}>
+        <View style={styles.textColumn} onLayout={onTextColumnLayout}>
+          {nameRow}
           {groupLabel}
-          <View style={styles.hoursProgress}>
+          <Pressable
+            testID={`habit-row-hours-${habit.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={hoursLabel(
+              habit.name,
+              hours.hoursToday,
+              habit.targetHours ?? 0,
+              status.streak,
+              freeze,
+            )}
+            hitSlop={isBanner ? BANNER_HOURS_HIT_SLOP : CELL_HOURS_HIT_SLOP}
+            onPress={() => onPress(habit.id)}
+            style={styles.hoursProgress}
+          >
             <HoursProgress
               total={hours.hoursToday}
               target={habit.targetHours ?? 0}
               testID={`habit-row-progress-${habit.id}`}
               color={scheme.barColor}
             />
-          </View>
+          </Pressable>
         </View>
         {cadenceLabel}
-      </Pressable>
+        {menu}
+      </View>
     );
   }
 
   return (
-    <Pressable
-      testID={`habit-row-${habit.id}`}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: status.markedToday }}
-      onPress={() => onPress(habit.id)}
-      style={rowStyle}
-    >
-      {scheme.iconFrozen ? (
-        <Snowflake
-          testID={`habit-row-frozen-${habit.id}`}
-          style={styles.frozenIcon}
-          color={scheme.iconColor}
-          size={20}
-          strokeWidth={2}
-        />
-      ) : (
-        <View
-          testID={`habit-row-icon-${habit.id}`}
-          style={[
-            styles.icon,
-            {
-              borderColor: scheme.iconColor,
-              backgroundColor: scheme.iconFilled ? scheme.iconColor : undefined,
-            },
-          ]}
-        >
-          {scheme.iconFilled ? (
-            <Check color={colors.v2Background} size={13} strokeWidth={3.5} />
-          ) : null}
-        </View>
-      )}
-      <View style={styles.textColumn}>
-        <View style={styles.nameRow}>
-          <Text style={[styles.name, { color: scheme.titleColor }]}>
-            {habit.name}
-          </Text>
-          <Text testID={`habit-row-streak-${habit.id}`} style={streakStyle}>
-            {status.streak}
-          </Text>
-          {menu}
-        </View>
+    <View testID={`habit-row-${habit.id}`} style={rowStyle}>
+      <Pressable
+        testID={`habit-row-check-${habit.id}`}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: status.markedToday }}
+        accessibilityLabel={checkmarkLabel(habit.name, status.streak, freeze)}
+        hitSlop={CHECK_HIT_SLOP}
+        onPress={() => onPress(habit.id)}
+        style={styles.check}
+      >
+        {scheme.iconFrozen ? (
+          <Snowflake
+            testID={`habit-row-frozen-${habit.id}`}
+            color={scheme.iconColor}
+            size={20}
+            strokeWidth={2}
+          />
+        ) : (
+          <View
+            testID={`habit-row-icon-${habit.id}`}
+            style={[
+              styles.icon,
+              {
+                borderColor: scheme.iconColor,
+                backgroundColor: scheme.iconFilled
+                  ? scheme.iconColor
+                  : undefined,
+              },
+            ]}
+          >
+            {scheme.iconFilled ? (
+              <Check color={colors.v2Background} size={13} strokeWidth={3.5} />
+            ) : null}
+          </View>
+        )}
+      </Pressable>
+      <View style={styles.textColumn} onLayout={onTextColumnLayout}>
+        {nameRow}
         {groupLabel}
       </View>
       {cadenceLabel}
-    </Pressable>
+      {menu}
+    </View>
   );
 }
+
+// The 20px check grows to 48×48 to tap, inside the banner's padding (more room
+// below, where the cadence label sits)
+export const CHECK_HIT_SLOP = { top: 12, bottom: 16, left: 14, right: 14 };
+// The Hours bar row (about 16px) grows to 48 tall; less above on banners so it
+// stays clear of the ⋮
+export const BANNER_HOURS_HIT_SLOP = { top: 10, bottom: 22 };
+export const CELL_HOURS_HIT_SLOP = { top: 16, bottom: 16 };
 
 const styles = StyleSheet.create({
   row: {
@@ -172,6 +226,9 @@ const styles = StyleSheet.create({
   bannerRow: {
     paddingBottom: 12 + CADENCE_LABEL_SPACE,
   },
+  check: {
+    marginRight: 10,
+  },
   icon: {
     width: 20,
     height: 20,
@@ -179,13 +236,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
-  frozenIcon: {
-    marginRight: 10,
   },
   textColumn: {
     flex: 1,
+  },
+  menuSpace: {
+    width: BANNER_MENU_SPACE,
   },
   nameRow: {
     flexDirection: 'row',

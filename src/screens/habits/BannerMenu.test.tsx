@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import BannerMenu from './BannerMenu';
+import BannerMenu, { bannerMenuTargetStyle } from './BannerMenu';
 
 function renderMenu(kind: 'habit' | 'group' = 'habit') {
   const onEdit = jest.fn();
@@ -81,5 +81,19 @@ describe('BannerMenu', () => {
       null,
       0,
     ]);
+  });
+});
+
+describe('bannerMenuTargetStyle', () => {
+  it('should centre the 48dp target on the name row at the right edge', () => {
+    expect(bannerMenuTargetStyle(40)).toEqual({
+      position: 'absolute',
+      right: 0,
+      top: 16,
+    });
+  });
+
+  it('should keep the target inside the banner when the row is near the top', () => {
+    expect(bannerMenuTargetStyle(10).top).toBe(0);
   });
 });

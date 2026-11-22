@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { LayoutGrid, List, ListFilter } from 'lucide-react-native';
 import { colors } from '../../theme';
 import CadenceFilter, { CadenceFilterValue } from './CadenceFilter';
+import TouchTarget from './TouchTarget';
 
 export type HabitsViewMode = 'group' | 'list';
 
@@ -36,41 +37,55 @@ export default function HabitsHeader({
         Vinaya - Habits
       </Text>
       <CadenceFilter value={cadenceFilter} onChange={onChangeCadenceFilter} />
+      {/* The group's background is drawn behind 48dp targets, so it keeps its size */}
       <View style={styles.toggleGroup}>
-        <Pressable
+        <View style={styles.toggleBackground} />
+        <TouchTarget
           testID="view-mode-toggle-group"
           accessibilityRole="button"
+          accessibilityLabel="Group view"
           accessibilityState={{ selected: isGroup }}
           onPress={() => onChangeViewMode('group')}
-          style={[styles.toggleButton, isGroup && styles.toggleButtonActive]}
+          style={styles.toggleTarget}
         >
-          <LayoutGrid
-            color={isGroup ? colors.v2Background : colors.v2GreyText}
-            size={18}
-          />
-        </Pressable>
-        <Pressable
+          <View
+            style={[styles.toggleButton, isGroup && styles.toggleButtonActive]}
+          >
+            <LayoutGrid
+              color={isGroup ? colors.v2Background : colors.v2GreyText}
+              size={18}
+            />
+          </View>
+        </TouchTarget>
+        <TouchTarget
           testID="view-mode-toggle-list"
           accessibilityRole="button"
+          accessibilityLabel="List view"
           accessibilityState={{ selected: !isGroup }}
           onPress={() => onChangeViewMode('list')}
-          style={[styles.toggleButton, !isGroup && styles.toggleButtonActive]}
+          style={styles.toggleTarget}
         >
-          <List
-            color={isGroup ? colors.v2GreyText : colors.v2Background}
-            size={18}
-          />
-        </Pressable>
+          <View
+            style={[styles.toggleButton, !isGroup && styles.toggleButtonActive]}
+          >
+            <List
+              color={isGroup ? colors.v2GreyText : colors.v2Background}
+              size={18}
+            />
+          </View>
+        </TouchTarget>
       </View>
-      <Pressable
+      <TouchTarget
         testID="sort-button"
         accessibilityRole="button"
         accessibilityLabel="Sort and filter"
         onPress={onOpenSort}
-        style={styles.sortButton}
+        style={styles.sortTarget}
       >
-        <ListFilter color={colors.v2White} size={18} />
-      </Pressable>
+        <View style={styles.sortButton}>
+          <ListFilter color={colors.v2White} size={18} />
+        </View>
+      </TouchTarget>
     </View>
   );
 }
@@ -80,8 +95,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    // 48dp targets fill the vertical padding, so the header keeps its height
+    paddingTop: 8,
     gap: 8,
   },
   title: {
@@ -94,9 +109,21 @@ const styles = StyleSheet.create({
   },
   toggleGroup: {
     flexDirection: 'row',
+    paddingHorizontal: 3,
+  },
+  toggleBackground: {
+    ...StyleSheet.absoluteFillObject,
+    top: 8,
+    bottom: 8,
     backgroundColor: colors.v2CardBackground,
     borderRadius: 10,
-    padding: 3,
+  },
+  // Each target overlaps its neighbour so the pair stays as wide as before
+  toggleTarget: {
+    marginHorizontal: -7,
+  },
+  sortTarget: {
+    marginHorizontal: -5,
   },
   toggleButton: {
     paddingVertical: 4,
