@@ -11,7 +11,7 @@ Work them in this order. Within a step, any order.
 | 2. Keeping data | `google-drive-backup.md` | done (web deletion page and Play setup outside the code) |
 | 3. Small UI fixes | `accessibility-fixes.md` | done |
 | | `usability-fixes.md` | done, except the keyboard bug: **not done**, parked, not reproducible |
-| 4. Release config and cleanup | `release-build-config.md` | ready for planning |
+| 4. Release config and cleanup | `release-build-config.md` | done in the code (Play Console steps outside) |
 | | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | ready (coming-soon text TBD) |
 | | `profile-tab.md` | to be designed |

@@ -1,5 +1,7 @@
 # Notifications
 
+**Removed for release 1.** v2 doesn't use reminders or the Mindfulness Bell yet, so `@notifee/react-native`, `src/notifications/` and the native bell and widget code were removed (`feature-development/release-1-readiness/release-build-config.md`). This page describes the v1 implementation, kept under the git tag `v1-reference`, for the reminders feature to restore from.
+
 ## Daily reminders (`src/notifications/reminders.ts`)
 - Library: `@notifee/react-native`
 - Channel: `vinaya_reminders_v2` (previous channel `vinaya_reminders` is deleted on init)
