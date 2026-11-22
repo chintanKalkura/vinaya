@@ -1,6 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Only what v2 uses: docs/feature-development/release-1-readiness/release-build-config.md -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Added by Credential Manager for passkeys; Vinaya only uses Google sign-in -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" />
 
     <application
       android:name=".MainApplication"
