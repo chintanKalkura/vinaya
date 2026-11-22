@@ -57,7 +57,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -72,6 +72,21 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def uploadKeyProperty(String name) {
+    return project.findProperty(name) ?: System.getenv(name)
+}
+
+def uploadKeyConfigured = [
+    'VINAYA_UPLOAD_STORE_FILE',
+    'VINAYA_UPLOAD_STORE_PASSWORD',
+    'VINAYA_UPLOAD_KEY_ALIAS',
+    'VINAYA_UPLOAD_KEY_PASSWORD',
+].every { uploadKeyProperty(it) }
+
+if (!uploadKeyConfigured) {
+    logger.warn('Vinaya: upload key not configured, release builds are signed with the debug key (not accepted by Play). See docs/start-app.md.')
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -82,8 +97,10 @@ android {
         applicationId "com.vinaya"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        // versionCode goes up by 1 on every Play upload; bump both by hand in the
+        // release PR: docs/feature-development/release-1-readiness/release-build-config.md
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     signingConfigs {
         debug {
@@ -92,16 +109,27 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // The upload key, from ~/.gradle/gradle.properties or the environment;
+        // never committed: docs/start-app.md
+        if (uploadKeyConfigured) {
+            release {
+                storeFile file(uploadKeyProperty('VINAYA_UPLOAD_STORE_FILE'))
+                storePassword uploadKeyProperty('VINAYA_UPLOAD_STORE_PASSWORD')
+                keyAlias uploadKeyProperty('VINAYA_UPLOAD_KEY_ALIAS')
+                keyPassword uploadKeyProperty('VINAYA_UPLOAD_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Without the upload key, release builds use the debug key, for
+            // installing on your own phone only; Play rejects them
+            signingConfig uploadKeyConfigured ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
