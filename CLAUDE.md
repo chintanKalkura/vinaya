@@ -12,7 +12,7 @@ Read the relevant doc in `docs/` before working on its area.
 
 - `docs/app-context.md` — Vinaya v2 app context, core model, Habits flows, design source of truth
 - `docs/architecture.md` — transitional state, `src_v1_backup/` and `src/` layout, code style, TypeScript, Android targets
-- `docs/notifications.md` — daily reminders, Mindfulness Bell, `MINDFULNESS_TEST_MODE`
+- `docs/notifications.md` — v1 daily reminders and Mindfulness Bell, removed for release 1 (restore from the `v1-reference` tag)
 - `docs/native-modules.md` — Android native modules and SharedPreferences namespace
 - `docs/source-control.md` — branching and commits
 - `docs/start-app.md` — commands

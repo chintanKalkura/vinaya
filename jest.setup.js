@@ -12,20 +12,6 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-jest.mock('@notifee/react-native', () => ({
-  __esModule: true,
-  default: {
-    createChannel: jest.fn().mockResolvedValue(undefined),
-    deleteChannel: jest.fn().mockResolvedValue(undefined),
-    getTriggerNotificationIds: jest.fn().mockResolvedValue([]),
-    createTriggerNotification: jest.fn().mockResolvedValue(undefined),
-    cancelTriggerNotification: jest.fn().mockResolvedValue(undefined),
-    requestPermission: jest.fn().mockResolvedValue(undefined),
-  },
-  AndroidImportance: {HIGH: 4},
-  TriggerType: {TIMESTAMP: 0},
-}));
-
 jest.mock('react-native-nitro-google-signin', () => ({
   GoogleOneTapSignIn: {
     configure: jest.fn(),

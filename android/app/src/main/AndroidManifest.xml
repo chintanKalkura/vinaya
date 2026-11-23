@@ -1,9 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Only what v2 uses: docs/feature-development/release-1-readiness/release-build-config.md -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Added by Credential Manager for passkeys; Vinaya only uses Google sign-in -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" />
 
     <application
       android:name=".MainApplication"
@@ -26,26 +28,5 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
-
-      <receiver android:name=".MindfulnessReceiver" android:exported="false">
-        <intent-filter>
-          <action android:name="com.vinaya.MINDFULNESS_ALARM" />
-          <action android:name="com.vinaya.MINDFULNESS_SNOOZE" />
-          <action android:name="com.vinaya.MINDFULNESS_ALERT" />
-          <action android:name="android.intent.action.BOOT_COMPLETED" />
-          <action android:name="android.intent.action.DATE_CHANGED" />
-        </intent-filter>
-      </receiver>
-
-      <receiver android:name=".CountdownWidget" android:exported="true">
-        <intent-filter>
-          <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-          <action android:name="android.intent.action.DATE_CHANGED" />
-          <action android:name="android.intent.action.BOOT_COMPLETED" />
-        </intent-filter>
-        <meta-data
-          android:name="android.appwidget.provider"
-          android:resource="@xml/widget_countdown_info" />
-      </receiver>
     </application>
 </manifest>

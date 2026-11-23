@@ -4,12 +4,7 @@ Located in `android/app/src/main/java/com/vinaya/`:
 
 | File | Bridge name | Purpose |
 |---|---|---|
-| `MindfulnessReceiver.kt` | — | `BroadcastReceiver`: alarm chain, notification actions, BOOT/DATE_CHANGED recovery |
-| `MindfulnessModule.kt` | `"MindfulnessScheduler"` | RN bridge: `init`, `setBellState`, `getBellState`, `getNextAlarmMs` |
-| `MindfulnessPackage.kt` | — | Registers `MindfulnessModule` |
-| `SharedPrefsModule.kt` | `"SharedPrefs"` | RN bridge: key/value store for home-screen widget data |
-| `SharedPrefsPackage.kt` | — | Registers `SharedPrefsModule` |
 | `AppInfoModule.kt` | `"AppInfo"` | RN bridge: `getLastUpdateTime` (APK install/update time, used to reseed dev fixtures), `getVersionName` (written into backups) |
 | `AppInfoPackage.kt` | — | Registers `AppInfoModule` |
 
-SharedPreferences namespace: `"com.vinaya.prefs"`. Keys prefixed `mindfulness_*` are owned by the bell system.
+The v1 Mindfulness Bell (`MindfulnessReceiver`, `MindfulnessModule`), the `SharedPrefs` module and the home-screen `CountdownWidget` were removed for release 1 (`feature-development/release-1-readiness/release-build-config.md`). They are kept under the git tag `v1-reference`.
