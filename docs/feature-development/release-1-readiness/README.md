@@ -12,7 +12,7 @@ Work them in this order. Within a step, any order.
 | 3. Small UI fixes | `accessibility-fixes.md` | done |
 | | `usability-fixes.md` | done, except the keyboard bug: **not done**, parked, not reproducible |
 | 4. Release config and cleanup | `release-build-config.md` | ready for planning |
-| | `tech-debt-cleanup.md` | ready (`src_v1_backup/`: owner's decision) |
+| | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | ready (coming-soon text TBD) |
 | | `profile-tab.md` | to be designed |
 | | `display-settings.md` | light theme and week start to be designed |

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Habit } from '../types/habit';
@@ -40,14 +46,12 @@ import { CadenceFilterValue } from './habits/CadenceFilter';
 import BottomMenu, { BOTTOM_MENU_HEIGHT } from './habits/BottomMenu';
 import CreateChoiceSheet from './habits/CreateChoiceSheet';
 import NewHabitForm, { PendingGroup } from './habits/NewHabitForm';
-import NewHabitGroupForm, { PendingHabit } from './habits/NewHabitGroupForm';
+import NewHabitGroupForm from './habits/NewHabitGroupForm';
 import { NewHabitDraft, PENDING_GROUP_ID } from '../utils/newHabit';
 import { NewHabitGroupDraft, PENDING_HABIT_ID } from '../utils/newHabitGroup';
+import { INITIAL_FORM_FLOW, formFlowReducer } from './habits/formFlow';
 import LoadErrorMessage from './habits/LoadErrorMessage';
 import SaveErrorSnackbar from './habits/SaveErrorSnackbar';
-
-// The + flow from docs/navigation/habits-section/02-habit-creation.md and 03-group-creation.md
-type CreateStep = 'none' | 'choice' | 'habit' | 'group';
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -67,23 +71,11 @@ export default function HabitsScreen({
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
-  const [createStep, setCreateStep] = useState<CreateStep>('none');
+  const [flow, dispatch] = useReducer(formFlowReducer, INITIAL_FORM_FLOW);
   // Session only: docs/feature-development/habits-section/sort-filter-delete-habit.md
   const [sortFilter, setSortFilter] =
     useState<SortFilterState>(DEFAULT_SORT_FILTER);
   const [sortOpen, setSortOpen] = useState(false);
-  // Edit Habit / Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
-  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
-  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
-  // Habit form → "+ Create Group": the group is saved with the habit
-  const [groupForHabit, setGroupForHabit] = useState<PendingHabit | null>(null);
-  const [pendingGroupDraft, setPendingGroupDraft] =
-    useState<NewHabitGroupDraft | null>(null);
-  // Group form → Create Habit: the habit is saved, then assigned
-  const [habitForGroup, setHabitForGroup] = useState(false);
-  const [groupNewHabitId, setGroupNewHabitId] = useState<string | undefined>(
-    undefined,
-  );
   // Storage errors: docs/feature-development/release-1-readiness/storage-write-safety.md
   const [loadError, setLoadError] = useState(false);
   // Counts failures so each one restarts the snackbar's timer
@@ -179,11 +171,10 @@ export default function HabitsScreen({
     [hoursHabitId, todayKey, runSave],
   );
 
-  const closeCreate = useCallback(() => {
-    setCreateStep('none');
-    setPendingGroupDraft(null);
-    setGroupNewHabitId(undefined);
-  }, []);
+  const closeForms = useCallback(() => dispatch({ type: 'close' }), []);
+  const { base, pendingGroupDraft, groupNewHabitId } = flow;
+  const editingHabitId = base.kind === 'editHabit' ? base.habitId : null;
+  const editingGroupId = base.kind === 'editGroup' ? base.groupId : null;
 
   // Returns to the view the + was tapped from; viewMode is left unchanged.
   // A group made with "+ Create Group" is saved after the habit, with it.
@@ -210,18 +201,18 @@ export default function HabitsScreen({
           await createHabit(draft, todayKey);
         }
       });
-      if (saved) closeCreate();
+      if (saved) closeForms();
     },
-    [pendingGroupDraft, todayKey, runSave, closeCreate],
+    [pendingGroupDraft, todayKey, runSave, closeForms],
   );
 
   const handleCreateGroup = useCallback(
     async (draft: NewHabitGroupDraft) => {
       if (await runSave(() => createHabitGroup(draft, todayKey))) {
-        closeCreate();
+        closeForms();
       }
     },
-    [todayKey, runSave, closeCreate],
+    [todayKey, runSave, closeForms],
   );
 
   const handleCreateHabitForGroup = useCallback(
@@ -232,9 +223,9 @@ export default function HabitsScreen({
           await createHabit({ ...draft, groupId: undefined }, todayKey)
         ).id;
       });
-      if (!saved) return;
-      setGroupNewHabitId(habitId);
-      setHabitForGroup(false);
+      if (saved && habitId) {
+        dispatch({ type: 'habitCreatedForGroup', habitId });
+      }
     },
     [todayKey, runSave],
   );
@@ -243,10 +234,10 @@ export default function HabitsScreen({
     async (draft: NewHabitDraft) => {
       if (!editingHabitId) return;
       if (await runSave(() => updateHabit(editingHabitId, draft))) {
-        setEditingHabitId(null);
+        closeForms();
       }
     },
-    [editingHabitId, runSave],
+    [editingHabitId, runSave, closeForms],
   );
 
   const handleSaveGroup = useCallback(
@@ -255,11 +246,9 @@ export default function HabitsScreen({
       const saved = await runSave(() =>
         updateHabitGroup(editingGroupId, draft, todayKey),
       );
-      if (!saved) return;
-      setEditingGroupId(null);
-      setGroupNewHabitId(undefined);
+      if (saved) closeForms();
     },
-    [editingGroupId, todayKey, runSave],
+    [editingGroupId, todayKey, runSave, closeForms],
   );
 
   const handleDeleteHabit = useCallback(
@@ -370,7 +359,7 @@ export default function HabitsScreen({
                   todayKey={todayKey}
                   onPress={handleToggleHabit}
                   colorKind="banner"
-                  onEdit={setEditingHabitId}
+                  onEdit={habitId => dispatch({ type: 'editHabit', habitId })}
                   onDelete={handleDeleteHabit}
                 />
               ))
@@ -385,7 +374,7 @@ export default function HabitsScreen({
                     habits={groupHabits}
                     todayKey={todayKey}
                     onToggle={handleToggleHabit}
-                    onEdit={setEditingGroupId}
+                    onEdit={groupId => dispatch({ type: 'editGroup', groupId })}
                     onDelete={handleDeleteGroup}
                   />
                 );
@@ -396,7 +385,7 @@ export default function HabitsScreen({
       {!loadError && (
         <Pressable
           testID="fab"
-          onPress={() => setCreateStep('choice')}
+          onPress={() => dispatch({ type: 'openChoice' })}
           style={[styles.fab, { bottom: menuHeight + 16 }]}
         >
           <Text style={styles.fabIcon}>+</Text>
@@ -426,78 +415,82 @@ export default function HabitsScreen({
         onClose={() => setSortOpen(false)}
       />
       <CreateChoiceSheet
-        visible={createStep === 'choice'}
-        onNewHabit={() => setCreateStep('habit')}
-        onNewGroup={() => setCreateStep('group')}
-        onClose={closeCreate}
+        visible={base.kind === 'choice'}
+        onNewHabit={() => dispatch({ type: 'chooseHabit' })}
+        onNewGroup={() => dispatch({ type: 'chooseGroup' })}
+        onClose={closeForms}
       />
-      <NewHabitForm
-        saveError={saveErrorIn(true)}
-        visible={createStep === 'habit'}
-        groups={joinableGroups}
-        onBack={() => {
-          setPendingGroupDraft(null);
-          setCreateStep('choice');
-        }}
-        onCreate={handleCreateHabit}
-        onCreateGroup={draft =>
-          setGroupForHabit({ name: draft.name, type: draft.type })
-        }
-        pendingGroup={pendingGroup}
-      />
-      <NewHabitGroupForm
-        saveError={saveErrorIn(true)}
-        visible={groupForHabit !== null}
-        habits={assignableHabits}
-        pendingHabit={groupForHabit ?? undefined}
-        allowCreateHabit={false}
-        onBack={() => setGroupForHabit(null)}
-        onCreate={draft => {
-          setPendingGroupDraft(draft);
-          setGroupForHabit(null);
-        }}
-      />
-      <NewHabitGroupForm
-        saveError={saveErrorIn(true)}
-        visible={createStep === 'group'}
-        habits={assignableHabits}
-        newHabitId={groupNewHabitId}
-        onBack={() => {
-          setGroupNewHabitId(undefined);
-          setCreateStep('choice');
-        }}
-        onCreate={handleCreateGroup}
-        onCreateHabit={() => setHabitForGroup(true)}
-      />
-      <NewHabitForm
-        saveError={saveErrorIn(true)}
-        visible={editingHabitId !== null}
-        groups={[]}
-        editing={editingHabitId ? habits[editingHabitId] : undefined}
-        onBack={() => setEditingHabitId(null)}
-        onCreate={handleSaveHabit}
-      />
-      <NewHabitGroupForm
-        saveError={saveErrorIn(true)}
-        visible={editingGroupId !== null}
-        habits={assignableHabits}
-        editing={editingGroupId ? groups[editingGroupId] : undefined}
-        newHabitId={groupNewHabitId}
-        onBack={() => {
-          setGroupNewHabitId(undefined);
-          setEditingGroupId(null);
-        }}
-        onCreate={handleSaveGroup}
-        onCreateHabit={() => setHabitForGroup(true)}
-      />
-      <NewHabitForm
-        saveError={saveErrorIn(true)}
-        visible={habitForGroup}
-        groups={[]}
-        hideGroupRow
-        onBack={() => setHabitForGroup(false)}
-        onCreate={handleCreateHabitForGroup}
-      />
+      {/* Only the open forms are mounted: the base form and the one stacked on it */}
+      {base.kind === 'newHabit' ? (
+        <NewHabitForm
+          saveError={saveErrorIn(true)}
+          visible
+          groups={joinableGroups}
+          onBack={() => dispatch({ type: 'backToChoice' })}
+          onCreate={handleCreateHabit}
+          onCreateGroup={draft =>
+            dispatch({
+              type: 'openGroupForHabit',
+              habit: { name: draft.name, type: draft.type },
+            })
+          }
+          pendingGroup={pendingGroup}
+        />
+      ) : null}
+      {flow.groupForHabit ? (
+        <NewHabitGroupForm
+          saveError={saveErrorIn(true)}
+          visible
+          habits={assignableHabits}
+          pendingHabit={flow.groupForHabit}
+          allowCreateHabit={false}
+          onBack={() => dispatch({ type: 'closeGroupForHabit' })}
+          onCreate={draft => dispatch({ type: 'saveGroupForHabit', draft })}
+        />
+      ) : null}
+      {base.kind === 'newGroup' ? (
+        <NewHabitGroupForm
+          saveError={saveErrorIn(true)}
+          visible
+          habits={assignableHabits}
+          newHabitId={groupNewHabitId}
+          onBack={() => dispatch({ type: 'backToChoice' })}
+          onCreate={handleCreateGroup}
+          onCreateHabit={() => dispatch({ type: 'openHabitForGroup' })}
+        />
+      ) : null}
+      {editingHabitId && habits[editingHabitId] ? (
+        <NewHabitForm
+          saveError={saveErrorIn(true)}
+          visible
+          groups={[]}
+          editing={habits[editingHabitId]}
+          onBack={closeForms}
+          onCreate={handleSaveHabit}
+        />
+      ) : null}
+      {editingGroupId && groups[editingGroupId] ? (
+        <NewHabitGroupForm
+          saveError={saveErrorIn(true)}
+          visible
+          habits={assignableHabits}
+          editing={groups[editingGroupId]}
+          newHabitId={groupNewHabitId}
+          onBack={closeForms}
+          onCreate={handleSaveGroup}
+          onCreateHabit={() => dispatch({ type: 'openHabitForGroup' })}
+        />
+      ) : null}
+      {flow.habitForGroup ? (
+        <NewHabitForm
+          saveError={saveErrorIn(true)}
+          visible
+          groups={[]}
+          hideGroupRow
+          onBack={() => dispatch({ type: 'closeHabitForGroup' })}
+          onCreate={handleCreateHabitForGroup}
+        />
+      ) : null}
     </View>
   );
 }

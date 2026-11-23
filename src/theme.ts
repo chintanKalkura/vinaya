@@ -1,11 +1,4 @@
 export const colors = {
-  ink: '#1a1209',
-  paper: '#f5f0e8',
-  accent: '#8b3a0f',
-  muted: '#7a6e5f',
-  line: '#c8bfa8',
-  done: '#4a7c59',
-
   v2Background: '#15152b',
   v2CardBackground: '#23233f',
   v2CardBackgroundInset: '#1c1c35',
@@ -22,13 +15,4 @@ export const colors = {
   v2GreyText: '#9393aa', // 4.6:1 or more on every card: accessibility-fixes.md
   v2GreyOutline: '#70709b', // 3:1 or more on the card, for icons
   v2White: '#f5f5fa',
-};
-
-export const fonts = {
-  serif: 'PlayfairDisplay-Regular',
-  serifBold: 'PlayfairDisplay-Bold',
-  serifItalic: 'PlayfairDisplay-Italic',
-  body: 'Lora-Regular',
-  bodyMedium: 'Lora-Medium',
-  bodyItalic: 'Lora-Italic',
 };
