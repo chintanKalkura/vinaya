@@ -33,6 +33,8 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+# Upload key: kept outside the repo (docs/start-app.md)
+*.jks
 .kotlin/
 
 # node.js
