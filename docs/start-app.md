@@ -21,9 +21,11 @@ npx jest path/to/file.test.tsx
 
 Release builds start empty: the dev seed (`src/storage/devSeed.ts`) only runs in debug builds (`__DEV__`). They are shrunk with R8 (`android/app/build.gradle`, keep rules in `proguard-rules.pro`), so check sign-in and backup on a device after changing native dependencies.
 
-### Upload key (one-time, never committed)
+### Upload key (never committed, never left on this machine)
 
-Play App Signing holds the app signing key; you sign uploads with your own upload key. Create it outside the repo and keep a backup of the file and both passwords:
+Play App Signing holds the app signing key; uploads are signed with your own upload key. The master copy of `vinaya-upload.jks` lives in your private Google Drive; its password lives separately (a password manager). The repo ignores `*.jks` and `*.keystore`.
+
+Created once (then uploaded to Drive and deleted locally):
 
 ```bash
 mkdir -p ~/keys && keytool -genkeypair -v -storetype PKCS12 \
@@ -31,16 +33,29 @@ mkdir -p ~/keys && keytool -genkeypair -v -storetype PKCS12 \
   -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-Then add to `~/.gradle/gradle.properties` (or set as environment variables):
+Its SHA-1 (`keytool -list -v -keystore ~/keys/vinaya-upload.jks -alias vinaya-upload`) is on its own Android OAuth client (`google-cloud-setup.md`). If the key is lost or leaked, Play support can reset an upload key.
 
-```
-VINAYA_UPLOAD_STORE_FILE=/Users/<you>/keys/vinaya-upload.jks
-VINAYA_UPLOAD_STORE_PASSWORD=...
-VINAYA_UPLOAD_KEY_ALIAS=vinaya-upload
-VINAYA_UPLOAD_KEY_PASSWORD=...
+For each signed build, download the `.jks` from Drive to `~/keys/vinaya-upload.jks`, then in one terminal session (the passwords are typed, not stored; `read -s` keeps them off screen and out of history):
+
+```bash
+cd android
+read -s "VINAYA_UPLOAD_STORE_PASSWORD?Upload key password: "; echo
+export VINAYA_UPLOAD_STORE_PASSWORD
+export VINAYA_UPLOAD_KEY_PASSWORD=$VINAYA_UPLOAD_STORE_PASSWORD
+export VINAYA_UPLOAD_STORE_FILE=~/keys/vinaya-upload.jks
+export VINAYA_UPLOAD_KEY_ALIAS=vinaya-upload
+./gradlew bundleRelease
 ```
 
-Add the upload key's SHA-1 (`keytool -list -v -keystore ~/keys/vinaya-upload.jks -alias vinaya-upload`) to the Android OAuth client (`google-cloud-setup.md`). Without these properties, release builds are signed with the debug key (Gradle prints a warning): fine for your own phone, rejected by Play.
+The build must not print "upload key not configured"; without these variables, release builds are signed with the debug key: fine for your own phone, rejected by Play. Clean up right after:
+
+```bash
+./gradlew --stop      # the Gradle daemon holds the passwords in memory
+unset VINAYA_UPLOAD_STORE_PASSWORD VINAYA_UPLOAD_KEY_PASSWORD
+rm ~/keys/vinaya-upload.jks   # and any copy left in ~/Downloads
+```
+
+Check the signer without the key: `keytool -printcert -jarfile android/app/build/outputs/bundle/release/app-release.aab` (owner "CN=Chintan Kalkura, OU=ckStudio", not "Android Debug").
 
 ### Play bundle
 
