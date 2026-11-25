@@ -24,7 +24,7 @@ Which part of the habit is orange or grey, and how the streak is laid out, follo
 ## Rules
 1. A Day-cadence Checkmark habit has one state per calendar day: marked or not marked.
 2. A day runs from local midnight to local midnight on the device.
-3. Only today can be marked or unmarked. Past days cannot be changed.
+3. Only today can be marked or unmarked. Past days cannot be changed. (The How to use help says so; update it if this changes: `habit-group-detail-page.md`.)
 4. Tapping an unmarked habit marks it for today.
 5. Tapping a marked habit unmarks it for today.
 6. Marks are stored in the habit's `recentLog`. Its shape is defined by the Habit type in the code; read it there.

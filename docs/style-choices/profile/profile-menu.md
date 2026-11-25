@@ -15,7 +15,7 @@ The title "Vinaya - Profile" in the Habits title look, the Account & backup card
 └───────────────────────────┘
  Display settings        >
  Support the developer   >     (support PR)
- How to use              >     (how-to-use PR)
+ How to use              >
  Sign out                      signed in only
  Delete data                   red, signed in only
  About                   >

@@ -14,7 +14,7 @@ Tapping a habit banner or group card opens a page with that item's stats and oth
 
 ## To be designed
 - What the page shows for a habit and for a group (for example current and best streak, completion rate, calendar, hours chart, freezes held and used, member habits for a group).
-- Whether past days can be marked or corrected from it.
+- Whether past days can be marked or corrected from it. **If they can, update the How to use wording:** the "Marking done and logging hours" topic says "Only today can be marked" (`src/content/howToUse.ts`, `../../style-choices/how-to-use/walkthrough-and-help.md`), and card 2 of the walkthrough says "done today".
 - Whether the week start setting (`display-settings.md`) applies to its calendar.
 - Whether Edit and Delete also live on this page.
 - Screens, empty states for a new habit, and how much history is shown.
