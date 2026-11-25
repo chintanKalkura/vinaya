@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { ExternalLink } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { getAppVersionName } from '../../storage/appInfo';
 import { ACCOUNT_DELETION_URL, PRIVACY_POLICY_URL } from '../../config/links';
 import MenuRow from './MenuRow';
@@ -20,6 +21,8 @@ export default function AboutScreen({
   privacyPolicyUrl = PRIVACY_POLICY_URL,
   accountDeletionUrl = ACCOUNT_DELETION_URL,
 }: AboutScreenProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [version, setVersion] = useState('');
 
   useEffect(() => {
@@ -60,12 +63,13 @@ export default function AboutScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.v2Background,
-  },
-  content: {
-    paddingHorizontal: 16,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.v2Background,
+    },
+    content: {
+      paddingHorizontal: 16,
+    },
+  });

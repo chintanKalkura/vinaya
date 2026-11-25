@@ -7,7 +7,8 @@ import {
   CircleUser,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 
 // Route names in App.tsx's tab navigator
 export type Tab = 'Habits' | 'Journal' | 'Level-Up' | 'Profile';
@@ -33,6 +34,8 @@ export default function BottomMenu({
   selected = 'Habits',
   onSelect,
 }: BottomMenuProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
 
   return (
@@ -61,21 +64,22 @@ export default function BottomMenu({
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: 'row',
-    paddingTop: 10,
-    backgroundColor: colors.v2MenuBackground,
-    borderTopWidth: 1,
-    borderTopColor: colors.v2MenuBorder,
-  },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    bar: {
+      flexDirection: 'row',
+      paddingTop: 10,
+      backgroundColor: colors.v2MenuBackground,
+      borderTopWidth: 1,
+      borderTopColor: colors.v2MenuBorder,
+    },
+    item: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    label: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginTop: 2,
+    },
+  });

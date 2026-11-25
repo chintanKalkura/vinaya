@@ -4,7 +4,8 @@ import { Star } from 'lucide-react-native';
 import { Habit, HabitCadence, HabitType } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { clampCadenceTarget } from '../../utils/cadence';
 import { HABIT_NAME_MAX } from '../../utils/newHabit';
 import {
@@ -25,7 +26,7 @@ import HabitPickerSheet, { PickerItem } from './HabitPickerSheet';
 import SegmentedControl from './SegmentedControl';
 import Stepper from './Stepper';
 import StreakFreezeField from './StreakFreezeField';
-import { formStyles } from './formStyles';
+import { useFormStyles } from './formStyles';
 
 // Screens 11-15: docs/feature-development/habits-section/create-habit-group.md
 const CADENCES: readonly HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
@@ -81,6 +82,9 @@ export default function NewHabitGroupForm({
   editing,
   saveError,
 }: NewHabitGroupFormProps): React.JSX.Element {
+  const formStyles = useFormStyles();
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [draft, setDraft] = useState<NewHabitGroupDraft>(
     initialDraft(pendingHabit, editing),
   );
@@ -347,82 +351,83 @@ export default function NewHabitGroupForm({
   );
 }
 
-const styles = StyleSheet.create({
-  description: {
-    marginTop: 12,
-  },
-  assigned: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    minHeight: 52,
-  },
-  assignedChip: {
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-    borderRadius: 14,
-    backgroundColor: colors.v2Border,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-  },
-  requiredChip: {
-    borderWidth: 2,
-    borderColor: colors.v2Blue,
-  },
-  assignedLabel: {
-    color: colors.v2White,
-    fontSize: 13,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
-  },
-  actionButton: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: 12,
-    backgroundColor: colors.v2CardBackground,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionLabel: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  requiredRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderColor: colors.v2Orange,
-    borderRadius: 12,
-    backgroundColor: colors.v2CardBackgroundInset,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  requiredText: {
-    flex: 1,
-    color: colors.v2White,
-    fontSize: 15,
-  },
-  editButton: {
-    borderWidth: 1,
-    borderColor: colors.v2Orange,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
-  },
-  editLabel: {
-    color: colors.v2Orange,
-    fontWeight: '700',
-  },
-  helper: {
-    color: colors.v2GreyText,
-    fontStyle: 'italic',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    description: {
+      marginTop: 12,
+    },
+    assigned: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      minHeight: 52,
+    },
+    assignedChip: {
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+      borderRadius: 14,
+      backgroundColor: colors.v2Border,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+    },
+    requiredChip: {
+      borderWidth: 2,
+      borderColor: colors.v2Blue,
+    },
+    assignedLabel: {
+      color: colors.v2White,
+      fontSize: 13,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 16,
+    },
+    actionButton: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: 12,
+      backgroundColor: colors.v2CardBackground,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionLabel: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 15,
+    },
+    requiredRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      borderWidth: 1,
+      borderColor: colors.v2Orange,
+      borderRadius: 12,
+      backgroundColor: colors.v2CardBackgroundInset,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    requiredText: {
+      flex: 1,
+      color: colors.v2White,
+      fontSize: 15,
+    },
+    editButton: {
+      borderWidth: 1,
+      borderColor: colors.v2Orange,
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 18,
+    },
+    editLabel: {
+      color: colors.v2Orange,
+      fontWeight: '700',
+    },
+    helper: {
+      color: colors.v2GreyText,
+      fontStyle: 'italic',
+      fontSize: 12,
+      textAlign: 'center',
+      marginTop: 8,
+    },
+  });

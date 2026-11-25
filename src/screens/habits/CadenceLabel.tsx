@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarSync } from 'lucide-react-native';
 import { HabitCadence } from '../../types/habit';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 
 // Bottom-right cadence label on banners: docs/style-choices/habits-section/cadence-label.md
 const LABELS: Record<HabitCadence, string> = {
@@ -24,6 +25,8 @@ export default function CadenceLabel({
   cadence,
   testID,
 }: CadenceLabelProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View testID={testID} style={styles.label}>
       <CalendarSync color={colors.v2GreyText} size={12} strokeWidth={2} />
@@ -32,19 +35,20 @@ export default function CadenceLabel({
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    position: 'absolute',
-    right: 12,
-    bottom: 7,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    opacity: 0.8,
-  },
-  text: {
-    color: colors.v2GreyText,
-    fontSize: 11,
-    letterSpacing: 0.3,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    label: {
+      position: 'absolute',
+      right: 12,
+      bottom: 7,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      opacity: 0.8,
+    },
+    text: {
+      color: colors.v2GreyText,
+      fontSize: 11,
+      letterSpacing: 0.3,
+    },
+  });

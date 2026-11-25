@@ -10,7 +10,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import TouchTarget, { MIN_TOUCH_SIZE } from './TouchTarget';
 
 // ⋮ right of a banner's streak number: docs/style-choices/habits-section/banner-menu.md.
@@ -45,6 +46,8 @@ export default function BannerMenu({
   testID,
   targetStyle,
 }: BannerMenuProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const buttonRef = useRef<View>(null);
   const [step, setStep] = useState<Step>('closed');
   const [position, setPosition] = useState(DEFAULT_POSITION);
@@ -166,86 +169,87 @@ export default function BannerMenu({
   );
 }
 
-const styles = StyleSheet.create({
-  dropdown: {
-    position: 'absolute',
-    minWidth: 150,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    backgroundColor: colors.v2CardBackground,
-    paddingVertical: 6,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  optionLabel: {
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  editLabel: {
-    color: colors.v2White,
-  },
-  deleteLabel: {
-    color: colors.v2Red,
-  },
-  backdrop: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(5, 5, 12, 0.85)',
-  },
-  dialog: {
-    width: '78%',
-    borderRadius: 18,
-    backgroundColor: colors.v2CardBackground,
-    padding: 18,
-    gap: 12,
-  },
-  button48: {
-    minHeight: 46,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancel: {
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-  },
-  cancelLabel: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  title: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 17,
-  },
-  body: {
-    color: colors.v2GreyText,
-    fontSize: 14,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  half: {
-    flex: 1,
-  },
-  confirm: {
-    backgroundColor: colors.v2Red,
-  },
-  confirmLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    dropdown: {
+      position: 'absolute',
+      minWidth: 150,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      backgroundColor: colors.v2CardBackground,
+      paddingVertical: 6,
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+    },
+    optionLabel: {
+      fontWeight: '600',
+      fontSize: 15,
+    },
+    editLabel: {
+      color: colors.v2White,
+    },
+    deleteLabel: {
+      color: colors.v2Red,
+    },
+    backdrop: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.v2Scrim,
+    },
+    dialog: {
+      width: '78%',
+      borderRadius: 18,
+      backgroundColor: colors.v2CardBackground,
+      padding: 18,
+      gap: 12,
+    },
+    button48: {
+      minHeight: 46,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cancel: {
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+    },
+    cancelLabel: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    title: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 17,
+    },
+    body: {
+      color: colors.v2GreyText,
+      fontSize: 14,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    half: {
+      flex: 1,
+    },
+    confirm: {
+      backgroundColor: colors.v2Red,
+    },
+    confirmLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+  });
 
 // Puts the 48dp target over the ⋮ drawn at the right end of a name row whose
 // vertical centre is `centerY` in the parent's coordinates

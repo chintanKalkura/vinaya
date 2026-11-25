@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { HabitCadence } from '../../types/habit';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
 import Stepper from './Stepper';
-import { formStyles } from './formStyles';
+import { useFormStyles } from './formStyles';
 
 // TARGET: read-only for Day, a stepper with "of N max" otherwise (gaps doc 1.1, 1.2)
 interface CadenceTargetFieldProps {
@@ -19,6 +19,7 @@ export default function CadenceTargetField({
   onChange,
   testID,
 }: CadenceTargetFieldProps): React.JSX.Element {
+  const formStyles = useFormStyles();
   return (
     <View style={formStyles.card}>
       {cadence === 'Day' ? (

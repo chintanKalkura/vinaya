@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 
 // Bottom-centre "n freezes left" on frozen banners: docs/style-choices/habits-section/streak-freeze.md
 interface FreezeLabelProps {
@@ -16,6 +17,7 @@ export default function FreezeLabel({
   freezesLeft,
   testID,
 }: FreezeLabelProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Text testID={testID} pointerEvents="none" style={styles.label}>
       {freezesLeftText(freezesLeft)}
@@ -23,16 +25,17 @@ export default function FreezeLabel({
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 7,
-    textAlign: 'center',
-    color: colors.v2Ice,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    label: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 7,
+      textAlign: 'center',
+      color: colors.v2Ice,
+      fontSize: 11,
+      fontWeight: '600',
+      letterSpacing: 0.3,
+    },
+  });

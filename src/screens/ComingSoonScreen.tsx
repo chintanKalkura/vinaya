@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme';
+import { Palette } from '../theme';
+import { useThemedStyles } from '../theming';
 
 // Journal and Level-Up until they're built:
 // docs/style-choices/tabs/coming-soon.md
@@ -25,6 +26,7 @@ interface ComingSoonScreenProps {
 export default function ComingSoonScreen({
   section,
 }: ComingSoonScreenProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const { title, message } = COMING_SOON[section];
 
@@ -39,27 +41,28 @@ export default function ComingSoonScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.v2Background,
-  },
-  // Same title look as the Habits header
-  title: {
-    color: colors.v2White,
-    fontFamily: 'serif',
-    fontStyle: 'italic',
-    fontWeight: '600',
-    fontSize: 20,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  message: {
-    color: colors.v2GreyText,
-    fontSize: 16,
-    lineHeight: 24,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.v2Background,
+    },
+    // Same title look as the Habits header
+    title: {
+      color: colors.v2White,
+      fontFamily: 'serif',
+      fontStyle: 'italic',
+      fontWeight: '600',
+      fontSize: 20,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    message: {
+      color: colors.v2GreyText,
+      fontSize: 16,
+      lineHeight: 24,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
+  });

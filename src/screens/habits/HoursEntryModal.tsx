@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 import { Minus, Plus, X } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { clampHours } from '../../utils/hours';
 
 interface HoursEntryModalProps {
@@ -26,6 +27,8 @@ export default function HoursEntryModal({
   onDone,
   onClose,
 }: HoursEntryModalProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [hours, setHours] = useState(clampHours(initialHours));
   const [text, setText] = useState(String(clampHours(initialHours)));
 
@@ -124,78 +127,79 @@ export default function HoursEntryModal({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 30,
-    backgroundColor: 'rgba(10, 10, 25, 0.7)',
-  },
-  card: {
-    borderRadius: 20,
-    backgroundColor: colors.v2CardBackground,
-    padding: 24,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  subtitle: {
-    color: colors.v2GreyText,
-    fontSize: 14,
-    marginTop: 8,
-  },
-  stepperRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 16,
-  },
-  stepButton: {
-    width: 58,
-    minHeight: 58,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-    backgroundColor: colors.v2Border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  input: {
-    flex: 1,
-    minHeight: 58,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2Background,
-    color: colors.v2Orange,
-    fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-    padding: 0,
-  },
-  helper: {
-    color: colors.v2GreyText,
-    fontSize: 12,
-    marginTop: 12,
-  },
-  doneButton: {
-    minHeight: 46,
-    borderRadius: 12,
-    backgroundColor: colors.v2Orange,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
-  doneLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 30,
+      backgroundColor: colors.v2ScrimSoft,
+    },
+    card: {
+      borderRadius: 20,
+      backgroundColor: colors.v2CardBackground,
+      padding: 24,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    title: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 18,
+    },
+    subtitle: {
+      color: colors.v2GreyText,
+      fontSize: 14,
+      marginTop: 8,
+    },
+    stepperRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 16,
+    },
+    stepButton: {
+      width: 58,
+      minHeight: 58,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+      backgroundColor: colors.v2Border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    input: {
+      flex: 1,
+      minHeight: 58,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2Background,
+      color: colors.v2Orange,
+      fontSize: 28,
+      fontWeight: '700',
+      textAlign: 'center',
+      padding: 0,
+    },
+    helper: {
+      color: colors.v2GreyText,
+      fontSize: 12,
+      marginTop: 12,
+    },
+    doneButton: {
+      minHeight: 46,
+      borderRadius: 12,
+      backgroundColor: colors.v2Orange,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 16,
+    },
+    doneLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+  });

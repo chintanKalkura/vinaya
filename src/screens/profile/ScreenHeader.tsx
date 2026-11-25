@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import TouchTarget from '../habits/TouchTarget';
 
 // Back arrow and title for screens opened from Profile, in the form screens' style
@@ -17,6 +18,8 @@ export default function ScreenHeader({
   onBack,
   testID,
 }: ScreenHeaderProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
 
   return (
@@ -35,20 +38,21 @@ export default function ScreenHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 4,
-    paddingBottom: 8,
-  },
-  back: {
-    marginRight: 0,
-  },
-  heading: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 22,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 4,
+      paddingBottom: 8,
+    },
+    back: {
+      marginRight: 0,
+    },
+    heading: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 22,
+    },
+  });
