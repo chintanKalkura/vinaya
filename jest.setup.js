@@ -35,3 +35,15 @@ jest.mock('react-native-nitro-google-signin', () => ({
   isErrorWithCode: error => !!error && typeof error.code === 'string',
   statusCodes: { SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED' },
 }));
+
+// Play Billing: unavailable unless a test injects FakeBillingClient
+jest.mock('react-native-iap', () => ({
+  initConnection: async () => false,
+  endConnection: async () => true,
+  fetchProducts: async () => [],
+  getAvailablePurchases: async () => [],
+  requestPurchase: async () => null,
+  consumePurchaseAndroid: async () => true,
+  purchaseUpdatedListener: () => ({ remove: () => {} }),
+  purchaseErrorListener: () => ({ remove: () => {} }),
+}));
