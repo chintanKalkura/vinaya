@@ -160,3 +160,16 @@ describe('App walkthrough', () => {
     expect(await utils.findByTestId('walkthrough')).toBeTruthy();
   });
 });
+
+describe('App support', () => {
+  it('opens Support from Profile and says it is unavailable without Play', async () => {
+    await AsyncStorage.setItem('onboarding_seen_v1', '1');
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
+
+    fireEvent.press(await utils.findByTestId('profile-support'));
+
+    expect(await utils.findByTestId('support-unavailable')).toBeTruthy();
+  });
+});
