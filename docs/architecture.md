@@ -9,7 +9,8 @@ App.tsx                     — tab navigator: Habits, Journal and Level-Up (com
 src/
 ├── theme.ts                — dark and light (Lavender) palettes; contrast checked by theme.contrast.test.ts
 ├── theming.tsx             — ThemeProvider, usePalette, useThemedStyles (styles built per palette)
-├── content/              — howToUse.ts: walkthrough, help and empty-screen wording
+├── content/              — howToUse.ts and support.ts: walkthrough, help, empty-screen and support wording
+├── support/              — Play Billing behind BillingClient (react-native-iap client, fake for tests), purchase handling
 ├── settings/               — SettingsProvider: display settings (settings_v2) and the palette they pick
 ├── systemBars.ts           — SystemBars native module (navigation bar icon colour)
 ├── types/                  — habit.ts, habitGroup.ts, habitConfig.ts (limits), log.ts, backup.ts
@@ -19,6 +20,7 @@ src/
 │   ├── habitStorage.ts     — AsyncStorage collections (habits_v2, habit_groups_v2, tombstones_v2),
 │   │                         the single storage write queue, read/write errors
 │   ├── settingsStorage.ts  — settings_v2 (default view, theme, week start), through the write queue
+│   ├── onboardingStorage.ts — onboarding_seen_v1 (walkthrough seen; this phone only)
 │   ├── devSeed.ts          — debug-only sample data
 │   └── appInfo.ts          — AppInfo native module (install time, version name)
 ├── services/               — habitService, habitGroupService: every change is one queued storage operation
