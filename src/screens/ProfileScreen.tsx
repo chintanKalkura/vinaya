@@ -3,14 +3,17 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 import AccountSection from './profile/AccountSection';
+import MenuRow from './profile/MenuRow';
 
-// Only Account & backup for now; the other sections come with profile-tab.md
+// The account card, then the menu: docs/style-choices/profile/profile-menu.md
 interface ProfileScreenProps {
   onDataChanged: () => void;
+  onOpenAbout: () => void;
 }
 
 export default function ProfileScreen({
   onDataChanged,
+  onOpenAbout,
 }: ProfileScreenProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
 
@@ -23,7 +26,17 @@ export default function ProfileScreen({
         Vinaya - Profile
       </Text>
       <ScrollView contentContainerStyle={styles.content}>
-        <AccountSection onDataChanged={onDataChanged} />
+        <View>
+          {/* Display settings, Support the developer and How to use rows go
+              in AccountSection's slot, above Sign out */}
+          <AccountSection onDataChanged={onDataChanged} />
+          <MenuRow
+            testID="profile-about"
+            label="About"
+            chevron
+            onPress={onOpenAbout}
+          />
+        </View>
       </ScrollView>
     </View>
   );

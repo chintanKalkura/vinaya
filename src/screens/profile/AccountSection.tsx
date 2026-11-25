@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../theme';
+import MenuRow from './MenuRow';
 import {
   createDriveStore,
   deleteBackupAndSignOut,
@@ -42,10 +43,12 @@ export function lastBackupText(lastBackupAt: number | undefined): string {
 
 interface AccountSectionProps {
   onDataChanged: () => void; // a restore or backup merge changed habits
+  children?: React.ReactNode; // Profile menu rows, drawn between the card and Sign out
 }
 
 export default function AccountSection({
   onDataChanged,
+  children,
 }: AccountSectionProps): React.JSX.Element {
   const [state, setState] = useState<BackupState>({});
   const [busy, setBusy] = useState<Busy>('none');
@@ -118,82 +121,86 @@ export default function AccountSection({
   const disabled = busy !== 'none';
 
   return (
-    <View testID="account-section" style={styles.card}>
-      <Text style={styles.heading}>ACCOUNT & BACKUP</Text>
+    <View testID="account-section" style={styles.section}>
+      <View style={styles.card}>
+        <Text style={styles.heading}>ACCOUNT & BACKUP</Text>
 
-      {account ? (
-        <>
-          <Text testID="account-name" style={styles.name}>
-            {account.name}
-          </Text>
-          <Text style={styles.email}>{account.email}</Text>
-          {state.lastError ? (
-            <Text testID="backup-status" style={styles.error}>
-              {state.lastError}
+        {account ? (
+          <>
+            <Text testID="account-name" style={styles.name}>
+              {account.name}
             </Text>
-          ) : (
-            <Text testID="backup-status" style={styles.status}>
-              {lastBackupText(state.lastBackupAt)}
+            <Text style={styles.email}>{account.email}</Text>
+            {state.lastError ? (
+              <Text testID="backup-status" style={styles.error}>
+                {state.lastError}
+              </Text>
+            ) : (
+              <Text testID="backup-status" style={styles.status}>
+                {lastBackupText(state.lastBackupAt)}
+              </Text>
+            )}
+            <Pressable
+              testID="back-up-now"
+              accessibilityRole="button"
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              onPress={handleBackUp}
+              style={[styles.primary, disabled && styles.primaryDisabled]}
+            >
+              <Text style={styles.primaryLabel}>
+                {busy === 'backup' ? 'Backing up…' : 'Back up now'}
+              </Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text testID="not-signed-in" style={styles.body}>
+              {NOT_SIGNED_IN_TEXT}
             </Text>
-          )}
-          <Pressable
-            testID="back-up-now"
-            accessibilityRole="button"
-            accessibilityState={{ disabled }}
-            disabled={disabled}
-            onPress={handleBackUp}
-            style={[styles.primary, disabled && styles.primaryDisabled]}
-          >
-            <Text style={styles.primaryLabel}>
-              {busy === 'backup' ? 'Backing up…' : 'Back up now'}
-            </Text>
-          </Pressable>
-          <Pressable
-            testID="sign-out"
-            accessibilityRole="button"
-            disabled={disabled}
-            onPress={handleSignOut}
-            style={styles.textButton}
-          >
-            <Text style={styles.textLabel}>Sign out</Text>
-          </Pressable>
-          <Pressable
-            testID="delete-backup"
-            accessibilityRole="button"
-            disabled={disabled}
-            onPress={() => setConfirmingDelete(true)}
-            style={styles.textButton}
-          >
-            <Text style={[styles.textLabel, styles.deleteLabel]}>
-              Delete backup and sign out
-            </Text>
-          </Pressable>
-        </>
-      ) : (
-        <>
-          <Text testID="not-signed-in" style={styles.body}>
-            {NOT_SIGNED_IN_TEXT}
-          </Text>
-          <Pressable
-            testID="sign-in"
-            accessibilityRole="button"
-            accessibilityState={{ disabled }}
-            disabled={disabled}
-            onPress={handleSignIn}
-            style={[styles.primary, disabled && styles.primaryDisabled]}
-          >
-            <Text style={styles.primaryLabel}>
-              {busy === 'signIn' ? 'Signing in…' : 'Sign in with Google'}
-            </Text>
-          </Pressable>
-        </>
-      )}
+            <Pressable
+              testID="sign-in"
+              accessibilityRole="button"
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              onPress={handleSignIn}
+              style={[styles.primary, disabled && styles.primaryDisabled]}
+            >
+              <Text style={styles.primaryLabel}>
+                {busy === 'signIn' ? 'Signing in…' : 'Sign in with Google'}
+              </Text>
+            </Pressable>
+          </>
+        )}
 
-      {actionError ? (
-        <Text testID="account-error" style={styles.error}>
-          {actionError}
-        </Text>
-      ) : null}
+        {actionError ? (
+          <Text testID="account-error" style={styles.error}>
+            {actionError}
+          </Text>
+        ) : null}
+      </View>
+
+      {/* The Profile menu, then the account rows: profile-menu.md */}
+      <View>
+        {children}
+        {account ? (
+          <>
+            <MenuRow
+              testID="sign-out"
+              label="Sign out"
+              disabled={disabled}
+              onPress={handleSignOut}
+            />
+            <MenuRow
+              testID="delete-backup"
+              label="Delete data"
+              danger
+              disabled={disabled}
+              onPress={() => setConfirmingDelete(true)}
+            />
+          </>
+        ) : null}
+      </View>
 
       <Modal
         visible={restored !== null}
@@ -319,16 +326,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
   },
-  textButton: {
-    paddingVertical: 8,
-  },
-  textLabel: {
-    color: colors.v2White,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  deleteLabel: {
-    color: colors.v2Red,
+  section: {
+    gap: 12,
   },
   backdrop: {
     flex: 1,
