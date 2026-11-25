@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   DarkTheme,
+  DefaultTheme,
   NavigationContainer,
   Theme,
 } from '@react-navigation/native';
@@ -11,11 +12,14 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { colors } from './src/theme';
+import { useIsDark, usePalette } from './src/theming';
+import { SettingsProvider } from './src/settings/SettingsProvider';
+import { setLightNavigationBar } from './src/systemBars';
 import HabitsScreen from './src/screens/HabitsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/profile/AboutScreen';
+import DisplaySettingsScreen from './src/screens/profile/DisplaySettingsScreen';
 import BottomMenu, { Tab } from './src/screens/habits/BottomMenu';
 import { useAutoBackup } from './src/hooks/useAutoBackup';
 
@@ -31,7 +35,13 @@ function ProfileTab({ onDataChanged }: { onDataChanged: () => void }) {
           <ProfileScreen
             onDataChanged={onDataChanged}
             onOpenAbout={() => navigation.navigate('About')}
+            onOpenDisplaySettings={() => navigation.navigate('DisplaySettings')}
           />
+        )}
+      </ProfileStack.Screen>
+      <ProfileStack.Screen name="DisplaySettings">
+        {({ navigation }) => (
+          <DisplaySettingsScreen onBack={navigation.goBack} />
         )}
       </ProfileStack.Screen>
       <ProfileStack.Screen name="About">
@@ -40,16 +50,6 @@ function ProfileTab({ onDataChanged }: { onDataChanged: () => void }) {
     </ProfileStack.Navigator>
   );
 }
-
-// The app's own colours, so screens don't flash white between tabs
-const navigationTheme: Theme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: colors.v2Background,
-    card: colors.v2Background,
-  },
-};
 
 // Our bottom menu as the tab bar: docs/style-choices/habits-section/header-and-bottom-menu.md
 function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -62,7 +62,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 export default function App() {
-  // Bumped when a backup or restore changed the stored habits
+  // Bumped when a backup or restore changed the stored habits or settings
   const [dataVersion, setDataVersion] = useState(0);
   const dataChanged = useCallback(() => setDataVersion(v => v + 1), []);
 
@@ -70,8 +70,46 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <SettingsProvider reloadKey={dataVersion}>
+        <ThemedApp dataVersion={dataVersion} onDataChanged={dataChanged} />
+      </SettingsProvider>
+    </SafeAreaProvider>
+  );
+}
+
+interface ThemedAppProps {
+  dataVersion: number;
+  onDataChanged: () => void;
+}
+
+function ThemedApp({
+  dataVersion,
+  onDataChanged,
+}: ThemedAppProps): React.JSX.Element {
+  const colors = usePalette();
+  const isDark = useIsDark();
+
+  // The app's own colours, so screens don't flash between tabs
+  const navigationTheme = useMemo<Theme>(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        background: colors.v2Background,
+        card: colors.v2Background,
+      },
+    };
+  }, [colors, isDark]);
+
+  useEffect(() => {
+    setLightNavigationBar(!isDark);
+  }, [isDark]);
+
+  return (
+    <>
       <StatusBar
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
         backgroundColor={colors.v2Background}
       />
       <NavigationContainer theme={navigationTheme}>
@@ -92,10 +130,10 @@ export default function App() {
             {() => <ComingSoonScreen section="Level-Up" />}
           </Tabs.Screen>
           <Tabs.Screen name="Profile">
-            {() => <ProfileTab onDataChanged={dataChanged} />}
+            {() => <ProfileTab onDataChanged={onDataChanged} />}
           </Tabs.Screen>
         </Tabs.Navigator>
       </NavigationContainer>
-    </SafeAreaProvider>
+    </>
   );
 }

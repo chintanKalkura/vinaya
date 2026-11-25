@@ -1,6 +1,6 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, StyleSheet } from 'react-native';
+import { AppState, StyleSheet, Text } from 'react-native';
 import {
   act,
   fireEvent,
@@ -18,6 +18,8 @@ import {
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
+import { SettingsProvider, useSettings } from '../settings/SettingsProvider';
+import { saveSettings } from '../storage/settingsStorage';
 
 // Tests move the day forward by setting mockToday
 let mockToday = '2024-06-15';
@@ -1203,5 +1205,50 @@ describe('HabitsScreen form mounting', () => {
       utils.UNSAFE_queryAllByType(NewHabitForm).length,
       utils.UNSAFE_queryAllByType(NewHabitGroupForm).length,
     ]).toEqual([0, 1, 0]);
+  });
+});
+
+describe('HabitsScreen default view', () => {
+  function Switcher() {
+    const { updateSettings } = useSettings();
+    return (
+      <Text
+        testID="switch-to-list"
+        onPress={() => updateSettings({ defaultView: 'list' })}
+      >
+        list
+      </Text>
+    );
+  }
+
+  function renderWithSettings() {
+    return render(
+      <SettingsProvider>
+        <HabitsScreen />
+        <Switcher />
+      </SettingsProvider>,
+    );
+  }
+
+  it('should open in the saved default view', async () => {
+    await saveSettings({ defaultView: 'group' });
+    const { findByTestId } = renderWithSettings();
+
+    expect(
+      (await findByTestId('view-mode-toggle-group')).props.accessibilityState
+        .selected,
+    ).toBe(true);
+  });
+
+  it('should switch view at once when the default view changes', async () => {
+    await saveSettings({ defaultView: 'group' });
+    const { findByTestId, getByTestId } = renderWithSettings();
+    await findByTestId('view-mode-toggle-group');
+
+    fireEvent.press(getByTestId('switch-to-list'));
+
+    expect(
+      getByTestId('view-mode-toggle-list').props.accessibilityState.selected,
+    ).toBe(true);
   });
 });

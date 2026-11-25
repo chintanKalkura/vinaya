@@ -11,6 +11,7 @@ import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { Palette } from '../theme';
 import { useThemedStyles } from '../theming';
+import { useSettings } from '../settings/SettingsProvider';
 import { useToday } from '../hooks/useToday';
 import { loadHabitsAndGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
@@ -68,7 +69,13 @@ export default function HabitsScreen({
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
+  // Opens in the default view from Display settings, and follows it when it
+  // changes; the header toggle still switches views for the session
+  const { defaultView } = useSettings().settings;
+  const [viewMode, setViewMode] = useState<HabitsViewMode>(defaultView);
+  useEffect(() => {
+    setViewMode(defaultView);
+  }, [defaultView]);
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const [flow, dispatch] = useReducer(formFlowReducer, INITIAL_FORM_FLOW);
   // Session only: docs/feature-development/habits-section/sort-filter-delete-habit.md

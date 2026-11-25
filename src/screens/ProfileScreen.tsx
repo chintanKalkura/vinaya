@@ -10,11 +10,13 @@ import MenuRow from './profile/MenuRow';
 interface ProfileScreenProps {
   onDataChanged: () => void;
   onOpenAbout: () => void;
+  onOpenDisplaySettings: () => void;
 }
 
 export default function ProfileScreen({
   onDataChanged,
   onOpenAbout,
+  onOpenDisplaySettings,
 }: ProfileScreenProps): React.JSX.Element {
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
@@ -29,9 +31,16 @@ export default function ProfileScreen({
       </Text>
       <ScrollView contentContainerStyle={styles.content}>
         <View>
-          {/* Display settings, Support the developer and How to use rows go
-              in AccountSection's slot, above Sign out */}
-          <AccountSection onDataChanged={onDataChanged} />
+          {/* Support the developer and How to use rows join Display
+              settings in AccountSection's slot, above Sign out */}
+          <AccountSection onDataChanged={onDataChanged}>
+            <MenuRow
+              testID="profile-display-settings"
+              label="Display settings"
+              chevron
+              onPress={onOpenDisplaySettings}
+            />
+          </AccountSection>
           <MenuRow
             testID="profile-about"
             label="About"

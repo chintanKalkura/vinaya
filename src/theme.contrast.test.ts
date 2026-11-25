@@ -1,17 +1,22 @@
-import { colors } from './theme';
+import { Palette, darkColors, lightColors } from './theme';
 import { contrastRatio } from './utils/contrast';
 
 // WCAG 2.2 AA on the Habits screen: 4.5:1 for text, 3:1 for icons and other
 // non-text UI. docs/feature-development/release-1-readiness/accessibility-fixes.md
-const CARDS = {
-  card: colors.v2CardBackground,
-  inset: colors.v2CardBackgroundInset,
-  background: colors.v2Background,
-  orangeCard: colors.v2OrangeCardBackground,
-  icyCard: colors.v2IceCardBackground,
-};
+const PALETTES: [string, Palette][] = [
+  ['dark', darkColors],
+  ['light', lightColors],
+];
 
-describe('theme contrast', () => {
+describe.each(PALETTES)('theme contrast (%s)', (_name, colors) => {
+  const CARDS = {
+    card: colors.v2CardBackground,
+    inset: colors.v2CardBackgroundInset,
+    background: colors.v2Background,
+    orangeCard: colors.v2OrangeCardBackground,
+    icyCard: colors.v2IceCardBackground,
+  };
+
   describe.each(Object.entries(CARDS))('on the %s background', (_, bg) => {
     it.each([
       ['grey text', colors.v2GreyText],
@@ -40,5 +45,17 @@ describe('theme contrast', () => {
     expect(
       contrastRatio(colors.v2GreyText, colors.v2CardBackground),
     ).toBeGreaterThanOrEqual(4.6);
+  });
+
+  it('should give labels on orange fills at least 4.5:1', () => {
+    expect(
+      contrastRatio(colors.v2Background, colors.v2Orange),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('should give red text at least 4.5:1 on the background', () => {
+    expect(
+      contrastRatio(colors.v2Red, colors.v2Background),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });
