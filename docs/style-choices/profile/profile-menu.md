@@ -13,7 +13,7 @@ The title "Vinaya - Profile" in the Habits title look, the Account & backup card
 │ name / email / backup     │
 │ [ Back up now ]           │
 └───────────────────────────┘
- Display settings        >     (display settings PR)
+ Display settings        >
  Support the developer   >     (support PR)
  How to use              >     (how-to-use PR)
  Sign out                      signed in only
