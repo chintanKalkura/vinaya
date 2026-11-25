@@ -26,9 +26,9 @@ Vinaya - Habits        [All ⌄] [▦|☰] [⚟]
 | Background | espresso `#1e1510` (`colors.v2MenuBackground`), a warm dark brown that contrasts with the orange and the blue-grey list; it runs down under the gesture or 3-button bar |
 | Top edge | 1px bitter coffee `#130d09` line (`colors.v2MenuBorder`) |
 | Padding | 10dp at the top; 10dp plus the bottom safe-area inset at the bottom |
-| Items | unchanged: Habits, Journal, Level-Up, Profile |
+| Items | Habits, Journal, Level-Up, Profile; the open tab is orange, the rest white. It is the app's tab bar (React Navigation, `App.tsx`), so every tab shows it |
 
-The + button sits 16dp above the menu: its bottom offset is the menu's measured height (which includes the bottom inset and grows with the system font size) + 16dp. Until the menu is first laid out, 60dp + the bottom inset is used. The header's controls have 48dp tap areas; its top padding is 8dp so it keeps its height (`tap-targets.md`).
+Screens sit above the tab bar, so it can grow with the system font size without covering anything. The + button (Habits only) sits 16dp above it. The header's controls have 48dp tap areas; its top padding is 8dp so it keeps its height (`tap-targets.md`).
 
 ## Why
 
