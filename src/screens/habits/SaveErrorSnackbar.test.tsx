@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import SaveErrorSnackbar, { SAVE_ERROR_HIDE_MS } from './SaveErrorSnackbar';
-import { BOTTOM_MENU_HEIGHT } from './BottomMenu';
 import { colors } from '../../theme';
 
 describe('SaveErrorSnackbar', () => {
@@ -57,7 +56,7 @@ describe('SaveErrorSnackbar', () => {
     expect(
       StyleSheet.flatten(getByTestId('save-error').props.style),
     ).toMatchObject({
-      bottom: BOTTOM_MENU_HEIGHT + 16 + 56 + 12,
+      bottom: 16 + 56 + 12,
       borderLeftColor: colors.v2Red,
       backgroundColor: colors.v2CardBackground,
     });
@@ -71,17 +70,5 @@ describe('SaveErrorSnackbar', () => {
     expect(
       StyleSheet.flatten(getByTestId('save-error').props.style).bottom,
     ).toBe(16);
-  });
-});
-
-describe('SaveErrorSnackbar menu height', () => {
-  it('should sit above the + over a measured bottom menu', () => {
-    const { getByTestId } = render(
-      <SaveErrorSnackbar visible menuHeight={110} onDismiss={() => {}} />,
-    );
-
-    expect(
-      StyleSheet.flatten(getByTestId('save-error').props.style).bottom,
-    ).toBe(110 + 16 + 56 + 12);
   });
 });

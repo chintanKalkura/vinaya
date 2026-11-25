@@ -9,40 +9,35 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
 
-export type Tab = 'Habits' | 'Profile';
+// Route names in App.tsx's tab navigator
+export type Tab = 'Habits' | 'Journal' | 'Level-Up' | 'Profile';
 
-const ITEMS = [
+const ITEMS: { label: Tab; Icon: typeof ListChecks }[] = [
   { label: 'Habits', Icon: ListChecks },
   { label: 'Journal', Icon: FilePen },
   { label: 'Level-Up', Icon: TrendingUp },
   { label: 'Profile', Icon: CircleUser },
 ];
-// Journal and Level-Up do nothing until bottom-tab-navigation.md
-const TABS: string[] = ['Habits', 'Profile'];
 
-// Flush with the screen's bottom edge, padded by the bottom inset so it clears
-// the gesture or 3-button bar: docs/style-choices/habits-section/header-and-bottom-menu.md.
-// It grows with the system font size, so its height is measured; this is only
-// the starting value (without the inset) until the first layout.
-export const BOTTOM_MENU_HEIGHT = 60;
+// The tab bar: flush with the screen's bottom edge, padded by the bottom inset
+// so it clears the gesture or 3-button bar. Screens sit above it, so it grows
+// with the font size without covering anything:
+// docs/style-choices/habits-section/header-and-bottom-menu.md
 
 interface BottomMenuProps {
   selected?: Tab;
   onSelect?: (tab: Tab) => void;
-  onHeightChange?: (height: number) => void; // includes the bottom inset
 }
 
 export default function BottomMenu({
   selected = 'Habits',
   onSelect,
-  onHeightChange,
 }: BottomMenuProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
 
   return (
     <View
       testID="bottom-menu"
-      onLayout={e => onHeightChange?.(e.nativeEvent.layout.height)}
       style={[styles.bar, { paddingBottom: 10 + insets.bottom }]}
     >
       {ITEMS.map(item => {
@@ -54,9 +49,7 @@ export default function BottomMenu({
             testID={`bottom-menu-${item.label}`}
             accessibilityRole="tab"
             accessibilityState={{ selected: isSelected }}
-            onPress={() => {
-              if (TABS.includes(item.label)) onSelect?.(item.label as Tab);
-            }}
+            onPress={() => onSelect?.(item.label)}
             style={styles.item}
           >
             <item.Icon color={color} size={22} />

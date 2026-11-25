@@ -2,17 +2,14 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme';
-import BottomMenu from './habits/BottomMenu';
 import AccountSection from './profile/AccountSection';
 
 // Only Account & backup for now; the other sections come with profile-tab.md
 interface ProfileScreenProps {
-  onOpenHabits: () => void;
   onDataChanged: () => void;
 }
 
 export default function ProfileScreen({
-  onOpenHabits,
   onDataChanged,
 }: ProfileScreenProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
@@ -28,12 +25,6 @@ export default function ProfileScreen({
       <ScrollView contentContainerStyle={styles.content}>
         <AccountSection onDataChanged={onDataChanged} />
       </ScrollView>
-      <BottomMenu
-        selected="Profile"
-        onSelect={tab => {
-          if (tab === 'Habits') onOpenHabits();
-        }}
-      />
     </View>
   );
 }

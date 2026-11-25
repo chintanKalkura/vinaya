@@ -5,6 +5,10 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import App from '../App';
+// Imported at the top so its automatic unmount runs after every test here
+import { act, fireEvent, render } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
+import { COMING_SOON } from '../src/screens/ComingSoonScreen';
 
 test('renders correctly', async () => {
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
@@ -16,9 +20,6 @@ test('renders correctly', async () => {
 });
 
 describe('App tabs', () => {
-  const { BackHandler } = require('react-native');
-  const { act, fireEvent, render } = require('@testing-library/react-native');
-
   it('opens Profile from the bottom menu and highlights it', async () => {
     const utils = render(<App />);
     await utils.findByTestId('fab');
@@ -57,11 +58,39 @@ describe('App tabs', () => {
 
     fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
     await utils.findByTestId('profile-screen');
-    fireEvent.press(utils.getAllByTestId('bottom-menu-Habits').pop());
+    fireEvent.press(utils.getByTestId('bottom-menu-Habits'));
 
     expect(
       utils.getByTestId('view-mode-toggle-group').props.accessibilityState
         .selected,
     ).toBe(true);
+  });
+});
+
+describe('App coming-soon tabs', () => {
+  it.each(['Journal', 'Level-Up'] as const)(
+    'opens %s with its coming-soon text and highlights it',
+    async tab => {
+      const utils = render(<App />);
+      await utils.findByTestId('fab');
+
+      fireEvent.press(utils.getByTestId(`bottom-menu-${tab}`));
+
+      expect([
+        !!(await utils.findByText(COMING_SOON[tab].message)),
+        utils.getByTestId(`bottom-menu-${tab}`).props.accessibilityState
+          .selected,
+      ]).toEqual([true, true]);
+    },
+  );
+
+  it('shows the + only on Habits', async () => {
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+
+    fireEvent.press(utils.getByTestId('bottom-menu-Journal'));
+    await utils.findByTestId('coming-soon-Journal');
+
+    expect(utils.queryByTestId('fab')).toBeNull();
   });
 });

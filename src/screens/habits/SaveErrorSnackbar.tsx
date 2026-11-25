@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme';
-import { BOTTOM_MENU_HEIGHT } from './BottomMenu';
 
 // Non-blocking "Couldn't save" above the FAB, or at the bottom of an open
 // form: docs/style-choices/habits-section/storage-error-messages.md
@@ -14,7 +13,6 @@ interface SaveErrorSnackbarProps {
   visible: boolean;
   onDismiss: () => void;
   inForm?: boolean; // a form covers the FAB and bottom menu
-  menuHeight?: number; // measured bottom menu height, with the bottom inset
 }
 
 // A new failure remounts it (keyed by the screen), restarting the timer
@@ -22,7 +20,6 @@ export default function SaveErrorSnackbar({
   visible,
   onDismiss,
   inForm = false,
-  menuHeight,
 }: SaveErrorSnackbarProps): React.JSX.Element | null {
   const insets = useSafeAreaInsets();
 
@@ -41,9 +38,8 @@ export default function SaveErrorSnackbar({
       style={[
         styles.snackbar,
         {
-          bottom: inForm
-            ? 16 + insets.bottom
-            : (menuHeight ?? BOTTOM_MENU_HEIGHT + insets.bottom) + FAB_TOP,
+          // The tab bar is below the screen, so the screen's bottom is its top
+          bottom: inForm ? 16 + insets.bottom : FAB_TOP,
         },
       ]}
     >

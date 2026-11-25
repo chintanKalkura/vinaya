@@ -41,14 +41,20 @@ describe('BottomMenu tabs', () => {
     expect(onSelect).toHaveBeenCalledWith('Profile');
   });
 
-  it('should ignore Journal and Level-Up', () => {
+  it('should open each tab when pressed', () => {
     const onSelect = jest.fn();
     const { getByTestId } = render(<BottomMenu onSelect={onSelect} />);
 
-    fireEvent.press(getByTestId('bottom-menu-Journal'));
-    fireEvent.press(getByTestId('bottom-menu-Level-Up'));
+    ['Habits', 'Journal', 'Level-Up', 'Profile'].forEach(label =>
+      fireEvent.press(getByTestId(`bottom-menu-${label}`)),
+    );
 
-    expect(onSelect).not.toHaveBeenCalled();
+    expect(onSelect.mock.calls.map(([tab]) => tab)).toEqual([
+      'Habits',
+      'Journal',
+      'Level-Up',
+      'Profile',
+    ]);
   });
 });
 
