@@ -14,7 +14,7 @@ export interface BackupData {
   habits: Record<string, Habit>;
   habitGroups: Record<string, HabitGroup>;
   tombstones: Tombstone[];
-  settings?: Record<string, unknown>; // left out until display-settings.md adds a settings store
+  settings?: Record<string, unknown>; // settings_v2, only once changed on some phone
 }
 
 export const BACKUP_SCHEMA_VERSION = 1;

@@ -9,6 +9,11 @@ import {
 } from '../storage/habitStorage';
 import { getAppVersionName } from '../storage/appInfo';
 import {
+  loadStoredSettings,
+  toSettings,
+  writeSettings,
+} from '../storage/settingsStorage';
+import {
   applyStreakFreezesInQueue,
   syncGroupCompletionInQueue,
 } from '../services/habitGroupService';
@@ -48,15 +53,17 @@ async function mergeIntoLocal(
   remote: BackupData | null,
   now: number,
 ): Promise<MergeResult> {
-  const [habits, habitGroups, tombstones] = await Promise.all([
+  const [habits, habitGroups, tombstones, settings] = await Promise.all([
     loadHabits(),
     loadHabitGroups(),
     loadTombstones(),
+    loadStoredSettings(),
   ]);
   const local: BackupData = {
     habits,
     habitGroups,
     tombstones: Object.values(tombstones),
+    ...(settings ? { settings: { ...settings } } : {}),
   };
   if (!remote) return { data: local, added: { habits: 0, groups: 0 } };
 
@@ -64,6 +71,9 @@ async function mergeIntoLocal(
   await saveHabits(data.habits);
   await saveHabitGroups(data.habitGroups);
   await saveTombstones(Object.fromEntries(data.tombstones.map(t => [t.id, t])));
+  // Settings changed on this phone win; otherwise the backup's are kept
+  if (!settings && data.settings)
+    await writeSettings(toSettings(data.settings));
 
   const todayKey = toDateKey(new Date(now));
   for (const groupId of Object.keys(data.habitGroups)) {

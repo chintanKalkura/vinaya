@@ -15,6 +15,7 @@ import {
   saveHabitGroups,
   saveHabits,
 } from '../storage/habitStorage';
+import { loadSettings, saveSettings } from '../storage/settingsStorage';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { BackupData } from '../types/backup';
@@ -244,5 +245,55 @@ describe('backupErrorText', () => {
     expect(backupErrorText(new BackupVersionError('Update the app'))).toBe(
       'Update the app',
     );
+  });
+});
+
+describe('backup settings', () => {
+  it('should include the phone settings in the backup', async () => {
+    const store = new FakeBackupStore();
+    await saveSettings({ theme: 'light' });
+
+    await backupNow(store, NOW);
+
+    expect(store.current!.settings).toEqual({
+      defaultView: 'list',
+      theme: 'light',
+      weekStart: 'monday',
+    });
+  });
+
+  it('should restore settings when none were changed on this phone', async () => {
+    const store = new FakeBackupStore();
+    store.current = backupOf({
+      settings: { defaultView: 'group', theme: 'system', weekStart: 'monday' },
+    });
+
+    await restoreFromBackup(store, NOW);
+
+    expect(await loadSettings()).toEqual({
+      defaultView: 'group',
+      theme: 'system',
+      weekStart: 'monday',
+    });
+  });
+
+  it('should keep settings changed on this phone over the backup', async () => {
+    const store = new FakeBackupStore();
+    store.current = backupOf({
+      settings: { defaultView: 'group', theme: 'light', weekStart: 'monday' },
+    });
+    await saveSettings({ theme: 'dark' });
+
+    await restoreFromBackup(store, NOW);
+
+    expect((await loadSettings()).defaultView).toBe('list');
+  });
+
+  it('should leave settings out of the backup until one is changed', async () => {
+    const store = new FakeBackupStore();
+
+    await backupNow(store, NOW);
+
+    expect('settings' in store.current!).toBe(false);
   });
 });
