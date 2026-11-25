@@ -6,7 +6,7 @@ Implemented in `../../../src/screens/profile/AccountSection.tsx`, shown by `../.
 
 ## Profile tab
 
-Opened from Profile in the bottom menu, which turns orange; Habits returns to the Habits screen with its view and filters kept. Android back on Profile returns to Habits. The title "Vinaya - Profile" uses the Habits title look (serif italic, white). For now the tab holds only this card; the other sections come with `profile-tab.md`. Journal and Level-Up still do nothing.
+The card opens the Profile tab; the menu below it is in `profile-menu.md`. Sign out and Delete data are rows of that menu, shown only when signed in.
 
 ## Design
 
@@ -19,9 +19,9 @@ Signed out                          Signed in
 │ in with your Google account│      │ chintu…@gmail.com             │
 │ to back up your data, so   │      │ Last backed up 17 Nov 2026    │
 │ that you don't lose your   │      │ [ Back up now ]               │
-│ progress. 🙂               │      │ Sign out                      │
-│ [ Sign in with Google ]    │      │ Delete backup and sign out    │
-└────────────────────────────┘      └───────────────────────────────┘
+│ progress. 🙂               │      └───────────────────────────────┘
+│ [ Sign in with Google ]    │
+└────────────────────────────┘
 ```
 
 | Element | Look |
@@ -31,8 +31,7 @@ Signed out                          Signed in
 | "Last backed up 17 Nov 2026" or "Not backed up yet" | grey 14 |
 | Last backup error, in place of the date | red (`v2Red`) 14 |
 | Sign in with Google, Back up now | orange (`v2Orange`) button, dark label; "Signing in…" / "Backing up…" and dimmed while running |
-| Sign out | white text button |
-| Delete backup and sign out | red text button |
+| Sign out, Delete data | menu rows below the card, signed in only (`profile-menu.md`) |
 
 Errors shown in place of the date: "Couldn't reach Google Drive. Will try again next time.", "Your Google Drive is full.", "Vinaya no longer has access to your Google Drive. Sign in again.", "Backup failed. Will try again next time.", and the newer-version message. A failed sign-in, sign-out or delete shows a red line under the buttons ("Couldn't sign in. Try again.").
 

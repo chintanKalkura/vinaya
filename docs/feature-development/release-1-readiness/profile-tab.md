@@ -1,6 +1,6 @@
 # Feature: Profile tab.
 
-Status: to be designed with Claude Code, then ready for planning.
+Status: in progress. Done: the menu, Sign out, Delete data, About. Coming with their own specs: Display settings, Support the developer, How to use rows. **Not wired:** the About links.
 
 ## Goal
 One place for the account, backup, display settings, supporting the developer, and help.
@@ -16,9 +16,11 @@ The Profile tab holds:
 1. Opened from the Profile tab in the bottom menu (`bottom-tab-navigation.md`).
 2. Also shows the app version and links to the privacy policy and the account-deletion page (both required for Play; see `play-store-release-checklist.md`).
 
-## To be designed
-- Layout, grouping and order of sections, and how each opens (inline or its own screen).
-- Signed-in and signed-out states.
+## Decided (owner, 25 Nov 2026)
+- **Layout:** the Account & backup card, then a menu of rows, each opening its own screen in a Profile stack: Display settings, Support the developer, How to use, Sign out and Delete data (signed in only), About. See `../../style-choices/profile/profile-menu.md`.
+- **Sign out and Delete data** are menu rows, not buttons in the card. Delete data deletes the cloud backup and signs out; habits on the phone stay.
+- **About:** version, Privacy policy and Delete account data. **The two links are not wired yet:** they show but open nothing until the URLs are set in `src/config/links.ts`.
+- **Help** is the How to use row (`how-to-use.md`).
 
 ## Tests
 - To be written with the design. At minimum: each section is reachable; signed-in and signed-out states; version shown; links open.

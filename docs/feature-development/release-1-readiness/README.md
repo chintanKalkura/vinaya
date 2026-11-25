@@ -14,7 +14,7 @@ Work them in this order. Within a step, any order.
 | 4. Release config and cleanup | `release-build-config.md` | done in the code (Play Console steps outside) |
 | | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | done |
-| | `profile-tab.md` | to be designed |
+| | `profile-tab.md` | in progress (menu and About done; About links not wired) |
 | | `display-settings.md` | light theme and week start to be designed |
 | | `how-to-use.md` | screens and wording to be designed |
 | | `support-the-developer.md` | custom amount: open question |
