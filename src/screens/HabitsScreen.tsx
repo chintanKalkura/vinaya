@@ -12,6 +12,7 @@ import { HabitGroup } from '../types/habitGroup';
 import { Palette } from '../theme';
 import { useThemedStyles } from '../theming';
 import { useSettings } from '../settings/SettingsProvider';
+import { EMPTY_HABITS_TEXT } from '../content/howToUse';
 import { useToday } from '../hooks/useToday';
 import { loadHabitsAndGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
@@ -84,6 +85,7 @@ export default function HabitsScreen({
   const [sortOpen, setSortOpen] = useState(false);
   // Storage errors: docs/feature-development/release-1-readiness/storage-write-safety.md
   const [loadError, setLoadError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   // Counts failures so each one restarts the snackbar's timer
   const [saveErrorCount, setSaveErrorCount] = useState(0);
   const [saveErrorVisible, setSaveErrorVisible] = useState(false);
@@ -104,6 +106,7 @@ export default function HabitsScreen({
       await seedDevFixturesIfNeeded();
       await applyStreakFreezes(todayKey);
       await reload();
+      setLoaded(true);
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -350,6 +353,14 @@ export default function HabitsScreen({
         <LoadErrorMessage onRetry={loadScreen} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
+          {/* Nothing stored yet: point to the + (how-to-use.md) */}
+          {loaded &&
+          Object.keys(habits).length === 0 &&
+          Object.keys(groups).length === 0 ? (
+            <Text testID="habits-empty" style={styles.empty}>
+              {EMPTY_HABITS_TEXT}
+            </Text>
+          ) : null}
           {viewMode === 'list'
             ? listHabits.map(habit => (
                 <HabitListRow
@@ -498,6 +509,14 @@ const makeStyles = (colors: Palette) =>
     content: {
       padding: 16,
       gap: 12,
+    },
+    empty: {
+      color: colors.v2GreyText,
+      fontSize: 16,
+      lineHeight: 24,
+      textAlign: 'center',
+      paddingHorizontal: 16,
+      paddingTop: 48,
     },
     fab: {
       position: 'absolute',

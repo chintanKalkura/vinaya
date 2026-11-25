@@ -6,7 +6,8 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import App from '../App';
 // Imported at the top so its automatic unmount runs after every test here
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BackHandler, StyleSheet } from 'react-native';
 import { lightColors } from '../src/theme';
 import { COMING_SOON } from '../src/screens/ComingSoonScreen';
@@ -124,5 +125,38 @@ describe('App display settings', () => {
         (await utils.findByTestId('display-settings-screen')).props.style,
       ).backgroundColor,
     ).toBe(lightColors.v2Background);
+  });
+});
+
+describe('App walkthrough', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('shows the walkthrough on first launch and not after Skip', async () => {
+    const first = render(<App />);
+    fireEvent.press(await first.findByTestId('walkthrough-skip'));
+    await waitFor(async () =>
+      expect(await AsyncStorage.getItem('onboarding_seen_v1')).not.toBeNull(),
+    );
+    first.unmount();
+
+    const second = render(<App />);
+    await second.findByTestId('fab');
+    await act(async () => {});
+
+    expect(second.queryByTestId('walkthrough')).toBeNull();
+  });
+
+  it('replays the walkthrough from Profile → How to use', async () => {
+    await AsyncStorage.setItem('onboarding_seen_v1', '1');
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
+
+    fireEvent.press(await utils.findByTestId('profile-how-to-use'));
+    fireEvent.press(await utils.findByTestId('help-show-walkthrough'));
+
+    expect(await utils.findByTestId('walkthrough')).toBeTruthy();
   });
 });
