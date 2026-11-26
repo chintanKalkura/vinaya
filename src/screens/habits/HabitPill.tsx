@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Habit } from '../../types/habit';
+import { CompletionColourId, Habit } from '../../types/habit';
 import { Check, Snowflake } from 'lucide-react-native';
 import { Palette } from '../../theme';
 import { usePalette, useThemedStyles } from '../../theming';
@@ -13,6 +13,7 @@ interface HabitPillProps {
   todayKey: string;
   onPress: (habitId: string) => void;
   required?: boolean;
+  colour?: CompletionColourId; // the group's colour: banner-colours.md
 }
 
 // A habit inside a group card (group view). Only the check is tappable, and it
@@ -22,6 +23,7 @@ export default function HabitPill({
   todayKey,
   onPress,
   required = false,
+  colour,
 }: HabitPillProps): React.JSX.Element {
   const colors = usePalette();
   const styles = useThemedStyles(makeStyles);
@@ -32,6 +34,7 @@ export default function HabitPill({
     status.markedToday,
     status.frozenToday,
     colors,
+    colour,
   );
 
   return (

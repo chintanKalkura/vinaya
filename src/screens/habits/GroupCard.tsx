@@ -46,6 +46,7 @@ export default function GroupCard({
     status.markedToday,
     status.frozenToday,
     colors,
+    group.colour,
   );
   const hoursTotal = habits.reduce(
     (sum, habit) => sum + getHoursToday(habit, todayKey),
@@ -118,7 +119,7 @@ export default function GroupCard({
                     : styles.statusRound,
                   {
                     backgroundColor: status.complete
-                      ? colors.v2Orange
+                      ? scheme.numberColor
                       : colors.v2GreyOutline,
                   },
                 ]}
@@ -158,6 +159,7 @@ export default function GroupCard({
               todayKey={todayKey}
               onPress={onToggle}
               required={isRequired(habit.id)}
+              colour={group.colour}
             />
           ))}
         </View>
@@ -181,6 +183,7 @@ export default function GroupCard({
                 onPress={onToggle}
                 colorKind="pill"
                 required={isRequired(habit.id)}
+                colour={group.colour}
               />
             </View>
           ))}
