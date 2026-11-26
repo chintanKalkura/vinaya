@@ -95,6 +95,24 @@ describe('backupNow', () => {
     expect(Object.keys(await loadHabits()).sort()).toEqual(['a', 'b']);
   });
 
+  // Bug: unmarking after a backup was undone by the next backup
+  it('should keep a day unmarked after the last backup unmarked', async () => {
+    const store = new FakeBackupStore();
+    const mark = { date: TODAY, kind: 'marker' as const, value: 1 };
+    await saveHabits({
+      a: makeHabit('a', { recentLog: [mark], history: [mark] }),
+    });
+    await backupNow(store, NOW);
+
+    await saveHabits({ a: makeHabit('a') });
+    await backupNow(store, NOW + DAY_MS);
+
+    expect([
+      (await loadHabits()).a.history,
+      store.current!.habits.a.history,
+    ]).toEqual([[], []]);
+  });
+
   it('should keep the previous backup', async () => {
     const store = new FakeBackupStore();
     const old = backupOf({});

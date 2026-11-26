@@ -95,45 +95,74 @@ describe('mergeBackup', () => {
     expect(mergeBackup(local, remote, NOW).data.habits.a.name).toBe('Run');
   });
 
-  it('should combine log entries by date, oldest first', () => {
+  // A day unmarked on the phone has no entry there; the backup's entry for it
+  // must not bring the mark back
+  it('should keep a day unmarked on the phone unmarked', () => {
     const local = data({
-      habits: { a: makeHabit('a', { history: [marker('2026-11-16')] }) },
+      habits: { a: makeHabit('a', { history: [marker('2026-11-14')] }) },
     });
     const remote = data({
-      habits: { a: makeHabit('a', { history: [marker('2026-11-14')] }) },
+      habits: {
+        a: makeHabit('a', {
+          history: [marker('2026-11-14'), marker('2026-11-16')],
+        }),
+      },
     });
 
     expect(mergeBackup(local, remote, NOW).data.habits.a.history).toEqual([
       marker('2026-11-14'),
-      marker('2026-11-16'),
     ]);
   });
 
-  it("should keep the phone's entry when both have the same date", () => {
+  it("should keep the phone's log, not combine it with the backup's", () => {
     const local = data({
       habits: { a: makeHabit('a', { history: [hours('2026-11-16', 3)] }) },
     });
     const remote = data({
-      habits: { a: makeHabit('a', { history: [hours('2026-11-16', 5)] }) },
+      habits: {
+        a: makeHabit('a', {
+          history: [marker('2026-11-14'), hours('2026-11-16', 5)],
+        }),
+      },
     });
 
-    expect(mergeBackup(local, remote, NOW).data.habits.a.history).toEqual([
-      hours('2026-11-16', 3),
+    expect(mergeBackup(local, remote, NOW).data.habits.a).toEqual(
+      local.habits.a,
+    );
+  });
+
+  it("should bring a backup-only item's full log", () => {
+    const remote = data({
+      habits: {
+        a: makeHabit('a', {
+          history: [marker('2026-11-14'), marker('2026-11-16')],
+        }),
+      },
+    });
+
+    expect(mergeBackup(data(), remote, NOW).data.habits.a.history).toEqual([
+      marker('2026-11-14'),
+      marker('2026-11-16'),
     ]);
   });
 
-  it('should rebuild recentLog newest first from the combined history', () => {
-    const local = data({
-      habits: { a: makeHabit('a', { history: [marker('2026-11-16')] }) },
-    });
-    const remote = data({
+  // Two phones with the same habit: whichever backs up last decides the
+  // backup's log, and each phone keeps its own
+  it("should let the last phone's log win for a habit on two phones", () => {
+    const phoneA = data({
       habits: { a: makeHabit('a', { history: [marker('2026-11-14')] }) },
     });
+    const phoneB = data({
+      habits: { a: makeHabit('a', { history: [marker('2026-11-15')] }) },
+    });
 
-    expect(mergeBackup(local, remote, NOW).data.habits.a.recentLog).toEqual([
-      marker('2026-11-16'),
-      marker('2026-11-14'),
-    ]);
+    const afterA = mergeBackup(phoneA, data(), NOW).data;
+    const afterB = mergeBackup(phoneB, afterA, NOW).data;
+
+    expect([
+      afterB.habits.a.history,
+      mergeBackup(phoneA, afterB, NOW).data.habits.a.history,
+    ]).toEqual([[marker('2026-11-15')], [marker('2026-11-14')]]);
   });
 
   it('should not add a backup item deleted on the phone', () => {

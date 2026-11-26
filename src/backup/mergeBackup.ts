@@ -1,16 +1,12 @@
 import { BackupData, Tombstone } from '../types/backup';
-import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
-import { LogEntry } from '../types/log';
 import { pruneTombstones } from '../utils/tombstones';
 
 // Merge rules: docs/feature-development/release-1-readiness/google-drive-backup.md
 // (decision 5). Pure, so the same rules can run on a backend later.
 
-interface Logged {
+interface Mergeable {
   id: string;
   sortOrder: number;
-  recentLog: LogEntry[];
-  history: LogEntry[];
 }
 
 export interface MergeResult {
@@ -18,36 +14,17 @@ export interface MergeResult {
   added: { habits: number; groups: number };
 }
 
-// Combined by date; on the same date the local entry wins. Oldest first.
-function mergeHistory(local: LogEntry[], remote: LogEntry[]): LogEntry[] {
-  const byDate = new Map<string, LogEntry>();
-  for (const entry of remote) byDate.set(entry.date, entry);
-  for (const entry of local) byDate.set(entry.date, entry);
-  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
-}
-
-function withLogs<T extends Logged>(item: T, history: LogEntry[]): T {
-  return {
-    ...item,
-    history,
-    recentLog: [...history]
-      .reverse()
-      .slice(0, DEFAULT_HABIT_LIMITS.recentLogSize),
-  };
-}
-
-function mergeItems<T extends Logged>(
+function mergeItems<T extends Mergeable>(
   local: Record<string, T>,
   remote: Record<string, T>,
   deleted: Set<string>,
 ): { items: Record<string, T>; added: number } {
+  // An item on both sides is kept as the phone has it, log included: a day
+  // unmarked on the phone has no entry, so combining by date would bring the
+  // backup's mark back
   const items: Record<string, T> = {};
   for (const item of Object.values(local)) {
-    if (deleted.has(item.id)) continue;
-    const other = remote[item.id];
-    items[item.id] = other
-      ? withLogs(item, mergeHistory(item.history, other.history))
-      : item;
+    if (!deleted.has(item.id)) items[item.id] = item;
   }
 
   // Backup-only items go after the phone's, in the backup's order
