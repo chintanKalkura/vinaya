@@ -234,22 +234,48 @@ describe('NewHabitForm', () => {
     expect(onCreate.mock.calls[0][0].streakFreezeInterval).toBe(100);
   });
 
-  it('should start on orange and preview the chosen colour as done', () => {
+  it('should start on orange with the preview closed', () => {
+    const { getByTestId, queryByTestId } = renderForm();
+
+    expect([
+      getByTestId('new-habit-colour-orange').props.accessibilityState.selected,
+      queryByTestId('new-habit-colour-preview-panel'),
+    ]).toEqual([true, null]);
+  });
+
+  it('should open the preview and follow the chosen colour while open', () => {
     const { getByTestId } = renderForm();
-    const orange = getByTestId('new-habit-colour-orange').props
-      .accessibilityState.selected;
+    fireEvent.press(getByTestId('new-habit-colour-preview-toggle'));
     fireEvent.press(getByTestId('new-habit-colour-blue'));
     const preview = StyleSheet.flatten(
-      // The preview is hidden from TalkBack; the swatch labels say it
-      getByTestId('new-habit-colour-preview', { includeHiddenElements: true })
-        .props.style,
+      getByTestId('new-habit-colour-preview').props.style,
     );
 
-    expect([orange, preview.borderColor, preview.backgroundColor]).toEqual([
+    expect([
+      getByTestId('new-habit-colour-preview-toggle').props.accessibilityState
+        .expanded,
+      preview.borderColor,
+      preview.backgroundColor,
+    ]).toEqual([
       true,
       colors.completion.blue.accent,
       colors.completion.blue.tint,
     ]);
+  });
+
+  it('should close the preview with the close button or Preview again', () => {
+    const { getByTestId, queryByTestId } = renderForm();
+    const toggle = () =>
+      fireEvent.press(getByTestId('new-habit-colour-preview-toggle'));
+    const isOpen = () => !!queryByTestId('new-habit-colour-preview-panel');
+
+    toggle();
+    fireEvent.press(getByTestId('new-habit-colour-preview-close'));
+    const afterClose = isOpen();
+    toggle();
+    toggle();
+
+    expect([afterClose, isOpen()]).toEqual([false, false]);
   });
 
   it('should go back', () => {
