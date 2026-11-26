@@ -10,14 +10,14 @@ function renderScreen(onShowWalkthrough = () => {}) {
 }
 
 describe('HelpScreen', () => {
-  it('should list all eight topics collapsed', () => {
+  it('should list all nine topics collapsed', () => {
     const { getByText, queryByTestId } = renderScreen();
 
     expect([
       HELP_TOPICS.length,
       HELP_TOPICS.every(topic => !!getByText(topic.title)),
       queryByTestId('help-body-create'),
-    ]).toEqual([8, true, null]);
+    ]).toEqual([9, true, null]);
   });
 
   it('should expand a topic when tapped and collapse it again', () => {

@@ -50,11 +50,10 @@ Scope: the page a habit or group opens, in the Habits tab. Where a screen PNG or
 
 ## Menus
 
-- **Page ⋮ on a habit:** Edit, Delete habit.
+- **Page ⋮ on a habit:** Edit, Edit past days (`edit-past-days.md`; greyed on the day the habit is created), Delete habit.
 - **Page ⋮ on a group:** Edit, Delete group.
 - **How it behaves:** the same dropdown and delete confirm as the banner menu (`../habits-section/banner-menu.md`).
 - **Edit habit:** the pencil and Edit open the edit form over the page, unchanged. Saving refreshes the page.
-- **Coming later:** Edit past days joins the habit's menu with the Edit past days pop-up.
 
 ## Sections
 

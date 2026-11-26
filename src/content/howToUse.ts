@@ -1,4 +1,4 @@
-// Owner-approved wording (25 Nov 2026): docs/style-choices/how-to-use/walkthrough-and-help.md
+// Owner-approved wording (25 Nov 2026; marking and the habit's page 26 Nov 2026): docs/style-choices/how-to-use/walkthrough-and-help.md
 
 export interface WalkthroughCard {
   key: string;
@@ -50,8 +50,7 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     key: 'mark',
     title: 'Marking done and logging hours',
-    // "Only today" changes when past days can be marked (habit-group-detail-page.md)
-    body: "Tap a habit's circle to mark it done today, and tap again to undo. For an Hours habit, tap its progress bar, set today's hours and tap Done. Only today can be marked.",
+    body: "Tap a habit's circle to mark it done today, and tap again to undo. For an Hours habit, tap its progress bar, set today's hours and tap Done. To fix a day you missed, open the habit, tap ⋮ and choose Edit past days.",
   },
   {
     key: 'streaks',
@@ -72,6 +71,11 @@ export const HELP_TOPICS: HelpTopic[] = [
     key: 'views',
     title: 'Views, sort and filter',
     body: 'Switch between list view and group view with the icons at the top. The cadence filter shows only Day, Week, Month or Year items. Sort and filter orders by streak, name or most recent, and can show only what is completed.',
+  },
+  {
+    key: 'page',
+    title: "A habit's page",
+    body: 'Tap a habit or a group to open its page, with its streaks, completion rate and history.',
   },
   {
     key: 'edit',

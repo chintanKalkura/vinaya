@@ -15,13 +15,14 @@ Work them in this order. Within a step, any order.
 | | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | done |
 | | `profile-tab.md` | in progress (menu and About done; About links not wired) |
-| | `display-settings.md` | done (week start stored, hidden) |
+| | `display-settings.md` | done (week start shown since the detail page) |
 | | `how-to-use.md` | done |
 | | `support-the-developer.md` | done in app; Play Console products and test purchase pending |
 | | `hours-habits-in-any-group.md` | done |
 | | `banner-colours.md` | done |
-| | `habit-group-detail-page.md` | in progress (decided; backup fix, logic, page and stats built; Edit past days next) |
+| | `habit-group-detail-page.md` | done |
 | 6. Ship | `play-store-release-checklist.md` | reference checklist |
+| 7. After release 1 | `habit-group-detail-page.md`, decision 8 (Rating) | later: a fuller rating formula combining streaks, completion and the other stats. Today the stars come from the overall completion rate only. To be designed with the owner. |
 
 Notes:
 - `google-drive-backup.md` depends on `storage-write-safety.md` (write queue) and adds tombstones that delete flows must write.

@@ -1,6 +1,6 @@
 # Feature: Habit and group detail page.
 
-Status: in progress. Decided with the owner on 26 Nov 2026, design and wording approved on the review page the same day; built in steps (below).
+Status: done (26 Nov 2026). Decided with the owner, design and wording approved on the review page the same day. Look: `../../style-choices/detail/detail-page.md`, `../../style-choices/detail/edit-past-days.md`.
 
 ## Goal
 Tapping a habit banner or group card opens a page with that item's stats and history, where past days can also be fixed.
@@ -29,7 +29,7 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 7. **List menus unchanged.** The ⋮ on banners and group cards stays Edit / Delete, so Edit past days stays tucked away.
 
 ### Stats
-8. **Rating.** Five stars filled from the overall completion rate, rounded to the nearest fifth: 20% is one star, 40% two, 60% three, 80% four, 100% five (so 84% shows 4, 90% shows 5, under 10% shows none). Filled stars use the item's completion colour, empty ones are grey outlines; no text. Before anything counts, all five are empty. A fuller formula may replace this later.
+8. **Rating.** Five stars filled from the overall completion rate, rounded to the nearest fifth: 20% is one star, 40% two, 60% three, 80% four, 100% five (so 84% shows 4, 90% shows 5, under 10% shows none). Filled stars use the item's completion colour, empty ones are grey outlines; no text. Before anything counts, all five are empty. A fuller formula may replace this later (README, step 7).
 9. **Streaks.** Current, best and previous. Previous is the run before the latest one; when the current streak is 0, it is the run that just ended. Runs follow the banner's streak rules, with frozen days bridging a run without adding to it.
 10. **Completion rate (overall).** Completed units ÷ units since the item was created.
     - Day: a unit is a day.
@@ -74,15 +74,15 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 2. Stats and past-days logic, no UI: `src/utils/history.ts`, `src/utils/pastDays.ts`, `rebuildFreezeState`, `setPastDays`, `syncGroupPastDaysInQueue`, week start setting.
 3. Page shell: Habits stack, opening from banners, pills and cards, title card, subtitle, menus, edit-form ⋮.
 4. Stats sections.
-5. Edit past days pop-up, and the How to use wording ("Only today can be marked" in `src/content/howToUse.ts` and `../../style-choices/how-to-use/walkthrough-and-help.md`).
+5. Edit past days pop-up in the page and Edit Habit menus, and the How to use wording (`src/content/howToUse.ts`).
 
 ## Tests
 - Logic (step 2): streak runs against `getStreak`, calendar periods with both week starts, completion with the current and first-period rules, trend axis per cadence and history length, heatmap slots, calendar ranges, the Edit past days range, the freeze rebuild against opening the app daily (every cadence), `setPastDays` range checks, hours, freezes, groups and logs past the 90-entry `recentLog`.
-- UI (steps 3–5): written with each step.
+- UI (steps 3–5): menus, opening pages from banners, pills, cells and cards, navigation, every section, the Edit past days range, toggles, Hours stepper, Save, Discard and failure, and a save through the page.
 
 ## Acceptance criteria
-- [ ] Tapping a banner, pill, Hours cell or group card opens its page; the check and bar still only mark
-- [ ] Back returns to the same view and scroll position
-- [ ] The page shows rating, streaks, completion with trend, heatmap, calendar (and Hours chart / members)
-- [ ] Edit past days marks and unmarks past days within the range, and streaks, freezes and groups follow
-- [ ] Past edits survive a backup
+- [x] Tapping a banner, pill, Hours cell or group card opens its page; the check and bar still only mark
+- [x] Back returns to the same view and scroll position
+- [x] The page shows rating, streaks, completion with trend, heatmap, calendar (and Hours chart / members)
+- [x] Edit past days marks and unmarks past days within the range, and streaks, freezes and groups follow
+- [x] Past edits survive a backup
