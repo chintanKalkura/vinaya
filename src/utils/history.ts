@@ -307,3 +307,24 @@ export function calendarRangeStart(
   back.setDate(Math.min(today.getDate(), lastDay));
   return addDays(toDateKey(back), 1);
 }
+
+// ---- Rating ----
+
+// Stars (0–5) from the overall completion rate, rounded to the nearest fifth
+export function starRating(rate: number | null): number {
+  return rate === null ? 0 : Math.round(rate * 5);
+}
+
+// ---- Heatmap shade ----
+
+// Shade step 0–4 for each slot: five bands of 20%. Month and Year habits mark
+// few days, so their bands are taken relative to the busiest slot.
+export function heatSteps(slots: HeatSlot[], cadence: HabitCadence): number[] {
+  const relative = cadence === 'Month' || cadence === 'Year';
+  const busiest = Math.max(0, ...slots.map(slot => slot.share ?? 0));
+  return slots.map(slot => {
+    const share = slot.share ?? 0;
+    const value = relative ? (busiest > 0 ? share / busiest : 0) : share;
+    return Math.min(4, Math.floor(value * 5));
+  });
+}

@@ -3,8 +3,10 @@ import {
   completionRate,
   completionUnits,
   defaultCalendarRange,
+  heatSteps,
   heatmap,
   periodStart,
+  starRating,
   streakSummary,
   trendAxis,
   trendPoints,
@@ -378,5 +380,43 @@ describe('calendar ranges', () => {
 
   it('should keep a month-end start inside a shorter month', () => {
     expect(calendarRangeStart('month', '2026-03-31')).toBe('2026-03-01');
+  });
+});
+
+describe('starRating', () => {
+  it.each([
+    [null, 0],
+    [0, 0],
+    [0.09, 0],
+    [0.1, 1],
+    [0.2, 1],
+    [0.4, 2],
+    [0.6, 3],
+    [0.84, 4],
+    [0.9, 5],
+    [1, 5],
+  ])('should give %p a rating of %i stars', (rate, stars) => {
+    expect(starRating(rate)).toBe(stars);
+  });
+});
+
+describe('heatSteps', () => {
+  const slots = (...shares: (number | null)[]) =>
+    shares.map((share, i) => ({ label: String(i), share }));
+
+  it('should band Day and Week shares in steps of 20%', () => {
+    expect(heatSteps(slots(0, 0.19, 0.2, 0.55, 0.79, 0.8, 1), 'Day')).toEqual([
+      0, 0, 1, 2, 3, 4, 4,
+    ]);
+  });
+
+  it('should band Month and Year shares relative to the busiest slot', () => {
+    expect(heatSteps(slots(0.03, 0.06, 0.015, null), 'Year')).toEqual([
+      2, 4, 1, 0,
+    ]);
+  });
+
+  it('should leave every step at 0 with no marks', () => {
+    expect(heatSteps(slots(0, 0, null), 'Month')).toEqual([0, 0, 0]);
   });
 });
