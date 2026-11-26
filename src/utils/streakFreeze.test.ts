@@ -267,13 +267,7 @@ describe('rebuildFreezeState', () => {
   };
 
   it('should earn a freeze every N streak days', () => {
-    const state = rebuildFreezeState(
-      days(-13, 0),
-      'Day',
-      7,
-      addDays(TODAY_KEY, -13),
-      TODAY_KEY,
-    );
+    const state = rebuildFreezeState(days(-13, 0), 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.earnedAtStreak, state.frozenDates]).toEqual([
       2,
@@ -284,13 +278,7 @@ describe('rebuildFreezeState', () => {
 
   it('should use a held freeze on a missed day and keep the run', () => {
     const markers = [...days(-10, -2), mark(TODAY_KEY)];
-    const state = rebuildFreezeState(
-      markers,
-      'Day',
-      7,
-      addDays(TODAY_KEY, -10),
-      TODAY_KEY,
-    );
+    const state = rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.frozenDates, state.lastUsedOn]).toEqual([
       0,
@@ -300,26 +288,14 @@ describe('rebuildFreezeState', () => {
   });
 
   it('should give the freeze back when the frozen day gets marked', () => {
-    const state = rebuildFreezeState(
-      days(-10, 0),
-      'Day',
-      7,
-      addDays(TODAY_KEY, -10),
-      TODAY_KEY,
-    );
+    const state = rebuildFreezeState(days(-10, 0), 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.frozenDates]).toEqual([1, []]);
   });
 
   it('should end the run when there are no freezes to cover a gap', () => {
     const markers = [...days(-5, -3), ...days(-1, 0)];
-    const state = rebuildFreezeState(
-      markers,
-      'Day',
-      7,
-      addDays(TODAY_KEY, -5),
-      TODAY_KEY,
-    );
+    const state = rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.earnedAtStreak, state.frozenDates]).toEqual([
       0,
@@ -343,22 +319,14 @@ describe('rebuildFreezeState', () => {
       );
     }
 
-    expect(
-      rebuildFreezeState(markers, 'Day', 7, addDays(TODAY_KEY, -30), TODAY_KEY),
-    ).toEqual(daily);
+    expect(rebuildFreezeState(markers, 'Day', 7, TODAY_KEY)).toEqual(daily);
   });
 
   it('should work for Week cadence', () => {
     const markers = ['-20', '-17', '-14', '-11', '-8', '-5', '-2'].map(o =>
       mark(addDays(TODAY_KEY, Number(o))),
     );
-    const state = rebuildFreezeState(
-      markers,
-      'Week',
-      3,
-      addDays(TODAY_KEY, -20),
-      TODAY_KEY,
-    );
+    const state = rebuildFreezeState(markers, 'Week', 3, TODAY_KEY);
 
     expect([state.available, state.earnedAtStreak]).toEqual([2, 6]);
   });
@@ -396,13 +364,7 @@ describe('rebuildFreezeState', () => {
         }
 
         expect(
-          rebuildFreezeState(
-            markers,
-            cadence,
-            interval,
-            addDays(TODAY_KEY, -span),
-            TODAY_KEY,
-          ),
+          rebuildFreezeState(markers, cadence, interval, TODAY_KEY),
         ).toEqual(daily);
       });
     },
@@ -411,7 +373,7 @@ describe('rebuildFreezeState', () => {
   it('should rebuild three years of daily marks quickly', () => {
     const markers = days(-1095, 0).filter((_, i) => i % 9 !== 0);
     const started = Date.now();
-    rebuildFreezeState(markers, 'Day', 7, addDays(TODAY_KEY, -1095), TODAY_KEY);
+    rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
 
     expect(Date.now() - started).toBeLessThan(100);
   });

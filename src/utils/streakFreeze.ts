@@ -160,7 +160,6 @@ export function rebuildFreezeState(
   markers: LogEntry[],
   cadence: HabitCadence,
   interval: number,
-  startKey: string,
   todayKey: string,
 ): StreakFreezeState {
   const n = clampFreezeInterval(interval);
@@ -204,8 +203,8 @@ export function rebuildFreezeState(
     }
   };
 
-  let day = dates.length > 0 && dates[0] < startKey ? dates[0] : startKey;
-  for (; day <= todayKey; day = addDays(day, 1)) {
+  // Nothing happens before the first mark
+  for (let day = dates[0] ?? todayKey; day <= todayKey; day = addDays(day, 1)) {
     const w = windowLength(cadence, day);
     if (run.length > 0 && w !== runWindow) rebuildRun(w);
     runWindow = w;
