@@ -43,7 +43,6 @@ import HoursEntryModal from './habits/HoursEntryModal';
 import HabitListRow from './habits/HabitListRow';
 import HabitsHeader, { HabitsViewMode } from './habits/HabitsHeader';
 import { CadenceFilterValue } from './habits/CadenceFilter';
-import BottomMenu, { BOTTOM_MENU_HEIGHT } from './habits/BottomMenu';
 import CreateChoiceSheet from './habits/CreateChoiceSheet';
 import NewHabitForm, { PendingGroup } from './habits/NewHabitForm';
 import NewHabitGroupForm from './habits/NewHabitGroupForm';
@@ -58,12 +57,10 @@ function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
 }
 
 interface HabitsScreenProps {
-  onOpenProfile?: () => void;
   dataVersion?: number; // bumped when a backup or restore changed the data
 }
 
 export default function HabitsScreen({
-  onOpenProfile,
   dataVersion = 0,
 }: HabitsScreenProps): React.JSX.Element {
   const [habits, setHabits] = useState<Record<string, Habit>>({});
@@ -85,11 +82,6 @@ export default function HabitsScreen({
   const todayKey = useToday();
   // The app draws edge-to-edge, so the header clears the status bar here
   const insets = useSafeAreaInsets();
-  // The bottom menu grows with the font size; the FAB and snackbar sit above it
-  const [measuredMenuHeight, setMeasuredMenuHeight] = useState<number | null>(
-    null,
-  );
-  const menuHeight = measuredMenuHeight ?? BOTTOM_MENU_HEIGHT + insets.bottom;
 
   const reload = useCallback(async () => {
     const [h, g] = await loadHabitsAndGroups();
@@ -270,7 +262,6 @@ export default function HabitsScreen({
       key={saveErrorCount}
       visible={saveErrorVisible}
       inForm={inForm}
-      menuHeight={menuHeight}
       onDismiss={dismissSaveError}
     />
   );
@@ -386,18 +377,12 @@ export default function HabitsScreen({
         <Pressable
           testID="fab"
           onPress={() => dispatch({ type: 'openChoice' })}
-          style={[styles.fab, { bottom: menuHeight + 16 }]}
+          style={styles.fab}
         >
           <Text style={styles.fabIcon}>+</Text>
         </Pressable>
       )}
       {saveErrorIn(false)}
-      <BottomMenu
-        onSelect={tab => {
-          if (tab === 'Profile') onOpenProfile?.();
-        }}
-        onHeightChange={setMeasuredMenuHeight}
-      />
       <HoursEntryModal
         visible={hoursHabit !== undefined}
         habitName={hoursHabit?.name ?? ''}
@@ -507,6 +492,8 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
+    // The tab bar is below the screen, so this sits 16 above it
+    bottom: 16,
     width: 56,
     height: 56,
     borderRadius: 28,

@@ -433,16 +433,13 @@ describe('HabitsScreen', () => {
     );
   });
 
-  it('shows the FAB and the four bottom menu items', async () => {
+  it('shows the FAB', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { findByTestId, getByTestId } = renderInGroupView();
     await findByTestId('habit-pill-no-killing');
 
     expect(getByTestId('fab')).toBeTruthy();
-    ['Habits', 'Journal', 'Level-Up', 'Profile'].forEach(label => {
-      expect(getByTestId(`bottom-menu-${label}`)).toBeTruthy();
-    });
   });
 
   it('persists marks across a remount against the same storage', async () => {
@@ -934,19 +931,14 @@ describe('HabitsScreen safe area', () => {
   });
 });
 
-describe('HabitsScreen bottom menu', () => {
-  it('keeps the + button above the flush menu and its inset', async () => {
-    const safeArea = require('react-native-safe-area-context');
-    const spy = jest
-      .spyOn(safeArea, 'useSafeAreaInsets')
-      .mockReturnValue({ top: 0, right: 0, bottom: 24, left: 0 });
+describe('HabitsScreen tab bar', () => {
+  it('keeps the + 16 above the tab bar, which sits below the screen', async () => {
     await seed({ 'no-killing': makeHabit() }, { precepts: makeGroup() });
 
     const { findByTestId } = render(<HabitsScreen />);
 
     const fab = await findByTestId('fab');
-    expect(StyleSheet.flatten(fab.props.style).bottom).toBe(60 + 16 + 24);
-    spy.mockRestore();
+    expect(StyleSheet.flatten(fab.props.style).bottom).toBe(16);
   });
 });
 
@@ -1181,16 +1173,6 @@ describe('HabitsScreen day change', () => {
 });
 
 describe('HabitsScreen profile and backups', () => {
-  it('opens Profile from the bottom menu', async () => {
-    const onOpenProfile = jest.fn();
-    const utils = render(<HabitsScreen onOpenProfile={onOpenProfile} />);
-    await utils.findByTestId('fab');
-
-    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
-
-    expect(onOpenProfile).toHaveBeenCalled();
-  });
-
   it('reloads when a backup or restore changed the data', async () => {
     const utils = render(<HabitsScreen dataVersion={0} />);
     await utils.findByTestId('fab');
@@ -1199,21 +1181,6 @@ describe('HabitsScreen profile and backups', () => {
     utils.rerender(<HabitsScreen dataVersion={1} />);
 
     expect(!!(await utils.findByTestId('habit-row-no-killing'))).toBe(true);
-  });
-});
-
-describe('HabitsScreen font scaling', () => {
-  it('keeps the + above a bottom menu that grew with the font size', async () => {
-    const utils = render(<HabitsScreen />);
-    await utils.findByTestId('fab');
-
-    fireEvent(utils.getByTestId('bottom-menu'), 'layout', {
-      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 110 } },
-    });
-
-    expect(
-      StyleSheet.flatten(utils.getByTestId('fab').props.style).bottom,
-    ).toBe(126);
   });
 });
 
