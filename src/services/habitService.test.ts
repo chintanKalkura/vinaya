@@ -7,6 +7,7 @@ import {
   updateHabit,
   markHabitDone,
   setHabitHours,
+  setPastDays,
   unmarkHabitDone,
 } from './habitService';
 import {
@@ -748,5 +749,155 @@ describe('concurrent saves', () => {
     expect(groups.g.history).toEqual([
       { date: TODAY, kind: 'marker', value: 1 },
     ]);
+  });
+});
+
+// Edit past days: docs/feature-development/release-1-readiness/habit-group-detail-page.md
+describe('setPastDays', () => {
+  const day = (offset: number) => addDays(TODAY, offset);
+  const mark = (offset: number) => ({
+    date: day(offset),
+    kind: 'marker' as const,
+    value: 1,
+  });
+  const marks = (from: number, to: number) => {
+    const out = [];
+    for (let i = from; i <= to; i++) out.push(mark(i));
+    return out;
+  };
+  const withLog = (history: Habit['history'], overrides: Partial<Habit> = {}) =>
+    makeHabit({ history, recentLog: [...history].reverse(), ...overrides });
+
+  it('should mark and unmark past days in one save', async () => {
+    await saveHabits({ 'habit-1': withLog([mark(-3)]) });
+
+    await setPastDays(
+      'habit-1',
+      [
+        { date: day(-3), value: 0 },
+        { date: day(-2), value: 1 },
+        { date: day(-1), value: 1 },
+      ],
+      TODAY,
+    );
+
+    expect((await loadHabits())['habit-1'].history).toEqual([
+      mark(-2),
+      mark(-1),
+    ]);
+  });
+
+  it('should reject today, days before creation and days past the range', async () => {
+    const created = new Date(2024, 5, 12, 9).getTime(); // 3 days before TODAY
+    await saveHabits({ 'habit-1': makeHabit({ createdAt: created }) });
+    const attempt = (offset: number) =>
+      setPastDays('habit-1', [{ date: day(offset), value: 1 }], TODAY);
+
+    await expect(attempt(0)).rejects.toBeInstanceOf(InvalidMarkError);
+    await expect(attempt(-4)).rejects.toBeInstanceOf(InvalidMarkError);
+    await expect(attempt(-3)).resolves.toBeDefined();
+  });
+
+  it('should reject days older than n for the cadence', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await expect(
+      setPastDays('habit-1', [{ date: day(-8), value: 1 }], TODAY),
+    ).rejects.toBeInstanceOf(InvalidMarkError);
+  });
+
+  it('should log hours on a past day, clamp them, and clear at 0', async () => {
+    const hours = (offset: number, value: number) => ({
+      date: day(offset),
+      kind: 'hours' as const,
+      value,
+    });
+    await saveHabits({
+      'habit-1': withLog([hours(-2, 1)], { type: 'Hours', targetHours: 2 }),
+    });
+
+    await setPastDays(
+      'habit-1',
+      [
+        { date: day(-2), value: 0 },
+        { date: day(-1), value: 30 },
+      ],
+      TODAY,
+    );
+
+    expect((await loadHabits())['habit-1'].history).toEqual([
+      hours(-1, DEFAULT_HABIT_LIMITS.hoursTargetMax),
+    ]);
+  });
+
+  it('should give back a freeze when the frozen day gets marked', async () => {
+    const frozen = {
+      available: 0,
+      earnedAtStreak: 7,
+      frozenDates: [day(-1)],
+      lastUsedOn: TODAY,
+    };
+    await saveHabits({
+      'habit-1': withLog([...marks(-8, -2), mark(0)], { streakFreeze: frozen }),
+    });
+
+    await setPastDays('habit-1', [{ date: day(-1), value: 1 }], TODAY);
+
+    expect((await loadHabits())['habit-1'].streakFreeze).toEqual({
+      available: 1,
+      earnedAtStreak: 7,
+      frozenDates: [],
+    });
+  });
+
+  it('should use a held freeze on a newly unmarked day', async () => {
+    // 7 days in a row (-9 to -3) earn a freeze before the gap at -1
+    await saveHabits({ 'habit-1': withLog(marks(-9, 0)) });
+
+    await setPastDays('habit-1', [{ date: day(-1), value: 0 }], TODAY);
+
+    expect((await loadHabits())['habit-1'].streakFreeze?.frozenDates).toEqual([
+      day(-1),
+    ]);
+  });
+
+  it("should re-check each of the habit's groups on the changed days", async () => {
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': makeHabit({ id: 'habit-2' }),
+    });
+    await saveHabitGroups({
+      any: { ...mixedAnyGroup(), id: 'any' },
+      all: { ...mixedAnyGroup(), id: 'all', groupType: 'All' },
+    });
+
+    await setPastDays('habit-1', [{ date: day(-2), value: 1 }], TODAY);
+    const groups = await loadHabitGroups();
+
+    expect([groups.any.history, groups.all.history]).toEqual([[mark(-2)], []]);
+  });
+
+  it('should handle days older than the 90-entry recent log', async () => {
+    const yearly = (offset: number) => ({ ...mark(offset) });
+    const history = Array.from({ length: 100 }, (_, i) =>
+      yearly(-400 - i),
+    ).reverse();
+    await saveHabits({ 'habit-1': withLog(history, { cadence: 'Year' }) });
+
+    await setPastDays('habit-1', [{ date: day(-150), value: 1 }], TODAY);
+    const saved = (await loadHabits())['habit-1'];
+
+    expect([
+      saved.history.length,
+      saved.recentLog.length,
+      saved.recentLog[0].date,
+    ]).toEqual([101, DEFAULT_HABIT_LIMITS.recentLogSize, day(-150)]);
+  });
+
+  it('should change nothing when there are no changes', async () => {
+    const habit = withLog([mark(-2)]);
+    await saveHabits({ 'habit-1': habit });
+
+    expect(await setPastDays('habit-1', [], TODAY)).toEqual(habit);
   });
 });

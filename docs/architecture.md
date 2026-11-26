@@ -15,7 +15,8 @@ src/
 ├── systemBars.ts           — SystemBars native module (navigation bar icon colour)
 ├── types/                  — habit.ts, habitGroup.ts, habitConfig.ts (limits), log.ts, backup.ts
 ├── utils/                  — pure logic: dates, cadence windows, streaks, streak freezes, hours,
-│                             group completion, sort/filter, new habit/group drafts, tombstones, contrast
+│                             group completion, sort/filter, new habit/group drafts, tombstones, contrast,
+│                             history.ts (page stats), pastDays.ts (Edit past days range), logs.ts (set one day)
 ├── storage/
 │   ├── habitStorage.ts     — AsyncStorage collections (habits_v2, habit_groups_v2, tombstones_v2),
 │   │                         the single storage write queue, read/write errors

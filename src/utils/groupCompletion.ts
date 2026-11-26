@@ -1,12 +1,16 @@
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
-import { getHoursToday, targetMetLog } from './hours';
+import { getHoursOn, targetMetLog } from './hours';
 
+// Read from the full history, so it holds for past dates too (recentLog is
+// capped at DEFAULT_HABIT_LIMITS.recentLogSize entries)
 export function isHabitMarkedToday(habit: Habit, todayKey: string): boolean {
   if (habit.type === 'Hours') {
-    return targetMetLog(habit).some(entry => entry.date === todayKey);
+    return targetMetLog(habit, habit.history).some(
+      entry => entry.date === todayKey,
+    );
   }
-  return habit.recentLog.some(
+  return habit.history.some(
     entry => entry.kind === 'marker' && entry.date === todayKey,
   );
 }
@@ -35,7 +39,7 @@ export function isGroupComplete(
       const target = group.targetHours ?? 0;
       if (target <= 0) return false;
       const total = habits.reduce(
-        (sum, h) => sum + getHoursToday(h, todayKey),
+        (sum, h) => sum + getHoursOn(h, todayKey),
         0,
       );
       return total >= target;

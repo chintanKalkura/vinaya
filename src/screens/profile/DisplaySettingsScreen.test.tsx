@@ -19,7 +19,7 @@ beforeEach(async () => {
 });
 
 describe('DisplaySettingsScreen', () => {
-  it('should show List and Dark selected by default', async () => {
+  it('should show List, Dark and Monday selected by default', async () => {
     const { findByTestId, getByTestId } = renderScreen();
     await findByTestId('display-settings-screen');
 
@@ -27,7 +27,19 @@ describe('DisplaySettingsScreen', () => {
       getByTestId('setting-default-view-List').props.accessibilityState
         ?.selected,
       getByTestId('setting-theme-Dark').props.accessibilityState?.selected,
-    ]).toEqual([true, true]);
+      getByTestId('setting-week-start-Monday').props.accessibilityState
+        ?.selected,
+    ]).toEqual([true, true, true]);
+  });
+
+  it('should save the week start', async () => {
+    const { findByTestId } = renderScreen();
+
+    fireEvent.press(await findByTestId('setting-week-start-Sunday'));
+
+    await waitFor(async () =>
+      expect((await loadSettings()).weekStart).toBe('sunday'),
+    );
   });
 
   it('should save the default view', async () => {

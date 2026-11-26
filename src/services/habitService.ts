@@ -4,7 +4,9 @@ import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { LogEntry } from '../types/log';
 import { toDateKey } from '../utils/dates';
 import { clampHours, habitMarkers } from '../utils/hours';
-import { withEarnedFreezes } from '../utils/streakFreeze';
+import { rebuildFreezeState, withEarnedFreezes } from '../utils/streakFreeze';
+import { editableRange, isInRange } from '../utils/pastDays';
+import { withLogEntry } from '../utils/logs';
 import { groupIdsByHabit } from '../utils/groupIndex';
 import {
   loadHabitGroups,
@@ -25,7 +27,10 @@ import {
 } from '../utils/newHabit';
 import { clampCadenceTarget } from '../utils/cadence';
 import { clampFreezeInterval } from '../utils/streakFreeze';
-import { syncGroupCompletionInQueue } from './habitGroupService';
+import {
+  syncGroupCompletionInQueue,
+  syncGroupPastDaysInQueue,
+} from './habitGroupService';
 
 export class InvalidMarkError extends Error {}
 export class InvalidHabitError extends Error {}
@@ -190,6 +195,68 @@ export function setHabitHours(
     }
 
     return saveAndSync(updated, todayKey);
+  });
+}
+
+// One day in Edit past days: Checkmark 1 (marked) or 0 (not), Hours the
+// hours logged (0 clears the day)
+export interface PastDayChange {
+  date: string;
+  value: number;
+}
+
+// Edit past days: docs/feature-development/release-1-readiness/habit-group-detail-page.md
+// Writes every change in one go, rebuilds the habit's freezes from its new
+// history, then re-checks each of its groups on the changed dates.
+export function setPastDays(
+  habitId: string,
+  changes: PastDayChange[],
+  todayKey: string = toDateKey(new Date()),
+): Promise<Habit> {
+  return withStorageQueue(async () => {
+    const habits = await loadHabits();
+    const habit = habits[habitId];
+    if (!habit) throw new InvalidMarkError(`Habit not found: ${habitId}`);
+    if (changes.length === 0) return habit;
+
+    const range = editableRange(habit.cadence, habit.createdAt, todayKey);
+    for (const { date } of changes) {
+      if (!range || !isInRange(date, range)) {
+        throw new InvalidMarkError(`${date} can't be edited`);
+      }
+    }
+
+    let updated = habit;
+    for (const { date, value } of changes) {
+      const kept =
+        habit.type === 'Hours' ? clampHours(value) : value > 0 ? 1 : 0;
+      const entry: LogEntry | undefined =
+        kept > 0
+          ? {
+              date,
+              kind: habit.type === 'Hours' ? 'hours' : 'marker',
+              value: kept,
+            }
+          : undefined;
+      updated = withLogEntry(updated, date, entry);
+    }
+    updated = {
+      ...updated,
+      streakFreeze: rebuildFreezeState(
+        habitMarkers(updated),
+        habit.cadence,
+        habit.streakFreezeInterval,
+        todayKey,
+      ),
+    };
+    await saveHabit(updated);
+
+    const dates = changes.map(change => change.date);
+    const groupIds = groupIdsByHabit(await loadHabitGroups())[habitId] ?? [];
+    for (const groupId of groupIds) {
+      await syncGroupPastDaysInQueue(groupId, dates, todayKey);
+    }
+    return updated;
   });
 }
 

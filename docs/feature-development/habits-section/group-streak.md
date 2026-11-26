@@ -26,7 +26,7 @@ Out of scope:
 4. If the group is complete today and has no entry for today, a marker entry `{date, kind: 'marker', value: 1}` is added to the front of the group's `recentLog` (capped at the same limit as habits) and appended to `history`.
 5. If the group is not complete today, today's entry is removed from both `recentLog` and `history`.
 6. If the group is complete and already has today's entry, nothing is written (no duplicates).
-7. Only today's entry is ever added or removed. Past days are never changed.
+7. Only today's entry is added or removed when a member is marked. The exception is Edit past days (`../release-1-readiness/habit-group-detail-page.md`): when a member's past days change, the group is re-checked on each of those dates and today with its **current** members (membership history isn't stored), and its freezes are rebuilt from the new log (`syncGroupPastDaysInQueue`). Group completion reads each member's full `history`, not the capped `recentLog`, so past dates are right.
 8. The group streak is `calculateStreak(group.recentLog, todayKey)`: consecutive complete days ending today, or ending yesterday if today is not complete. It is never stored.
 9. The banner number shows the group streak. It is orange on an orange banner and grey on a grey banner (unchanged from the group view spec).
 10. Hours-type groups are never synced.

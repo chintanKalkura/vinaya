@@ -14,7 +14,12 @@ import {
 import { CadenceStatus, getCadenceStatus } from '../utils/cadence';
 import { isGroupComplete } from '../utils/groupCompletion';
 import { habitMarkers } from '../utils/hours';
-import { withAppliedFreezes, withEarnedFreezes } from '../utils/streakFreeze';
+import {
+  rebuildFreezeState,
+  withAppliedFreezes,
+  withEarnedFreezes,
+} from '../utils/streakFreeze';
+import { withLogEntry } from '../utils/logs';
 import { toDateKey } from '../utils/dates';
 import {
   NewHabitGroupDraft,
@@ -130,6 +135,43 @@ export async function syncGroupCompletionInQueue(
   }
 
   updated = withEarnedFreezes(updated, updated.history, todayKey);
+  await saveHabitGroup(updated);
+  return updated;
+}
+
+// After a member's past days change: re-checks the group on each of those
+// dates (and today) with its current members, since membership history isn't
+// stored, then rebuilds its freezes from the new log.
+// docs/feature-development/habits-section/group-streak.md
+export async function syncGroupPastDaysInQueue(
+  groupId: string,
+  dateKeys: string[],
+  todayKey: string,
+): Promise<HabitGroup | undefined> {
+  const [groups, habits] = await Promise.all([loadHabitGroups(), loadHabits()]);
+  const group = groups[groupId];
+  if (!group) return group;
+
+  const members = group.habitIds
+    .map(id => habits[id])
+    .filter((habit): habit is Habit => habit !== undefined);
+  let updated = group;
+  for (const dateKey of new Set([...dateKeys, todayKey])) {
+    const complete = isGroupComplete(group, members, dateKey);
+    const entry: LogEntry | undefined = complete
+      ? { date: dateKey, kind: 'marker', value: 1 }
+      : undefined;
+    updated = withLogEntry(updated, dateKey, entry);
+  }
+  updated = {
+    ...updated,
+    streakFreeze: rebuildFreezeState(
+      updated.history,
+      group.cadence,
+      group.streakFreezeInterval,
+      todayKey,
+    ),
+  };
   await saveHabitGroup(updated);
   return updated;
 }

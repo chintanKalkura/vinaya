@@ -55,12 +55,13 @@ User should be able to track and record habits and groups with week, month and y
    - Example: target 4 per week, marked on days 1–4 and 9–12, today is day 12. The streak is 8. The habit is complete on days 4–7 and on day 12, and incomplete on days 8–11 while the streak stays alive.
 6. **Day cadence is unchanged.** A Day habit is complete when marked today. Its streak is the run of consecutive marked days ending today, or ending yesterday if today is not marked yet.
 7. **Groups.** Each day, a group is complete or not by its group-type rule (Required, Any, All, or Hours total ≥ daily target hours). This is recorded in the group log as today. A Week/Month/Year group is complete while its complete days in the window are at least the group's `target`. Its streak follows decision 5. The cadences of its member habits don't affect this.
-8. **Display.** Week/Month/Year habits and groups look the same as Day ones (streak number, check icon, and the Hours bar and label).
+8. **Stats use calendar periods.** The banner's complete state and streak use the rolling windows above. The completion rates on the habit and group page instead count calendar weeks (starting on the week start setting), months and years that met the target (`../release-1-readiness/habit-group-detail-page.md`).
+9. **Display.** Week/Month/Year habits and groups look the same as Day ones (streak number, check icon, and the Hours bar and label).
    - Title, number and banner are orange while the habit or group is complete (decision 4 or 7).
    - The check icon or group selector is filled only when today is marked, or for a group, when today is complete.
    - For Day the two are the same.
    - See `../../style-choices/habits-section/coloring-rules.md`.
-9. **Cadence filter.** One dropdown replaces the four cadence pills in the header. It offers All, Day, Week, Month and Year, and the default is All. See `../../style-choices/habits-section/cadence-filter.md`.
+10. **Cadence filter.** One dropdown replaces the four cadence pills in the header. It offers All, Day, Week, Month and Year, and the default is All. See `../../style-choices/habits-section/cadence-filter.md`.
 10. **What the filter applies to.** In group view it filters groups by the group's cadence; each group still shows all its habits. In list view it filters habits by the habit's cadence.
 11. **Sort.** Sort stays unwired in this feature. When it is built, it orders whatever the cadence filter shows, so the filter takes precedence. Built in `sort-filter-delete-habit.md`.
 

@@ -187,3 +187,35 @@ describe('isHabitMarkedToday', () => {
     expect(isHabitMarkedToday(habit, TODAY)).toBe(false);
   });
 });
+
+describe('isGroupComplete on past dates', () => {
+  it('should read members from the full history, past the capped recent log', () => {
+    const old = '2024-01-02';
+    const habit = {
+      ...makeHabit('a'),
+      recentLog: [],
+      history: [{ date: old, kind: 'marker' as const, value: 1 }],
+    };
+
+    expect(
+      isGroupComplete(makeGroup('Any', { habitIds: ['a'] }), [habit], old),
+    ).toBe(true);
+  });
+
+  it('should sum past hours from the full history for Hours groups', () => {
+    const old = '2024-01-02';
+    const habit = {
+      ...makeHoursHabit('a', 0),
+      recentLog: [],
+      history: [{ date: old, kind: 'hours' as const, value: 3 }],
+    };
+
+    expect(
+      isGroupComplete(
+        makeGroup('Hours', { habitIds: ['a'], targetHours: 3 }),
+        [habit],
+        old,
+      ),
+    ).toBe(true);
+  });
+});
