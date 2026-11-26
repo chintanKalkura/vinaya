@@ -277,8 +277,8 @@ describe('rebuildFreezeState', () => {
   });
 
   it('should use a held freeze on a missed day and keep the run', () => {
-    const markers = [...days(-10, -2), mark(TODAY_KEY)];
-    const state = rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
+    const log = [...days(-10, -2), mark(TODAY_KEY)];
+    const state = rebuildFreezeState(log, 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.frozenDates, state.lastUsedOn]).toEqual([
       0,
@@ -294,8 +294,8 @@ describe('rebuildFreezeState', () => {
   });
 
   it('should end the run when there are no freezes to cover a gap', () => {
-    const markers = [...days(-5, -3), ...days(-1, 0)];
-    const state = rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
+    const log = [...days(-5, -3), ...days(-1, 0)];
+    const state = rebuildFreezeState(log, 'Day', 7, TODAY_KEY);
 
     expect([state.available, state.earnedAtStreak, state.frozenDates]).toEqual([
       0,
@@ -305,28 +305,28 @@ describe('rebuildFreezeState', () => {
   });
 
   it('should match opening the app every day', () => {
-    const markers = [...days(-30, -20), ...days(-18, -9), ...days(-6, 0)];
+    const log = [...days(-30, -20), ...days(-18, -9), ...days(-6, 0)];
     let daily = NO_FREEZE;
     for (let i = -30; i <= 0; i++) {
-      const day = addDays(TODAY_KEY, i);
-      const before = markers.filter(m => m.date < day);
-      daily = applyFreezes(daily, before, 'Day', day);
-      const upTo = markers.filter(m => m.date <= day);
+      const dayKey = addDays(TODAY_KEY, i);
+      const before = log.filter(m => m.date < dayKey);
+      daily = applyFreezes(daily, before, 'Day', dayKey);
+      const upTo = log.filter(m => m.date <= dayKey);
       daily = earnFreezes(
         daily,
-        getStreak(upTo, 'Day', day, daily.frozenDates),
+        getStreak(upTo, 'Day', dayKey, daily.frozenDates),
         7,
       );
     }
 
-    expect(rebuildFreezeState(markers, 'Day', 7, TODAY_KEY)).toEqual(daily);
+    expect(rebuildFreezeState(log, 'Day', 7, TODAY_KEY)).toEqual(daily);
   });
 
   it('should work for Week cadence', () => {
-    const markers = ['-20', '-17', '-14', '-11', '-8', '-5', '-2'].map(o =>
+    const log = ['-20', '-17', '-14', '-11', '-8', '-5', '-2'].map(o =>
       mark(addDays(TODAY_KEY, Number(o))),
     );
-    const state = rebuildFreezeState(markers, 'Week', 3, TODAY_KEY);
+    const state = rebuildFreezeState(log, 'Week', 3, TODAY_KEY);
 
     expect([state.available, state.earnedAtStreak]).toEqual([2, 6]);
   });
@@ -345,35 +345,35 @@ describe('rebuildFreezeState', () => {
         const density = { Day: 0.8, Week: 0.4, Month: 0.12, Year: 0.02 }[
           cadence
         ];
-        const markers = [];
+        const log = [];
         for (let i = -span; i <= 0; i++) {
-          if (rand() < density) markers.push(mark(addDays(TODAY_KEY, i)));
+          if (rand() < density) log.push(mark(addDays(TODAY_KEY, i)));
         }
         const interval = 1 + Math.floor(rand() * 5);
         let daily = NO_FREEZE;
         for (let i = -span; i <= 0; i++) {
-          const day = addDays(TODAY_KEY, i);
-          const before = markers.filter(m => m.date < day);
-          daily = applyFreezes(daily, before, cadence, day);
-          const upTo = markers.filter(m => m.date <= day);
+          const dayKey = addDays(TODAY_KEY, i);
+          const before = log.filter(m => m.date < dayKey);
+          daily = applyFreezes(daily, before, cadence, dayKey);
+          const upTo = log.filter(m => m.date <= dayKey);
           daily = earnFreezes(
             daily,
-            getStreak(upTo, cadence, day, daily.frozenDates),
+            getStreak(upTo, cadence, dayKey, daily.frozenDates),
             interval,
           );
         }
 
-        expect(
-          rebuildFreezeState(markers, cadence, interval, TODAY_KEY),
-        ).toEqual(daily);
+        expect(rebuildFreezeState(log, cadence, interval, TODAY_KEY)).toEqual(
+          daily,
+        );
       });
     },
   );
 
   it('should rebuild three years of daily marks quickly', () => {
-    const markers = days(-1095, 0).filter((_, i) => i % 9 !== 0);
+    const log = days(-1095, 0).filter((_, i) => i % 9 !== 0);
     const started = Date.now();
-    rebuildFreezeState(markers, 'Day', 7, TODAY_KEY);
+    rebuildFreezeState(log, 'Day', 7, TODAY_KEY);
 
     expect(Date.now() - started).toBeLessThan(100);
   });
