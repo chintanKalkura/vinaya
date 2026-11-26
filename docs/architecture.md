@@ -9,6 +9,7 @@ App.tsx                     — tab navigator: Habits, Journal and Level-Up (com
 src/
 ├── theme.ts                — dark and light (Lavender) palettes; contrast checked by theme.contrast.test.ts
 ├── theming.tsx             — ThemeProvider, usePalette, useThemedStyles (styles built per palette)
+├── content/              — howToUse.ts: walkthrough, help and empty-screen wording
 ├── settings/               — SettingsProvider: display settings (settings_v2) and the palette they pick
 ├── systemBars.ts           — SystemBars native module (navigation bar icon colour)
 ├── types/                  — habit.ts, habitGroup.ts, habitConfig.ts (limits), log.ts, backup.ts
@@ -30,6 +31,7 @@ src/
     ├── habits/             — rows, pills, group cards, header, sheets, forms, menus, labels, tap targets
     ├── ProfileScreen.tsx
     ├── ComingSoonScreen.tsx — Journal and Level-Up until they're built
+    ├── howToUse/           — first-launch walkthrough and the How to use help screen
     └── profile/            — AccountSection (sign-in and backup), menu rows, About, Display settings
 ```
 

@@ -1,6 +1,6 @@
 # Feature: How to use — first-launch walkthrough and help page.
 
-Status: needs design (screens and wording), then ready for planning.
+Status: done (25 Nov 2026). Look and wording: `../../style-choices/how-to-use/walkthrough-and-help.md`.
 
 ## Goal
 New users understand how Vinaya works before they see an empty list, and anyone can look it up again later.
@@ -22,7 +22,7 @@ New users understand how Vinaya works before they see an empty list, and anyone 
    - Signing in for backup, and what happens without it.
 3. **Help page.** In Profile, the full version of the same topics, plus "Show the walkthrough again".
 4. **Empty Habits screen.** After the walkthrough, an empty Habits screen shows a short line pointing to the ＋ button. Wording: with the rest of the copy.
-5. **Screens, number of walkthrough steps, illustrations and wording:** to be designed with Claude Code.
+5. **Screens and wording** (owner, 25 Nov 2026): 5 swipeable cards with a lucide icon each; the help page is a topic list that expands on tap; wording approved in the review page with the owner's edits (both habit types on card 1, configurable freezes on card 3, "the cloud" rather than Google Drive on card 5).
 
 ## Out of scope
 - Tooltips on individual controls
@@ -33,6 +33,6 @@ New users understand how Vinaya works before they see an empty list, and anyone 
 - Empty state shows when there are no habits and no groups.
 
 ## Acceptance criteria
-- [ ] A fresh install shows the walkthrough once, and it can be skipped
-- [ ] The help page in Profile covers every topic in decision 2
-- [ ] An empty Habits screen tells the user how to start
+- [x] A fresh install shows the walkthrough once, and it can be skipped
+- [x] The help page in Profile covers every topic in decision 2
+- [x] An empty Habits screen tells the user how to start

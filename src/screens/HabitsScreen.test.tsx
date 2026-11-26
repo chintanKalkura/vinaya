@@ -20,6 +20,8 @@ import { HabitGroup } from '../types/habitGroup';
 import { colors } from '../theme';
 import { SettingsProvider, useSettings } from '../settings/SettingsProvider';
 import { saveSettings } from '../storage/settingsStorage';
+import { EMPTY_HABITS_TEXT } from '../content/howToUse';
+import * as devSeed from '../storage/devSeed';
 
 // Tests move the day forward by setting mockToday
 let mockToday = '2024-06-15';
@@ -1250,5 +1252,24 @@ describe('HabitsScreen default view', () => {
     expect(
       getByTestId('view-mode-toggle-list').props.accessibilityState.selected,
     ).toBe(true);
+  });
+});
+
+describe('HabitsScreen empty state', () => {
+  it('should point to the + when there are no habits or groups', async () => {
+    jest.spyOn(devSeed, 'seedDevFixturesIfNeeded').mockResolvedValue();
+    const { findByTestId } = render(<HabitsScreen />);
+
+    expect((await findByTestId('habits-empty')).props.children).toBe(
+      EMPTY_HABITS_TEXT,
+    );
+  });
+
+  it('should not show the empty line once a habit exists', async () => {
+    await seed({ a: makeHabit({ id: 'a' }) });
+    const { findByText, queryByTestId } = render(<HabitsScreen />);
+    await findByText('No Killing');
+
+    expect(queryByTestId('habits-empty')).toBeNull();
   });
 });

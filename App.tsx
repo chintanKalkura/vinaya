@@ -20,6 +20,12 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/profile/AboutScreen';
 import DisplaySettingsScreen from './src/screens/profile/DisplaySettingsScreen';
+import HelpScreen from './src/screens/howToUse/HelpScreen';
+import WalkthroughScreen from './src/screens/howToUse/WalkthroughScreen';
+import {
+  hasSeenOnboarding,
+  markOnboardingSeen,
+} from './src/storage/onboardingStorage';
 import BottomMenu, { Tab } from './src/screens/habits/BottomMenu';
 import { useAutoBackup } from './src/hooks/useAutoBackup';
 
@@ -27,7 +33,12 @@ const Tabs = createBottomTabNavigator();
 // Profile and the screens its menu opens; back returns to the menu
 const ProfileStack = createNativeStackNavigator();
 
-function ProfileTab({ onDataChanged }: { onDataChanged: () => void }) {
+interface ProfileTabProps {
+  onDataChanged: () => void;
+  onShowWalkthrough: () => void;
+}
+
+function ProfileTab({ onDataChanged, onShowWalkthrough }: ProfileTabProps) {
   return (
     <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
       <ProfileStack.Screen name="ProfileMenu">
@@ -36,12 +47,21 @@ function ProfileTab({ onDataChanged }: { onDataChanged: () => void }) {
             onDataChanged={onDataChanged}
             onOpenAbout={() => navigation.navigate('About')}
             onOpenDisplaySettings={() => navigation.navigate('DisplaySettings')}
+            onOpenHowToUse={() => navigation.navigate('HowToUse')}
           />
         )}
       </ProfileStack.Screen>
       <ProfileStack.Screen name="DisplaySettings">
         {({ navigation }) => (
           <DisplaySettingsScreen onBack={navigation.goBack} />
+        )}
+      </ProfileStack.Screen>
+      <ProfileStack.Screen name="HowToUse">
+        {({ navigation }) => (
+          <HelpScreen
+            onBack={navigation.goBack}
+            onShowWalkthrough={onShowWalkthrough}
+          />
         )}
       </ProfileStack.Screen>
       <ProfileStack.Screen name="About">
@@ -106,6 +126,21 @@ function ThemedApp({
     setLightNavigationBar(!isDark);
   }, [isDark]);
 
+  // Shown over Habits on first launch, and again from Profile → How to use
+  const [walkthrough, setWalkthrough] = useState<'hidden' | 'first' | 'replay'>(
+    'hidden',
+  );
+  useEffect(() => {
+    hasSeenOnboarding().then(seen => {
+      if (!seen) setWalkthrough('first');
+    });
+  }, []);
+  const closeWalkthrough = useCallback(() => {
+    if (walkthrough === 'first') markOnboardingSeen();
+    setWalkthrough('hidden');
+  }, [walkthrough]);
+  const showWalkthrough = useCallback(() => setWalkthrough('replay'), []);
+
   return (
     <>
       <StatusBar
@@ -130,10 +165,19 @@ function ThemedApp({
             {() => <ComingSoonScreen section="Level-Up" />}
           </Tabs.Screen>
           <Tabs.Screen name="Profile">
-            {() => <ProfileTab onDataChanged={onDataChanged} />}
+            {() => (
+              <ProfileTab
+                onDataChanged={onDataChanged}
+                onShowWalkthrough={showWalkthrough}
+              />
+            )}
           </Tabs.Screen>
         </Tabs.Navigator>
       </NavigationContainer>
+      <WalkthroughScreen
+        visible={walkthrough !== 'hidden'}
+        onDone={closeWalkthrough}
+      />
     </>
   );
 }
