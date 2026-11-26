@@ -14,6 +14,7 @@ interface HabitPillProps {
   onPress: (habitId: string) => void;
   required?: boolean;
   colour?: CompletionColourId; // the group's colour: banner-colours.md
+  onOpen?: (habitId: string) => void; // the rest of the pill opens the habit's page
 }
 
 // A habit inside a group card (group view). Only the check is tappable, and it
@@ -24,6 +25,7 @@ export default function HabitPill({
   onPress,
   required = false,
   colour,
+  onOpen,
 }: HabitPillProps): React.JSX.Element {
   const colors = usePalette();
   const styles = useThemedStyles(makeStyles);
@@ -37,9 +39,15 @@ export default function HabitPill({
     colour,
   );
 
+  // The check marks; anywhere else on the pill opens the habit's page
+  // (habit-group-detail-page.md). TalkBack reaches it through the name.
+  const open = onOpen ? () => onOpen(habit.id) : undefined;
   return (
-    <View
+    <Pressable
       testID={`habit-pill-${habit.id}`}
+      accessible={false}
+      disabled={!open}
+      onPress={open}
       style={[
         styles.pill,
         { borderColor: required ? colors.v2Blue : colors.v2Border },
@@ -83,19 +91,29 @@ export default function HabitPill({
           </View>
         )}
       </Pressable>
-      <Text
-        importantForAccessibility="no"
-        style={[styles.name, { color: scheme.titleColor }]}
+      <Pressable
+        testID={`habit-pill-open-${habit.id}`}
+        accessible={!!open}
+        accessibilityRole="button"
+        accessibilityLabel={`Open ${habit.name}`}
+        disabled={!open}
+        onPress={open}
+        style={styles.label}
       >
-        {habit.name}
-      </Text>
-      <Text
-        importantForAccessibility="no"
-        style={[styles.streak, { color: scheme.numberColor }]}
-      >
-        {status.streak}
-      </Text>
-    </View>
+        <Text
+          importantForAccessibility="no"
+          style={[styles.name, { color: scheme.titleColor }]}
+        >
+          {habit.name}
+        </Text>
+        <Text
+          importantForAccessibility="no"
+          style={[styles.streak, { color: scheme.numberColor }]}
+        >
+          {status.streak}
+        </Text>
+      </Pressable>
+    </Pressable>
   );
 }
 
@@ -124,6 +142,10 @@ const makeStyles = (colors: Palette) =>
       borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    label: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     name: {
       fontWeight: '600',

@@ -23,6 +23,7 @@ interface HabitListRowProps {
   colorKind: ColorKind;
   required?: boolean; // pills in a Required group: blue border, like HabitPill
   colour?: CompletionColourId; // pills take their group's colour; banners their own
+  onOpen?: (habitId: string) => void; // the rest of the banner opens the habit's page
   onEdit?: (habitId: string) => void; // banners only
   onDelete?: (habitId: string) => void; // banners only
 }
@@ -35,6 +36,7 @@ export default function HabitListRow({
   colorKind,
   required = false,
   colour,
+  onOpen,
   onEdit,
   onDelete,
 }: HabitListRowProps): React.JSX.Element {
@@ -133,16 +135,34 @@ export default function HabitListRow({
   );
   const onTextColumnLayout = (e: { nativeEvent: { layout: { y: number } } }) =>
     setTextColumnY(e.nativeEvent.layout.y);
+  // Anywhere but the check, the bar and the ⋮ opens the habit's page
+  // (habit-group-detail-page.md); TalkBack reaches it through the name
+  const open = onOpen ? () => onOpen(habit.id) : undefined;
+  const openProps = {
+    accessible: !!open,
+    accessibilityRole: 'button' as const,
+    accessibilityLabel: `Open ${habit.name}`,
+    disabled: !open,
+    onPress: open,
+  };
 
   // Only the check (or the Hours bar) is tappable; the rest of the banner
   // will open the detail page (habit-group-detail-page.md):
   // docs/style-choices/habits-section/tap-targets.md
   if (hours) {
     return (
-      <View testID={`habit-row-${habit.id}`} style={rowStyle}>
+      <Pressable
+        testID={`habit-row-${habit.id}`}
+        accessible={false}
+        disabled={!open}
+        onPress={open}
+        style={rowStyle}
+      >
         <View style={styles.textColumn} onLayout={onTextColumnLayout}>
-          {nameRow}
-          {groupLabel}
+          <Pressable testID={`habit-row-open-${habit.id}`} {...openProps}>
+            {nameRow}
+            {groupLabel}
+          </Pressable>
           <Pressable
             testID={`habit-row-hours-${habit.id}`}
             accessibilityRole="button"
@@ -167,12 +187,18 @@ export default function HabitListRow({
         </View>
         {cadenceLabel}
         {menu}
-      </View>
+      </Pressable>
     );
   }
 
   return (
-    <View testID={`habit-row-${habit.id}`} style={rowStyle}>
+    <Pressable
+      testID={`habit-row-${habit.id}`}
+      accessible={false}
+      disabled={!open}
+      onPress={open}
+      style={rowStyle}
+    >
       <Pressable
         testID={`habit-row-check-${habit.id}`}
         accessibilityRole="checkbox"
@@ -208,13 +234,18 @@ export default function HabitListRow({
           </View>
         )}
       </Pressable>
-      <View style={styles.textColumn} onLayout={onTextColumnLayout}>
+      <Pressable
+        testID={`habit-row-open-${habit.id}`}
+        {...openProps}
+        style={styles.textColumn}
+        onLayout={onTextColumnLayout}
+      >
         {nameRow}
         {groupLabel}
-      </View>
+      </Pressable>
       {cadenceLabel}
       {menu}
-    </View>
+    </Pressable>
   );
 }
 
