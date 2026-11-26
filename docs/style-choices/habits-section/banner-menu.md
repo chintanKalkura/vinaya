@@ -2,7 +2,7 @@
 
 Scope: the ⋮ button that opens the Edit and Delete options on banners in the Habits section (screens 01 and 04). Where a screen PNG or an earlier spec disagrees with this document, this document wins.
 
-Implemented in `../../../src/screens/habits/BannerMenu.tsx`, used by `HabitListRow` (banners only) and `GroupCard`.
+Implemented in `../../../src/screens/habits/BannerMenu.tsx` (Edit and Delete), used by `HabitListRow` (banners only) and `GroupCard`. It is built on `OptionsMenu.tsx`, a ⋮ with any list of items (a danger item is red and confirmed first, a disabled one greyed). The same menu, with its own items, is on the habit and group page (`../detail/detail-page.md`) and at the right of the Edit Habit and Edit Habit Group titles.
 
 ## Design
 
