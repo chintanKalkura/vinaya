@@ -1,5 +1,6 @@
 import { Palette, darkColors, lightColors } from './theme';
 import { contrastRatio } from './utils/contrast';
+import { mixHex } from './utils/colorMix';
 
 // WCAG 2.2 AA on the Habits screen: 4.5:1 for text, 3:1 for icons and other
 // non-text UI. docs/feature-development/release-1-readiness/accessibility-fixes.md
@@ -65,6 +66,37 @@ describe.each(PALETTES)('theme contrast (%s)', (_name, colors) => {
         ['for grey text on its tint', colors.v2GreyText, tint],
       ])('should give %s at least 4.5:1', (__, fg, bg) => {
         expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+      });
+    },
+  );
+
+  // Heatmap shades on the habit page: five steps blended from the inset grey
+  // to the completion colour (docs/style-choices/detail/detail-page.md). The %
+  // under each cell carries the value in text; the shades must still read in
+  // order and apart, and the two darkest pass 3:1 like other non-text UI.
+  describe.each(Object.entries(colors.completion))(
+    'the %s heatmap shades',
+    (_, { accent }) => {
+      const shade = (step: number) =>
+        mixHex(colors.v2CardBackgroundInset, accent, step / 4);
+      const onCard = [0, 1, 2, 3, 4].map(step =>
+        contrastRatio(shade(step), colors.v2CardBackground),
+      );
+
+      it('should stand out more from the card with every step', () => {
+        expect(onCard.every((r, i) => i === 0 || r > onCard[i - 1])).toBe(true);
+      });
+
+      it('should keep each step at least 1.35:1 from the one before', () => {
+        for (let step = 1; step <= 4; step++) {
+          expect(
+            contrastRatio(shade(step), shade(step - 1)),
+          ).toBeGreaterThanOrEqual(1.35);
+        }
+      });
+
+      it('should give the two darkest steps at least 3:1 on the card', () => {
+        expect(Math.min(onCard[3], onCard[4])).toBeGreaterThanOrEqual(3);
       });
     },
   );
