@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Palette } from '../../theme';
 import { useThemedStyles } from '../../theming';
 import { useSettings } from '../../settings/SettingsProvider';
-import { DefaultView, ThemeSetting } from '../../types/settings';
+import { DefaultView, ThemeSetting, WeekStart } from '../../types/settings';
 import SegmentedControl from '../habits/SegmentedControl';
 import { useFormStyles } from '../habits/formStyles';
 import ScreenHeader from './ScreenHeader';
@@ -11,11 +11,14 @@ import ScreenHeader from './ScreenHeader';
 // Profile → Display settings: docs/style-choices/profile/display-settings.md
 const VIEWS = ['List', 'Group'] as const;
 const THEMES = ['Dark', 'Light', 'System'] as const;
+const WEEK_STARTS = ['Monday', 'Sunday'] as const;
 
 const toView = (label: (typeof VIEWS)[number]) =>
   label.toLowerCase() as DefaultView;
 const toTheme = (label: (typeof THEMES)[number]) =>
   label.toLowerCase() as ThemeSetting;
+const toWeekStart = (label: (typeof WEEK_STARTS)[number]) =>
+  label.toLowerCase() as WeekStart;
 const labelOf = <T extends string>(labels: readonly T[], value: string) =>
   labels.find(label => label.toLowerCase() === value) ?? labels[0];
 
@@ -51,6 +54,14 @@ export default function DisplaySettingsScreen({
           options={THEMES}
           value={labelOf(THEMES, settings.theme)}
           onChange={label => updateSettings({ theme: toTheme(label) })}
+        />
+        {/* Weekly completion rates, the heatmap and every calendar grid */}
+        <Text style={formStyles.label}>WEEK STARTS ON</Text>
+        <SegmentedControl
+          testID="setting-week-start"
+          options={WEEK_STARTS}
+          value={labelOf(WEEK_STARTS, settings.weekStart)}
+          onChange={label => updateSettings({ weekStart: toWeekStart(label) })}
         />
       </ScrollView>
     </View>
