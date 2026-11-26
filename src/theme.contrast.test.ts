@@ -53,6 +53,32 @@ describe.each(PALETTES)('theme contrast (%s)', (_name, colors) => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
+  // Completion colours: docs/style-choices/theme/completion-colours.md
+  describe.each(Object.entries(colors.completion))(
+    'the %s completion colour',
+    (_, { accent, tint }) => {
+      it.each([
+        ['as text on its tint', accent, tint],
+        ['as text on the plain card', accent, colors.v2CardBackground],
+        ['under the check on its fill', colors.v2Background, accent],
+        ['for white text on its tint', colors.v2White, tint],
+        ['for grey text on its tint', colors.v2GreyText, tint],
+      ])('should give %s at least 4.5:1', (__, fg, bg) => {
+        expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+      });
+    },
+  );
+
+  it('should not use the grey or icy colours for completion', () => {
+    const accents = Object.values(colors.completion).map(c => c.accent);
+
+    expect(
+      accents.filter(c =>
+        [colors.v2GreyText, colors.v2GreyOutline, colors.v2Ice].includes(c),
+      ),
+    ).toEqual([]);
+  });
+
   it('should give red text at least 4.5:1 on the background', () => {
     expect(
       contrastRatio(colors.v2Red, colors.v2Background),
