@@ -628,3 +628,36 @@ describe('GroupCard with Hours habits in a Checkmark-style group', () => {
     ]);
   });
 });
+
+// docs/feature-development/release-1-readiness/banner-colours.md
+describe('GroupCard completion colour', () => {
+  it("should colour the card, status and pills with the group's colour", () => {
+    const habit: Habit = {
+      ...makeHabit('h1', 'Stretch'),
+      colour: 'red',
+      recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+      history: [{ date: TODAY, kind: 'marker', value: 1 }],
+    };
+    const { getByTestId } = render(
+      <GroupCard
+        group={completeGroup(true, {
+          groupType: 'Any',
+          habitIds: ['h1'],
+          colour: 'blue',
+        })}
+        habits={[habit]}
+        todayKey={TODAY}
+        onToggle={jest.fn()}
+      />,
+    );
+    const style = (id: string) =>
+      StyleSheet.flatten(getByTestId(id).props.style);
+    const blue = colors.completion.blue.accent;
+
+    expect([
+      style('group-card-group-1').borderColor,
+      style('group-selector-group-1').backgroundColor,
+      style('habit-pill-icon-h1').backgroundColor,
+    ]).toEqual([blue, blue, blue]);
+  });
+});

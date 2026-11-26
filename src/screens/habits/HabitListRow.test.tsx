@@ -721,3 +721,40 @@ describe('HabitListRow tap targets and labels', () => {
     expect(16 + hitSlop.top + hitSlop.bottom).toBeGreaterThanOrEqual(48);
   });
 });
+
+// docs/feature-development/release-1-readiness/banner-colours.md
+describe('HabitListRow completion colour', () => {
+  const marked = makeHabit({
+    colour: 'purple',
+    recentLog: [{ date: TODAY, kind: 'marker', value: 1 }],
+  });
+  const border = (kind: ColorKind, colour?: 'green') =>
+    render(
+      <HabitListRow
+        habit={marked}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind={kind}
+        colour={colour}
+      />,
+    );
+
+  it("should colour a complete banner with the habit's own colour", () => {
+    const style = StyleSheet.flatten(
+      border('banner').getByTestId('habit-row-habit-1').props.style,
+    );
+
+    expect([style.borderColor, style.backgroundColor]).toEqual([
+      colors.completion.purple.accent,
+      colors.completion.purple.tint,
+    ]);
+  });
+
+  it("should colour a pill with the colour it's given, not the habit's", () => {
+    const icon = border('pill', 'green').getByTestId('habit-row-icon-habit-1');
+
+    expect(StyleSheet.flatten(icon.props.style).backgroundColor).toBe(
+      colors.completion.green.accent,
+    );
+  });
+});
