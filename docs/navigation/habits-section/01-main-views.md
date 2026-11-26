@@ -18,4 +18,13 @@ flowchart LR
 
   G01 -->|"FAB ＋"| CS
   G04 -->|"FAB ＋"| CS
+
+  HP["Habit page"]
+  GP["Group page"]
+  G04 -->|"banner"| HP
+  G01 -->|"pill or Hours cell"| HP
+  G01 -->|"group card"| GP
+  HP -->|"group chip"| GP
+  GP -->|"back"| HP
+  HP -->|"back"| G04
 ```

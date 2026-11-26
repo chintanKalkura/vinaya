@@ -661,3 +661,39 @@ describe('GroupCard completion colour', () => {
     ]).toEqual([blue, blue, blue]);
   });
 });
+
+// docs/feature-development/release-1-readiness/habit-group-detail-page.md
+describe('GroupCard opening pages', () => {
+  it('should open the group from the card and a habit from its pill or cell', () => {
+    const onOpen = jest.fn();
+    const onOpenHabit = jest.fn();
+    const onToggle = jest.fn();
+    const hours: Habit = {
+      ...makeHabit('h2', 'Read'),
+      type: 'Hours',
+      targetHours: 1,
+    };
+    const { getByTestId } = render(
+      <GroupCard
+        group={makeGroup({ groupType: 'Any' })}
+        habits={[makeHabit('h1', 'Stretch'), hours]}
+        todayKey={TODAY}
+        onToggle={onToggle}
+        onOpen={onOpen}
+        onOpenHabit={onOpenHabit}
+      />,
+    );
+
+    fireEvent.press(getByTestId('group-card-group-1'));
+    fireEvent.press(getByTestId('group-header-group-1'));
+    fireEvent.press(getByTestId('habit-pill-open-h1'));
+    fireEvent.press(getByTestId('habit-row-open-h2'));
+    fireEvent.press(getByTestId('habit-pill-check-h1'));
+
+    expect([
+      onOpen.mock.calls,
+      onOpenHabit.mock.calls,
+      onToggle.mock.calls,
+    ]).toEqual([[['group-1'], ['group-1']], [['h1'], ['h2']], [['h1']]]);
+  });
+});

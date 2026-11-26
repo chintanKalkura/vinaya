@@ -21,6 +21,7 @@ interface FormScreenProps {
   onBack: () => void;
   children: React.ReactNode;
   saveError?: React.ReactNode; // the form covers the screen's save message
+  menu?: React.ReactNode; // a ⋮ at the right of the title (edit forms)
 }
 
 export default function FormScreen({
@@ -31,6 +32,7 @@ export default function FormScreen({
   onBack,
   children,
   saveError,
+  menu,
 }: FormScreenProps): React.JSX.Element {
   const colors = usePalette();
   const styles = useThemedStyles(makeStyles);
@@ -62,6 +64,7 @@ export default function FormScreen({
             <ChevronLeft color={colors.v2White} size={26} />
           </Pressable>
           <Text style={styles.heading}>{title}</Text>
+          {menu ? <View style={styles.menu}>{menu}</View> : null}
         </View>
         <ScrollView
           contentContainerStyle={styles.content}
@@ -90,9 +93,16 @@ const makeStyles = (colors: Palette) =>
       paddingBottom: 8,
     },
     heading: {
+      flex: 1,
       color: colors.v2White,
       fontWeight: '700',
       fontSize: 22,
+    },
+    // The ⋮'s 48dp target reaches into the padding, so the icon lines up
+    // with the fields' right edge
+    menu: {
+      marginVertical: -12,
+      marginRight: -14,
     },
     content: {
       paddingHorizontal: 16,

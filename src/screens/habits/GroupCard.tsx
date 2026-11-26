@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { ChartNoAxesColumnIncreasing, Snowflake } from 'lucide-react-native';
@@ -24,6 +24,8 @@ interface GroupCardProps {
   habits: Habit[];
   todayKey: string;
   onToggle: (habitId: string) => void;
+  onOpen?: (groupId: string) => void; // the card opens the group's page
+  onOpenHabit?: (habitId: string) => void; // a pill or Hours cell opens the habit's
   onEdit?: (groupId: string) => void;
   onDelete?: (groupId: string) => void;
 }
@@ -33,6 +35,8 @@ export default function GroupCard({
   habits,
   todayKey,
   onToggle,
+  onOpen,
+  onOpenHabit,
   onEdit,
   onDelete,
 }: GroupCardProps): React.JSX.Element {
@@ -61,9 +65,16 @@ export default function GroupCard({
   const [headerCenter, setHeaderCenter] = useState(0);
   const hasMenu = onEdit && onDelete;
 
+  // Pills, cells, checks, bars and the ⋮ keep their own taps; the rest of
+  // the card opens the group's page (habit-group-detail-page.md). TalkBack
+  // reaches it through the header.
+  const open = onOpen ? () => onOpen(group.id) : undefined;
   return (
-    <View
+    <Pressable
       testID={`group-card-${group.id}`}
+      accessible={false}
+      disabled={!open}
+      onPress={open}
       style={[styles.card, scheme.container]}
     >
       <View
@@ -75,9 +86,13 @@ export default function GroupCard({
         }
       >
         {/* Read as one item; the ⋮ stays separate */}
-        <View
+        <Pressable
           testID={`group-header-${group.id}`}
           accessible
+          accessibilityRole={open ? 'button' : undefined}
+          accessibilityHint={open ? 'Opens the group page' : undefined}
+          disabled={!open}
+          onPress={open}
           accessibilityLabel={groupLabel(
             group.name,
             group.groupType,
@@ -135,7 +150,7 @@ export default function GroupCard({
           >
             {status.streak}
           </Text>
-        </View>
+        </Pressable>
         {hasMenu ? <View style={styles.menuSpace} /> : null}
       </View>
       {isHoursGroup ? (
@@ -160,6 +175,7 @@ export default function GroupCard({
               onPress={onToggle}
               required={isRequired(habit.id)}
               colour={group.colour}
+              onOpen={onOpenHabit}
             />
           ))}
         </View>
@@ -184,6 +200,7 @@ export default function GroupCard({
                 colorKind="pill"
                 required={isRequired(habit.id)}
                 colour={group.colour}
+                onOpen={onOpenHabit}
               />
             </View>
           ))}
@@ -209,7 +226,7 @@ export default function GroupCard({
           targetStyle={bannerMenuTargetStyle(headerCenter)}
         />
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 

@@ -56,6 +56,7 @@ interface NewHabitGroupFormProps {
   pendingHabit?: PendingHabit; // the habit whose "+ Create Group" opened this
   editing?: HabitGroup; // Edit Habit Group: docs/feature-development/habits-section/edit-habit-group.md
   saveError?: React.ReactNode;
+  headerMenu?: React.ReactNode; // the edit form's ⋮, right of the title
 }
 
 function initialDraft(
@@ -82,6 +83,7 @@ export default function NewHabitGroupForm({
   pendingHabit,
   editing,
   saveError,
+  headerMenu,
 }: NewHabitGroupFormProps): React.JSX.Element {
   const formStyles = useFormStyles();
   const colors = usePalette();
@@ -172,6 +174,7 @@ export default function NewHabitGroupForm({
       backTestID="new-group-back"
       onBack={onBack}
       saveError={saveError}
+      menu={headerMenu}
     >
       <Text style={formStyles.label}>NAME</Text>
       <TextInput

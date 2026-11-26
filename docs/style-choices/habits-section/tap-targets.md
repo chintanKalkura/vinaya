@@ -6,14 +6,14 @@ Implemented in `../../../src/screens/habits/HabitListRow.tsx`, `HabitPill.tsx`, 
 
 ## Only the check marks a habit
 
-| Where | Tappable | Does nothing (for now) |
+| Where | Marks | Opens the page (`../detail/detail-page.md`) |
 |---|---|---|
 | Checkmark banner (list view) | the check circle | name, group, streak, rest of the banner |
-| Habit pill (group view) | the check circle | name and streak |
-| Hours banner and Hours cell | the progress bar row (bar and `2/4h`), opens the Hours modal | name, group, streak, rest of the banner |
-| Group card | its habits' checks and bars, and ⋮ | the header and status icon |
+| Habit pill (group view) | the check circle | name and streak, rest of the pill |
+| Hours banner and Hours cell | the progress bar row (bar and `2/4h`), opens the Hours modal | name, group, streak, rest of the banner or cell |
+| Group card | its habits' checks and bars (each pill or cell opens its habit) | the header, status icon and the rest of the card open the group |
 
-The rest of a banner will open the habit or group detail page (`habit-group-detail-page.md`) once it exists. Scrolling or tapping a name can never mark a habit.
+The ⋮ keeps its own target. Scrolling or tapping a name can never mark a habit. For TalkBack, the name area of a banner, pill or cell is a button read "Open <name>", and a group card's header is a button with the hint "Opens the group page".
 
 ## 48dp tap areas
 

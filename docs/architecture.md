@@ -5,7 +5,8 @@
 The v1 app (21-day challenge, journal screen, reminders, Mindfulness Bell, countdown widget) is not in the tree. It is kept under the git tag `v1-reference`.
 
 ```
-App.tsx                     — tab navigator: Habits, Journal and Level-Up (coming soon), Profile; auto backup
+App.tsx                     — tab navigator: Habits (a stack: the list and the habit and group pages), Journal and
+                              Level-Up (coming soon), Profile; auto backup
 src/
 ├── theme.ts                — dark and light (Lavender) palettes; contrast checked by theme.contrast.test.ts
 ├── theming.tsx             — ThemeProvider, usePalette, useThemedStyles (styles built per palette)
@@ -30,8 +31,11 @@ src/
 ├── hooks/                  — useToday (date rollover), useAutoBackup
 ├── config/                 — google.ts (Web OAuth client ID)
 └── screens/
-    ├── HabitsScreen.tsx    — list and group views, saves, errors; form steps in habits/formFlow.ts
-    ├── habits/             — rows, pills, group cards, header, sheets, forms, menus, labels, tap targets
+    ├── HabitsScreen.tsx    — HabitsList: list and group views, filters and sort
+    ├── habits/             — rows, pills, group cards, header, sheets, forms, menus, labels, tap targets;
+    │                         HabitsData.tsx: the Habits tab's shared data, saves, errors and forms
+    │                         (form steps in formFlow.ts), drawn over the list and the pages
+    ├── detail/             — the habit and group page
     ├── ProfileScreen.tsx
     ├── ComingSoonScreen.tsx — Journal and Level-Up until they're built
     ├── howToUse/           — first-launch walkthrough and the How to use help screen

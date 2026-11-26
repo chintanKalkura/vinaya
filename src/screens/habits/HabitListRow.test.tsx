@@ -758,3 +758,63 @@ describe('HabitListRow completion colour', () => {
     );
   });
 });
+
+// docs/feature-development/release-1-readiness/habit-group-detail-page.md
+describe('HabitListRow opening the habit page', () => {
+  const renderRow = (habit: Habit) => {
+    const onPress = jest.fn();
+    const onOpen = jest.fn();
+    const utils = render(
+      <HabitListRow
+        habit={habit}
+        todayKey={TODAY}
+        onPress={onPress}
+        onOpen={onOpen}
+        colorKind="banner"
+      />,
+    );
+    return { ...utils, onPress, onOpen };
+  };
+
+  it('should open the page from the banner, and only mark from the check', () => {
+    const utils = renderRow(makeHabit());
+    fireEvent.press(utils.getByTestId('habit-row-habit-1'));
+    fireEvent.press(utils.getByTestId('habit-row-open-habit-1'));
+    fireEvent.press(utils.getByTestId('habit-row-check-habit-1'));
+
+    expect([utils.onOpen.mock.calls, utils.onPress.mock.calls]).toEqual([
+      [['habit-1'], ['habit-1']],
+      [['habit-1']],
+    ]);
+  });
+
+  it('should keep the Hours bar for marking', () => {
+    const utils = renderRow(makeHabit({ type: 'Hours', targetHours: 2 }));
+    fireEvent.press(utils.getByTestId('habit-row-hours-habit-1'));
+
+    expect([
+      utils.onOpen.mock.calls.length,
+      utils.onPress.mock.calls.length,
+    ]).toEqual([0, 1]);
+  });
+
+  it('should name the page to TalkBack', () => {
+    expect(
+      renderRow(makeHabit()).getByTestId('habit-row-open-habit-1').props
+        .accessibilityLabel,
+    ).toBe('Open Cook');
+  });
+
+  it('should open nothing without onOpen', () => {
+    const { getByTestId } = render(
+      <HabitListRow
+        habit={makeHabit()}
+        todayKey={TODAY}
+        onPress={jest.fn()}
+        colorKind="banner"
+      />,
+    );
+
+    expect(getByTestId('habit-row-open-habit-1').props.accessible).toBe(false);
+  });
+});

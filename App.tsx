@@ -11,11 +11,18 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  NativeStackScreenProps,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
 import { useIsDark, usePalette } from './src/theming';
 import { SettingsProvider } from './src/settings/SettingsProvider';
 import { setLightNavigationBar } from './src/systemBars';
-import HabitsScreen from './src/screens/HabitsScreen';
+import { HabitsList } from './src/screens/HabitsScreen';
+import { HabitsDataProvider } from './src/screens/habits/HabitsData';
+import HabitDetailScreen, {
+  DetailKind,
+} from './src/screens/detail/HabitDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/profile/AboutScreen';
@@ -33,6 +40,53 @@ import BottomMenu, { Tab } from './src/screens/habits/BottomMenu';
 import { useAutoBackup } from './src/hooks/useAutoBackup';
 
 const Tabs = createBottomTabNavigator();
+
+// The Habits list and the habit and group pages, which stack on each other:
+// docs/feature-development/release-1-readiness/habit-group-detail-page.md
+type HabitsStackParams = {
+  HabitsList: undefined;
+  Detail: { kind: DetailKind; id: string };
+};
+const HabitsStack = createNativeStackNavigator<HabitsStackParams>();
+
+function HabitsListRoute({
+  navigation,
+}: NativeStackScreenProps<HabitsStackParams, 'HabitsList'>) {
+  return (
+    <HabitsList
+      onOpenHabit={id => navigation.push('Detail', { kind: 'habit', id })}
+      onOpenGroup={id => navigation.push('Detail', { kind: 'group', id })}
+    />
+  );
+}
+
+function DetailRoute({
+  navigation,
+  route,
+}: NativeStackScreenProps<HabitsStackParams, 'Detail'>) {
+  return (
+    <HabitDetailScreen
+      kind={route.params.kind}
+      id={route.params.id}
+      onBack={navigation.goBack}
+      onOpenGroup={id => navigation.push('Detail', { kind: 'group', id })}
+      onGone={navigation.popToTop}
+    />
+  );
+}
+
+// Data, saves and forms are shared by the list and the pages, and the forms
+// open over whichever is showing
+function HabitsTab({ dataVersion }: { dataVersion: number }) {
+  return (
+    <HabitsDataProvider dataVersion={dataVersion}>
+      <HabitsStack.Navigator screenOptions={{ headerShown: false }}>
+        <HabitsStack.Screen name="HabitsList" component={HabitsListRoute} />
+        <HabitsStack.Screen name="Detail" component={DetailRoute} />
+      </HabitsStack.Navigator>
+    </HabitsDataProvider>
+  );
+}
 // Profile and the screens its menu opens; back returns to the menu
 const ProfileStack = createNativeStackNavigator();
 
@@ -168,7 +222,7 @@ function ThemedApp({
           screenOptions={{ headerShown: false }}
         >
           <Tabs.Screen name="Habits">
-            {() => <HabitsScreen dataVersion={dataVersion} />}
+            {() => <HabitsTab dataVersion={dataVersion} />}
           </Tabs.Screen>
           <Tabs.Screen name="Journal">
             {() => <ComingSoonScreen section="Journal" />}
