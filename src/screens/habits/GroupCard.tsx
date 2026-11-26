@@ -52,6 +52,10 @@ export default function GroupCard({
     0,
   );
   const hoursTarget = group.targetHours ?? 0;
+  const checkHabits = habits.filter(habit => habit.type !== 'Hours');
+  const hoursHabits = habits.filter(habit => habit.type === 'Hours');
+  const isRequired = (habitId: string) =>
+    group.requiredHabitIds?.includes(habitId) ?? false;
   // The header's centre in the card, for the ⋮ target
   const [headerCenter, setHeaderCenter] = useState(0);
   const hasMenu = onEdit && onDelete;
@@ -143,9 +147,29 @@ export default function GroupCard({
           />
         </View>
       ) : null}
-      {isHoursGroup ? (
-        <View style={styles.hoursGrid}>
-          {habits.map(habit => (
+      {/* Checkmark pills wrap first, then Hours habits in a 2-column grid:
+          docs/feature-development/release-1-readiness/hours-habits-in-any-group.md */}
+      {checkHabits.length > 0 ? (
+        <View style={styles.pillRow}>
+          {checkHabits.map(habit => (
+            <HabitPill
+              key={habit.id}
+              habit={habit}
+              todayKey={todayKey}
+              onPress={onToggle}
+              required={isRequired(habit.id)}
+            />
+          ))}
+        </View>
+      ) : null}
+      {hoursHabits.length > 0 ? (
+        <View
+          style={[
+            styles.hoursGrid,
+            checkHabits.length > 0 && styles.hoursGridBelowPills,
+          ]}
+        >
+          {hoursHabits.map(habit => (
             <View
               key={habit.id}
               testID={`group-hours-cell-${habit.id}`}
@@ -156,23 +180,12 @@ export default function GroupCard({
                 todayKey={todayKey}
                 onPress={onToggle}
                 colorKind="pill"
+                required={isRequired(habit.id)}
               />
             </View>
           ))}
         </View>
-      ) : (
-        <View style={styles.pillRow}>
-          {habits.map(habit => (
-            <HabitPill
-              key={habit.id}
-              habit={habit}
-              todayKey={todayKey}
-              onPress={onToggle}
-              required={group.requiredHabitIds?.includes(habit.id) ?? false}
-            />
-          ))}
-        </View>
-      )}
+      ) : null}
       {scheme.frozen ? (
         <FreezeLabel
           freezesLeft={status.freezesLeft}
@@ -262,6 +275,9 @@ const makeStyles = (colors: Palette) =>
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       rowGap: 8,
+    },
+    hoursGridBelowPills: {
+      marginTop: 8,
     },
     hoursCell: {
       width: '48.5%',
