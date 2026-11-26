@@ -30,7 +30,7 @@ user should be able to create a habit and configure it with all possible vlaues.
 2. **How it is shown.** React Native `Modal`s, with no navigation library. The Choice sheet is a bottom sheet over the Habits screen, and the form is a full-screen modal. Both extend under the status and navigation bars, padded by the safe-area insets.
 3. **Groups are out of scope.** "New Habit Group" on the Choice sheet and the "+ Create Group" chip are drawn as on the screens, but tapping them does nothing. Superseded by `create-habit-group.md` decisions 1 and 9: both now open the group form.
 4. **Fields**, in the order of the gaps doc 1.1:
-   - Name, Cadence, Target, Streak Freeze, Type, Daily Target Hours (Hours only), Habit Group, Create Habit.
+   - Name, Completion Colour (`../../style-choices/theme/completion-colours.md`), Cadence, Target, Streak Freeze, Type, Daily Target Hours (Hours only), Habit Group, Create Habit.
    - The back arrow is shown on every variant, including screen 06, where the PNG leaves it out.
 5. **Defaults and limits.**
 
