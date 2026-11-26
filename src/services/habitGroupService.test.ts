@@ -42,8 +42,9 @@ function makeHabit(id: string, overrides: Partial<Habit> = {}): Habit {
     sortOrder: 0,
     createdAt: 0,
     recentLog: [],
-    history: [],
     ...overrides,
+    // history mirrors the log, as in real data
+    history: overrides.history ?? overrides.recentLog ?? [],
   };
 }
 

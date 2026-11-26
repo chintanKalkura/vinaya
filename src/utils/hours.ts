@@ -17,6 +17,14 @@ export function getHoursToday(habit: Habit, todayKey: string): number {
   return entry?.value ?? 0;
 }
 
+// Hours logged on any day, from the full history (recentLog is capped)
+export function getHoursOn(habit: Habit, dateKey: string): number {
+  const entry = habit.history.find(
+    e => e.kind === 'hours' && e.date === dateKey,
+  );
+  return entry?.value ?? 0;
+}
+
 // Days whose logged hours met the target, as marker entries, so the
 // Checkmark streak and colour rules apply unchanged to Hours habits
 export function targetMetLog(
