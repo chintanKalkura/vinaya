@@ -29,7 +29,7 @@ All the design elements seen in the screen are in scope.
 6. Tapping an Hours row opens the existing Hours Entry Modal, the same as in group view.
 7. Habits without a group show no group name.
 8. An Hours habit's streak is the number of consecutive days its `targetHours` was met, ending today, or ending yesterday if today's target is not met yet. The streak number's color follows the coloring rules: orange only when the target is met today, grey otherwise, even while the streak is alive.
-9. In group view, Hours habits inside an Hours group use the same row component as list view, without the group name, laid out two per row in the banner. They are pills and follow the pill coloring rule.
+9. In group view, Hours habits inside any group use the same row component as list view, without the group name, laid out two per row in the banner. They are pills and follow the pill coloring rule.
 10. In list view, each habit row is a banner, the same as a habit group card:
     - Complete: orange 2px border, orange card background and orange streak number.
     - Not complete: grey border, grey card background and grey streak number.
