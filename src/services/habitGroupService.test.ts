@@ -543,14 +543,18 @@ describe('updateHabitGroup', () => {
   it('rejects a type change and incompatible habits', async () => {
     await seed(
       [makeHabit('a'), makeHabit('b'), makeHabit('h', { type: 'Hours' })],
-      makeGroup('Any'),
+      makeGroup('Hours', { habitIds: ['h'], targetHours: 1 }),
     );
 
     await expect(
       updateHabitGroup('g', edit({ groupType: 'All' }), TODAY),
     ).rejects.toBeInstanceOf(InvalidHabitGroupError);
     await expect(
-      updateHabitGroup('g', edit({ habitIds: ['a', 'h'] }), TODAY),
+      updateHabitGroup(
+        'g',
+        edit({ groupType: 'Hours', habitIds: ['h', 'a'], targetHours: 1 }),
+        TODAY,
+      ),
     ).rejects.toBeInstanceOf(InvalidHabitGroupError);
   });
 });

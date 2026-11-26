@@ -47,7 +47,7 @@ user should be able to create a habit and configure it with all possible vlaues.
    - When the cadence changes, the target is clamped to the new maximum (e.g. 50 on Year becomes 6 on Week).
    - Create Habit is disabled while the name is empty.
 6. **Joining a group.** A new habit can join a compatible existing group only.
-   - Checkmark habits can join Required, Any or All groups; Hours habits can join Hours groups only. Incompatible chips are greyed out and can't be tapped.
+   - Checkmark habits can join Required, Any or All groups; Hours habits can join any group (`../release-1-readiness/hours-habits-in-any-group.md`). Incompatible chips (Hours groups, for a Checkmark habit) are greyed out and can't be tapped.
    - No group is selected by default. Tapping the selected chip again clears it, and switching the type clears a group that becomes incompatible.
    - Joining a Required group doesn't make the habit required.
    - The group's habit list gains the habit, and the group's completion for today is re-checked (a new member can make an All group incomplete).

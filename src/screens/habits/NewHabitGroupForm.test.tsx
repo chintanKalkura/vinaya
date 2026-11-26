@@ -101,16 +101,26 @@ describe('NewHabitGroupForm', () => {
     ]).toEqual([true, true, true]);
   });
 
-  it('should grey out habits the group type cannot take', () => {
+  it('should grey out only Checkmark habits, and only for Hours groups', () => {
     const utils = renderForm();
-    fireEvent.press(utils.getByTestId('new-group-assign'));
+    const disabled = () => {
+      fireEvent.press(utils.getByTestId('new-group-assign'));
+      const result = ['run', 'study'].map(
+        id =>
+          utils.getByTestId(`assign-sheet-item-${id}`).props.accessibilityState
+            .disabled,
+      );
+      fireEvent.press(utils.getByTestId('assign-sheet-backdrop'));
+      return result;
+    };
 
-    expect([
-      utils.getByTestId('assign-sheet-item-run').props.accessibilityState
-        .disabled,
-      utils.getByTestId('assign-sheet-item-study').props.accessibilityState
-        .disabled,
-    ]).toEqual([false, true]);
+    const any = disabled();
+    fireEvent.press(utils.getByTestId('new-group-type-Hours'));
+
+    expect([any, disabled()]).toEqual([
+      [false, false],
+      [true, false],
+    ]);
   });
 
   it('should drop incompatible habits when the type switches to Hours', () => {

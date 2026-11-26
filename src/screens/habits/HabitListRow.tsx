@@ -21,6 +21,7 @@ interface HabitListRowProps {
   todayKey: string;
   onPress: (habitId: string) => void;
   colorKind: ColorKind;
+  required?: boolean; // pills in a Required group: blue border, like HabitPill
   onEdit?: (habitId: string) => void; // banners only
   onDelete?: (habitId: string) => void; // banners only
 }
@@ -31,6 +32,7 @@ export default function HabitListRow({
   todayKey,
   onPress,
   colorKind,
+  required = false,
   onEdit,
   onDelete,
 }: HabitListRowProps): React.JSX.Element {
@@ -47,7 +49,12 @@ export default function HabitListRow({
   // Banners (list view) right-align the streak and show the cadence label;
   // pills (Hours habits inside a group card) keep the streak beside the name
   const isBanner = colorKind === 'banner';
-  const rowStyle = [styles.row, scheme.container, isBanner && styles.bannerRow];
+  const rowStyle = [
+    styles.row,
+    scheme.container,
+    isBanner && styles.bannerRow,
+    required && { borderColor: colors.v2Blue },
+  ];
   const streakStyle = [
     styles.streak,
     isBanner && styles.streakRight,

@@ -554,3 +554,77 @@ describe('GroupCard status icon and label', () => {
     ).toBe('Fitness, Any group, not complete, 0 day streak');
   });
 });
+
+// docs/feature-development/release-1-readiness/hours-habits-in-any-group.md
+describe('GroupCard with Hours habits in a Checkmark-style group', () => {
+  const hoursHabit = (id: string, hours: number): Habit => ({
+    ...makeHabit(id, id),
+    type: 'Hours',
+    targetHours: 2,
+    recentLog: [{ date: TODAY, kind: 'hours', value: hours }],
+  });
+  const habits = [
+    makeHabit('c1', 'Meditate'),
+    hoursHabit('r1', 1),
+    makeHabit('c2', 'Stretch'),
+  ];
+  const renderMixed = (
+    overrides: Partial<HabitGroup> = {},
+    onToggle = jest.fn(),
+  ) =>
+    render(
+      <GroupCard
+        group={makeGroup({ groupType: 'Any', ...overrides })}
+        habits={habits}
+        todayKey={TODAY}
+        onToggle={onToggle}
+      />,
+    );
+
+  it('should show Checkmark habits as pills and the Hours habit as a cell with its bar', () => {
+    const { getByTestId, queryByTestId } = renderMixed();
+
+    expect([
+      !!getByTestId('habit-pill-c1'),
+      !!getByTestId('habit-pill-c2'),
+      queryByTestId('habit-pill-r1'),
+      !!getByTestId('group-hours-cell-r1'),
+      !!getByTestId('habit-row-progress-r1'),
+    ]).toEqual([true, true, null, true, true]);
+  });
+
+  it('should draw the pills before the Hours cells', () => {
+    const json = JSON.stringify(renderMixed().toJSON());
+
+    expect(json.indexOf('habit-pill-c2')).toBeLessThan(
+      json.indexOf('group-hours-cell-r1'),
+    );
+  });
+
+  it('should pass the Hours habit to onToggle when its bar is tapped', () => {
+    const onToggle = jest.fn();
+    const { getByTestId } = renderMixed({}, onToggle);
+
+    fireEvent.press(getByTestId('habit-row-hours-r1'));
+
+    expect(onToggle).toHaveBeenCalledWith('r1');
+  });
+
+  it('should show no group progress bar outside Hours groups', () => {
+    expect(renderMixed().queryByTestId('group-progress-group-1')).toBeNull();
+  });
+
+  it('should give a required Hours habit the blue border', () => {
+    const { getByTestId } = renderMixed({
+      groupType: 'Required',
+      requiredHabitIds: ['r1'],
+    });
+    const border = (testID: string) =>
+      StyleSheet.flatten(getByTestId(testID).props.style).borderColor;
+
+    expect([border('habit-row-r1'), border('habit-pill-c1')]).toEqual([
+      colors.v2Blue,
+      colors.v2Border,
+    ]);
+  });
+});

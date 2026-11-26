@@ -59,7 +59,7 @@ The full rules are in `../../style-choices/habits-section/coloring-rules.md`. Th
 - **Banner titles stay white.** This covers both group cards and list rows, in both states.
 - **Streak number of an unmarked habit with an active streak.** It is grey, for pills and banners alike. This supersedes rule 10 and the "grey / orange" rows of the streak table in `../../feature-development/habits-section/mark-habit.md`, which showed the number orange while the streak was alive.
 - **Pills (habits inside a group card in group view).** Title, streak number and check icon are orange when complete and grey when not. The card itself does not change.
-- **Hours habits inside an Hours group** are pills. They follow the pill rule, so they never get the orange banner background.
+- **Hours habits inside a group** are pills. They follow the pill rule, so they never get the orange banner background.
 - **Banner icons when not complete.** The group selector and the Hours chart icon use the grey outline color. Screen 01 draws them white. When complete, they are orange.
 - **Unchanged in both states:** the list-row group name, the progress bar and its `{hours}/{target}h` label.
 - **Same rules for both habit types.** Checkmark and Hours habits use the same rules. An Hours habit is complete when its hours logged today meet its daily target hours.
@@ -71,7 +71,7 @@ Screen 04 draws Job Hunt and Study with a checkbox. That is superseded.
 - Hours habits have no checkbox.
 - The row shows the name, the streak, the italic group name, and a progress bar with a short `{hours}/{target}h` label at its right end, all on one line. The Hours group card uses the same bar and label. The full design is in `../../style-choices/habits-section/hours-progress.md`. It replaces the "{hours} / {target} hrs today" caption on its own line drawn on screen 01.
 - The streak is the number of consecutive days the daily target hours were met. It replaces the `3h`/`2h` hours shown on screens 01 and 04; hours logged today appear in the label beside the bar instead.
-- Group view (screen 01): Hours habits inside an Hours group use this same row, without the group name, two per row in the banner. This replaces the compact `Job Hunt 3h` pills drawn on screen 01.
+- Group view (screen 01): Hours habits inside any group use this same row, without the group name, two per row in the banner. This replaces the compact `Job Hunt 3h` pills drawn on screen 01.
 - The bar fills with hours logged today against the habit's daily target hours, capped at full.
 - Its colors follow 1.3. An Hours habit is complete when hours today ≥ the daily target hours.
 - Every Checkmark habit in list view uses the round check icon, including habits in Any and All groups. The square checkbox on Cook in screen 04 is superseded.
@@ -128,7 +128,7 @@ Screens 01 and 04 are superseded on three points:
 - **Back arrow.** Every New Habit variant has the back arrow, including screen 06, where the PNG leaves it out.
 - **Habit Group row.**
   - No group is selected by default; tapping the selected chip again clears it.
-  - Groups the habit's type can't join are greyed out: Checkmark habits join Required, Any or All groups, and Hours habits join Hours groups.
+  - Groups the habit's type can't join are greyed out: Checkmark habits join Required, Any or All groups, and Hours habits join any group (`../../feature-development/release-1-readiness/hours-habits-in-any-group.md`).
   - "+ Create Group" and the Choice sheet's "New Habit Group" open the group form (1.10).
 - **Defaults.** Target 1, streak freeze 7, daily target hours 1. The name is required, at most 40 characters.
 - Full rules: `../../feature-development/habits-section/create-habit.md`.

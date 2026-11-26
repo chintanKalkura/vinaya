@@ -61,9 +61,9 @@ describe('canJoinGroup', () => {
     ['Checkmark', 'Any', true],
     ['Checkmark', 'All', true],
     ['Checkmark', 'Hours', false],
-    ['Hours', 'Required', false],
-    ['Hours', 'Any', false],
-    ['Hours', 'All', false],
+    ['Hours', 'Required', true],
+    ['Hours', 'Any', true],
+    ['Hours', 'All', true],
     ['Hours', 'Hours', true],
   ] as const)('should let a %s habit join a %s group: %s', (type, gt, ok) => {
     expect(canJoinGroup(type, group(gt))).toBe(ok);

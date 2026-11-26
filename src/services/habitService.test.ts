@@ -41,6 +41,24 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
   };
 }
 
+// An Any group holding one Checkmark and one Hours habit:
+// docs/feature-development/release-1-readiness/hours-habits-in-any-group.md
+function mixedAnyGroup(): HabitGroup {
+  return {
+    id: 'mixed',
+    name: 'Mixed',
+    cadence: 'Day',
+    groupType: 'Any',
+    habitIds: ['habit-1', 'habit-2'],
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [],
+  };
+}
+
 beforeEach(async () => {
   await AsyncStorage.clear();
 });
@@ -214,6 +232,23 @@ describe('setHabitHours', () => {
     const updated = await setHabitHours('habit-1', 0, TODAY);
 
     expect(updated.history).toEqual([]);
+  });
+
+  it('should complete an Any group once the hours reach the target', async () => {
+    await saveHabits({
+      'habit-1': makeHabit(),
+      'habit-2': hoursHabit({ id: 'habit-2', targetHours: 2 }),
+    });
+    await saveHabitGroups({ mixed: mixedAnyGroup() });
+
+    await setHabitHours('habit-2', 1, TODAY);
+    const below = (await loadHabitGroups()).mixed.recentLog;
+    await setHabitHours('habit-2', 2, TODAY);
+
+    expect([below, (await loadHabitGroups()).mixed.recentLog]).toEqual([
+      [],
+      [{ date: TODAY, kind: 'marker', value: 1 }],
+    ]);
   });
 
   it('should keep earlier days when logging today', async () => {
@@ -458,11 +493,22 @@ describe('createHabit', () => {
   });
 
   it('rejects a group the habit type cannot join', async () => {
-    await saveHabitGroups({ g: group() });
+    await saveHabitGroups({ g: group({ groupType: 'Hours', targetHours: 1 }) });
 
     await expect(
-      createHabit(draft({ type: 'Hours', groupId: 'g' }), TODAY),
+      createHabit(draft({ groupId: 'g' }), TODAY),
     ).rejects.toBeInstanceOf(InvalidHabitError);
+  });
+
+  it('lets an Hours habit join an All group', async () => {
+    await saveHabitGroups({ g: group() });
+
+    const habit = await createHabit(
+      draft({ type: 'Hours', groupId: 'g' }),
+      TODAY,
+    );
+
+    expect((await loadHabitGroups()).g.habitIds).toContain(habit.id);
   });
 });
 
@@ -602,6 +648,31 @@ describe('updateHabit', () => {
     await updateHabit('habit-1', edit({ cadence: 'Day' }));
 
     expect((await loadHabits())['habit-1'].target).toBeUndefined();
+  });
+
+  it('re-checks its groups when an Hours target changes', async () => {
+    const hours = { date: TODAY, kind: 'hours' as const, value: 1 };
+    await saveHabits({
+      'habit-1': makeHabit({ id: 'habit-1' }),
+      'habit-2': makeHabit({
+        id: 'habit-2',
+        type: 'Hours',
+        targetHours: 2,
+        recentLog: [hours],
+        history: [hours],
+      }),
+    });
+    await saveHabitGroups({ mixed: mixedAnyGroup() });
+
+    await updateHabit(
+      'habit-2',
+      edit({ type: 'Hours', targetHours: 1 }),
+      TODAY,
+    );
+
+    expect((await loadHabitGroups()).mixed.recentLog).toEqual([
+      { date: TODAY, kind: 'marker', value: 1 },
+    ]);
   });
 
   it('rejects a type change and an empty name', async () => {

@@ -25,7 +25,7 @@ The bar and label colors never change with the complete state (see `coloring-rul
 | Place | Hours shown |
 |---|---|
 | Hours habit row, list view (screen 04) | the habit's hours today / its daily target hours |
-| Hours habit in an Hours group card, group view (screen 01) | the same, in the half-width cell |
+| Hours habit in a group card, group view (screen 01) | the same, in the half-width cell |
 | Hours group card, group view (screen 01) | total hours today across the group / the group's daily target hours |
 
 ## Why

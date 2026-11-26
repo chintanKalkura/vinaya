@@ -53,7 +53,7 @@ user should be able to create a habit group and configure it with all possible v
 5. **Assigned habits.**
    - A chip box; "No habits assigned yet" when empty. Required habits have a blue border.
    - Create Habit Group is disabled until at least one habit is assigned, with the line "Add at least 1 habit to create a group".
-   - Required and Any/All groups take Checkmark habits; Hours groups take Hours habits.
+   - Required, Any and All groups take Checkmark and Hours habits; Hours groups take Hours habits only (`../release-1-readiness/hours-habits-in-any-group.md`).
    - Switching the group type removes habits the new type can't take, and clears the required list when leaving Required.
 6. **Required groups.** The Required Habits row (star, "Select Required Habits", Edit) opens the Required sheet. Create Habit Group needs at least one required habit. Unassigning a habit also takes it off the required list.
 7. **Sheets** (screens 12 and 14).

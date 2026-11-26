@@ -88,21 +88,34 @@ describe('NewHabitForm', () => {
     const checkmark = [disabled('fitness'), disabled('productive')];
     fireEvent.press(getByTestId('new-habit-type-Hours'));
 
+    // Hours habits can join any group: hours-habits-in-any-group.md
     expect([checkmark, [disabled('fitness'), disabled('productive')]]).toEqual([
       [false, true],
-      [true, false],
+      [false, false],
     ]);
   });
 
   it('should clear the group when the type switch makes it incompatible', () => {
     const { getByTestId, onCreate } = renderForm();
     fireEvent.changeText(getByTestId('new-habit-name'), 'Run');
+    fireEvent.press(getByTestId('new-habit-type-Hours'));
+    fireEvent.press(getByTestId('new-habit-group-productive'));
+
+    fireEvent.press(getByTestId('new-habit-type-Checkmark'));
+    fireEvent.press(getByTestId('new-habit-create'));
+
+    expect(onCreate.mock.calls[0][0].groupId).toBeUndefined();
+  });
+
+  it('should keep a Checkmark-style group when switching to Hours', () => {
+    const { getByTestId, onCreate } = renderForm();
+    fireEvent.changeText(getByTestId('new-habit-name'), 'Read');
     fireEvent.press(getByTestId('new-habit-group-fitness'));
 
     fireEvent.press(getByTestId('new-habit-type-Hours'));
     fireEvent.press(getByTestId('new-habit-create'));
 
-    expect(onCreate.mock.calls[0][0].groupId).toBeUndefined();
+    expect(onCreate.mock.calls[0][0].groupId).toBe('fitness');
   });
 
   it('should clear the group when the selected chip is tapped again', () => {

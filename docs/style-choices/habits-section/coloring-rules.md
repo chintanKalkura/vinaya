@@ -29,7 +29,7 @@ The same rules apply to Checkmark and Hours habits.
 
 | Kind | Where it appears |
 |---|---|
-| **Pill** | A habit inside a group card in group view. Checkmark habits use the compact pill. Hours habits use the habit row component, without the group name, two per row. |
+| **Pill** | A habit inside a group card in group view. Checkmark habits use the compact pill. Hours habits use the habit row component, without the group name, two per row, after the Checkmark pills when a group has both. |
 | **Banner** | A group card in group view, or a habit row in list view. |
 
 Pills appear only in group view. List view shows only banners.
