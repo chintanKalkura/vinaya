@@ -59,10 +59,19 @@ A group card's pills and Hours cells take the **group's** colour, not each habit
 ## Picker
 
 - **Label and placement:** "COMPLETION COLOUR", right after Name on New/Edit Habit and New/Edit Habit Group.
+- **One row:** the six swatches, then a **Preview** button at the end of the same row. Nothing else is drawn under the row until Preview is tapped (owner's choice, 26 Nov 2026: a second row that can't be tapped shouldn't look like part of the control).
 - **Swatches:**
-  - one 32dp filled circle per colour, each with the same white check a completed habit shows
+  - one 32dp filled circle per colour, each with the same check a completed habit shows
   - each inside a 48dp tap target
   - the selected one has a 2dp ring in the text colour
   - TalkBack reads "<Colour> when complete" and the selected state
-- **Preview:** below the swatches, two small banners, "Not done" (grey) and "Done" (the chosen colour with its tint and filled check). They use the draft's name, or "Your habit" / "Your group" while it has none. The preview is hidden from TalkBack.
+  - on phones too narrow for six 48dp targets plus Preview, the targets overlap a little, as the header's view toggle does; the circles never touch
+- **Preview button:** an eye icon and "Preview", in the forms' chip style, inside a 48dp target. TalkBack reads "Preview completion colour" and whether it's expanded. Its border turns to the text colour while the preview is open.
+- **Preview row (option A from the review page):**
+  - opens in place under the swatches, pushing the next fields down
+  - a card headed "How it looks", with two small banners, "Not done" (grey) and "Done" (the chosen colour with its tint and filled check)
+  - the banners use the draft's name, or "Your habit" / "Your group" while it has none
+  - the swatches stay tappable while it's open, and the Done banner follows them
+  - closes with its ✕ or by tapping Preview again
+  - starts closed every time the form opens
 - **Defaults:** Orange is selected on a new item. Changing the colour enables Save on the edit forms.
