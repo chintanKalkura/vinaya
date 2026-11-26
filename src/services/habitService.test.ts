@@ -458,11 +458,22 @@ describe('createHabit', () => {
   });
 
   it('rejects a group the habit type cannot join', async () => {
-    await saveHabitGroups({ g: group() });
+    await saveHabitGroups({ g: group({ groupType: 'Hours', targetHours: 1 }) });
 
     await expect(
-      createHabit(draft({ type: 'Hours', groupId: 'g' }), TODAY),
+      createHabit(draft({ groupId: 'g' }), TODAY),
     ).rejects.toBeInstanceOf(InvalidHabitError);
+  });
+
+  it('lets an Hours habit join an All group', async () => {
+    await saveHabitGroups({ g: group() });
+
+    const habit = await createHabit(
+      draft({ type: 'Hours', groupId: 'g' }),
+      TODAY,
+    );
+
+    expect((await loadHabitGroups()).g.habitIds).toContain(habit.id);
   });
 });
 
