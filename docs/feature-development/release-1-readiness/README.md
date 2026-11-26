@@ -20,7 +20,7 @@ Work them in this order. Within a step, any order.
 | | `support-the-developer.md` | done in app; Play Console products and test purchase pending |
 | | `hours-habits-in-any-group.md` | done |
 | | `banner-colours.md` | done |
-| | `habit-group-detail-page.md` | to be designed |
+| | `habit-group-detail-page.md` | in progress (decided; backup fix and logic built, page next) |
 | 6. Ship | `play-store-release-checklist.md` | reference checklist |
 
 Notes:
