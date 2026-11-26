@@ -16,7 +16,12 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 
 ### Header
 3. **Title card.** The habit or group name, a pencil (opens the edit form, unchanged) and a ⋮.
-4. **Subtitle.** Under the card, a row of chips: cadence and target, one chip per group it is in, freezes held (icy). No start date. A group page has no group chips.
+4. **Subtitle** (option B1). Under the card:
+   - **Facts:** cadence and target, and freezes held (icy), as small icon + text with no outline.
+   - **Group chips:** below the facts, one chip per group the habit is in, with a stronger outline and a › chevron. These are the only chips, so on this page a chip always means "tap to open".
+   - **Tapping a group chip:** opens that group's page on top, and Back returns to the habit's page. It has a 48dp target, dims while pressed, and TalkBack reads "Open <name> group".
+   - **Group pages:** no group chips.
+   - No start date.
 5. **⋮ on the page.**
    - Habit: Edit, Edit past days, Delete habit.
    - Group: Edit, Delete group (groups are never marked by hand, so no Edit past days).
