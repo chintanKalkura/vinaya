@@ -26,7 +26,9 @@ Users who sign in with Google get a weekly backup of their habits to their own G
 5. **Merge rules** (one pure function, `mergeBackup(local, remote)`, unit-tested and reusable on the backend):
    - Item only on the phone → kept.
    - Item only in the backup → added, unless a local tombstone has its id. Added items go after local items in sort order.
-   - Item in both → the local item's fields win (name, cadence, targets, colour, status, freeze state, group members). Log entries are combined by date; on the same date the local entry wins. `recentLog` is rebuilt from the combined history.
+   - Item in both → the local item wins whole, its log included (name, cadence, targets, colour, status, freeze state, group members, `history` and `recentLog`).
+     - Changed on 26 Nov 2026 (bug fix). Logs used to be combined by date, but a day unmarked on the phone has no entry, so the backup's entry for that date brought the mark back on the next backup.
+     - Trade-off accepted by the owner: the same habit used on two phones doesn't sync its marks. Whichever phone backs up last decides the backup's log for it, and each phone keeps its own.
    - Tombstones from both sides are combined and applied: an item tombstoned on either side is removed.
    - Settings: local wins if the user has changed any setting on this phone, otherwise the backup's settings are used.
    - After merging, every group is re-checked for today and freezes are re-applied.
@@ -57,7 +59,7 @@ Users who sign in with Google get a weekly backup of their habits to their own G
 - Encrypting the backup beyond what Drive provides
 
 ## Tests
-- `mergeBackup`: each rule in decision 5, including same-date log conflict, tombstone on each side, items added after local sort order, settings rule, and idempotency (merging the same backup twice changes nothing).
+- `mergeBackup`: each rule in decision 5, including the phone's log winning for an item in both (a day unmarked on the phone stays unmarked; two phones with the same habit), a backup-only item arriving with its full log, tombstone on each side, items added after local sort order, settings rule, and idempotency (merging the same backup twice changes nothing).
 - Schema: version 1 round-trips; an unknown newer version is refused with a message.
 - Backup service with a fake `BackupStore`: weekly trigger at 7 days, not at 6; download-merge-upload order; previous file kept; failure leaves local data unchanged and records the error.
 - Delete: both files removed, access revoked, local data kept.
