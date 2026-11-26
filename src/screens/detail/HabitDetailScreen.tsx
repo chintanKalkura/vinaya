@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -10,13 +10,23 @@ import {
   Snowflake,
   Trash2,
 } from 'lucide-react-native';
-import { Palette } from '../../theme';
+import { Habit } from '../../types/habit';
+import { HabitGroup } from '../../types/habitGroup';
+import { Palette, completionColour } from '../../theme';
+import { useSettings } from '../../settings/SettingsProvider';
 import { usePalette, useThemedStyles } from '../../theming';
 import { groupIdsByHabit } from '../../utils/groupIndex';
 import { useHabitsData } from '../habits/HabitsData';
 import OptionsMenu, { MenuItem } from '../habits/OptionsMenu';
 import TouchTarget from '../habits/TouchTarget';
 import { freezesHeldText, groupFactText, habitFactText } from './subtitleText';
+import { pageStats } from './pageStats';
+import RatingStars from './RatingStars';
+import StreakStats from './StreakStats';
+import CompletionRateSection from './CompletionRateSection';
+import HeatmapSection from './HeatmapSection';
+import HistorySection from './HistorySection';
+import MemberList from './MemberList';
 
 // The habit and group page: docs/feature-development/release-1-readiness/habit-group-detail-page.md,
 // look: docs/style-choices/detail/detail-page.md
@@ -27,6 +37,7 @@ interface HabitDetailScreenProps {
   id: string;
   onBack: () => void;
   onOpenGroup: (groupId: string) => void;
+  onOpenHabit: (habitId: string) => void; // a group's member row
   onGone: () => void; // the item was deleted: back to the Habits list
 }
 
@@ -35,6 +46,7 @@ export default function HabitDetailScreen({
   id,
   onBack,
   onOpenGroup,
+  onOpenHabit,
   onGone,
 }: HabitDetailScreenProps): React.JSX.Element | null {
   const colors = usePalette();
@@ -48,8 +60,16 @@ export default function HabitDetailScreen({
     editGroup,
     removeHabit,
     removeGroup,
+    todayKey,
   } = useHabitsData();
-  const item = kind === 'habit' ? habits[id] : groups[id];
+  const { weekStart } = useSettings().settings;
+  const item: Habit | HabitGroup | undefined =
+    kind === 'habit' ? habits[id] : groups[id];
+  const stats = useMemo(
+    () =>
+      item ? pageStats(item, kind === 'habit', todayKey, weekStart) : null,
+    [item, kind, todayKey, weekStart],
+  );
 
   // Deleted here, from its edit form or by a restore: every page about it
   // is stale, so return to the list
@@ -57,7 +77,7 @@ export default function HabitDetailScreen({
   useEffect(() => {
     if (gone) onGone();
   }, [gone, onGone]);
-  if (!item) return null;
+  if (!item || !stats) return null;
 
   const isHabit = kind === 'habit';
   const facts = isHabit ? habitFactText(habits[id]) : groupFactText(groups[id]);
@@ -65,6 +85,12 @@ export default function HabitDetailScreen({
   const memberOf = isHabit
     ? (groupIdsByHabit(groups)[id] ?? []).map(groupId => groups[groupId])
     : [];
+  const accent = completionColour(colors, item.colour).accent;
+  const members = isHabit
+    ? []
+    : groups[id].habitIds
+        .map(habitId => habits[habitId])
+        .filter((habit): habit is Habit => habit !== undefined);
   const edit = () => (isHabit ? editHabit(id) : editGroup(id));
   const menuItems: MenuItem[] = [
     { key: 'edit', label: 'Edit', Icon: Pencil, onPress: edit },
@@ -161,6 +187,41 @@ export default function HabitDetailScreen({
             </View>
           ) : null}
         </View>
+
+        <RatingStars stars={stats.stars} color={accent} />
+        <StreakStats streaks={stats.streaks} color={accent} />
+        <CompletionRateSection
+          rate={stats.rate}
+          trend={stats.trend}
+          step={stats.trendStep}
+          cadence={item.cadence}
+          color={accent}
+        />
+        <HeatmapSection
+          slots={stats.heat}
+          steps={stats.heatSteps}
+          color={accent}
+        />
+        <HistorySection
+          cadence={item.cadence}
+          markers={stats.markers}
+          frozenDates={stats.frozenDates}
+          hoursHabit={
+            isHabit && habits[id].type === 'Hours' ? habits[id] : undefined
+          }
+          todayKey={todayKey}
+          weekStart={weekStart}
+          color={accent}
+        />
+        {!isHabit && members.length > 0 ? (
+          <MemberList
+            members={members}
+            todayKey={todayKey}
+            weekStart={weekStart}
+            color={accent}
+            onOpenHabit={onOpenHabit}
+          />
+        ) : null}
       </ScrollView>
     </View>
   );

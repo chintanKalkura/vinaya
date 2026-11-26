@@ -50,6 +50,7 @@ function renderPage(kind: DetailKind, id: string) {
   const handlers = {
     onBack: jest.fn(),
     onOpenGroup: jest.fn(),
+    onOpenHabit: jest.fn(),
     onGone: jest.fn(),
   };
   const utils = render(
@@ -156,5 +157,48 @@ describe('HabitDetailScreen', () => {
     fireEvent.press(await utils.findByTestId('detail-back'));
 
     expect(utils.onBack).toHaveBeenCalled();
+  });
+});
+
+describe('HabitDetailScreen sections', () => {
+  it('should show the stats sections, with History on last week for a Week habit', async () => {
+    const utils = renderPage('habit', 'run');
+    await utils.findByTestId('detail-title');
+
+    expect([
+      !!utils.getByTestId('detail-rating'),
+      !!utils.getByTestId('detail-streaks'),
+      !!utils.getByTestId('detail-completion'),
+      !!utils.getByTestId('detail-heatmap'),
+      utils.getByTestId('history-range-week').props.accessibilityState.selected,
+      utils.queryByTestId('detail-hours'),
+      utils.queryByTestId('detail-members'),
+    ]).toEqual([true, true, true, true, true, null, null]);
+  });
+
+  it('should switch the History range', async () => {
+    const utils = renderPage('habit', 'run');
+    fireEvent.press(await utils.findByTestId('history-range-3m'));
+
+    expect(
+      utils.getByTestId('history-range-3m').props.accessibilityState.selected,
+    ).toBe(true);
+  });
+
+  it('should show hours per day under History for an Hours habit', async () => {
+    await saveHabits({ run: { ...habit, type: 'Hours', targetHours: 2 } });
+    const utils = renderPage('habit', 'run');
+
+    expect(await utils.findByTestId('detail-hours')).toBeTruthy();
+  });
+
+  it("should list a group's members, opening their pages", async () => {
+    const utils = renderPage('group', 'fitness');
+    fireEvent.press(await utils.findByTestId('detail-member-run'));
+
+    expect([
+      utils.getByTestId('detail-member-rate-run').props.children,
+      utils.onOpenHabit.mock.calls,
+    ]).toEqual(['0%', [['run']]]);
   });
 });
