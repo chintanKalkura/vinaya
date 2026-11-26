@@ -25,7 +25,7 @@ The streak is never used to pick a color. A habit or group with an active streak
 
 The same rules apply to Checkmark and Hours habits.
 
-**Completion colour.** Wherever this document says orange for complete, the item's chosen completion colour is used instead (orange when none is set). Pills inside a group card use the group's colour. See `../theme/completion-colours.md`.
+**Completion colour.** Wherever this document says orange for complete, the item's chosen completion colour is used instead (orange when none is set). Pills inside a group card use the group's colour. See `../theme/completion-colours.md`. The habit and group page uses the same colour for its stars, current streak, trend, heatmap and done days, and icy blue for frozen days (`../detail/detail-page.md`).
 
 ## 2. Element kinds
 
