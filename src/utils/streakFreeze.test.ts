@@ -3,10 +3,11 @@ import {
   clampFreezeInterval,
   earnFreezes,
   nextBreakDay,
+  rebuildFreezeState,
   withAppliedFreezes,
   withEarnedFreezes,
 } from './streakFreeze';
-import { getStreak } from './cadence';
+import { NO_FREEZE, getStreak } from './cadence';
 import { addDays } from './dates';
 import { StreakFreezeState } from '../types/habit';
 import { LogEntry } from '../types/log';
@@ -253,5 +254,165 @@ describe('withEarnedFreezes and withAppliedFreezes', () => {
       withAppliedFreezes(held, markers(...daysRange(1, 9)), day(11))
         .streakFreeze?.lastUsedOn,
     ).toBe(day(11));
+  });
+});
+
+describe('rebuildFreezeState', () => {
+  const TODAY_KEY = '2026-11-26';
+  const mark = (date: string) => ({ date, kind: 'marker' as const, value: 1 });
+  const days = (from: number, to: number) => {
+    const out = [];
+    for (let i = from; i <= to; i++) out.push(mark(addDays(TODAY_KEY, i)));
+    return out;
+  };
+
+  it('should earn a freeze every N streak days', () => {
+    const state = rebuildFreezeState(
+      days(-13, 0),
+      'Day',
+      7,
+      addDays(TODAY_KEY, -13),
+      TODAY_KEY,
+    );
+
+    expect([state.available, state.earnedAtStreak, state.frozenDates]).toEqual([
+      2,
+      14,
+      [],
+    ]);
+  });
+
+  it('should use a held freeze on a missed day and keep the run', () => {
+    const markers = [...days(-10, -2), mark(TODAY_KEY)];
+    const state = rebuildFreezeState(
+      markers,
+      'Day',
+      7,
+      addDays(TODAY_KEY, -10),
+      TODAY_KEY,
+    );
+
+    expect([state.available, state.frozenDates, state.lastUsedOn]).toEqual([
+      0,
+      [addDays(TODAY_KEY, -1)],
+      TODAY_KEY,
+    ]);
+  });
+
+  it('should give the freeze back when the frozen day gets marked', () => {
+    const state = rebuildFreezeState(
+      days(-10, 0),
+      'Day',
+      7,
+      addDays(TODAY_KEY, -10),
+      TODAY_KEY,
+    );
+
+    expect([state.available, state.frozenDates]).toEqual([1, []]);
+  });
+
+  it('should end the run when there are no freezes to cover a gap', () => {
+    const markers = [...days(-5, -3), ...days(-1, 0)];
+    const state = rebuildFreezeState(
+      markers,
+      'Day',
+      7,
+      addDays(TODAY_KEY, -5),
+      TODAY_KEY,
+    );
+
+    expect([state.available, state.earnedAtStreak, state.frozenDates]).toEqual([
+      0,
+      0,
+      [],
+    ]);
+  });
+
+  it('should match opening the app every day', () => {
+    const markers = [...days(-30, -20), ...days(-18, -9), ...days(-6, 0)];
+    let daily = NO_FREEZE;
+    for (let i = -30; i <= 0; i++) {
+      const day = addDays(TODAY_KEY, i);
+      const before = markers.filter(m => m.date < day);
+      daily = applyFreezes(daily, before, 'Day', day);
+      const upTo = markers.filter(m => m.date <= day);
+      daily = earnFreezes(
+        daily,
+        getStreak(upTo, 'Day', day, daily.frozenDates),
+        7,
+      );
+    }
+
+    expect(
+      rebuildFreezeState(markers, 'Day', 7, addDays(TODAY_KEY, -30), TODAY_KEY),
+    ).toEqual(daily);
+  });
+
+  it('should work for Week cadence', () => {
+    const markers = ['-20', '-17', '-14', '-11', '-8', '-5', '-2'].map(o =>
+      mark(addDays(TODAY_KEY, Number(o))),
+    );
+    const state = rebuildFreezeState(
+      markers,
+      'Week',
+      3,
+      addDays(TODAY_KEY, -20),
+      TODAY_KEY,
+    );
+
+    expect([state.available, state.earnedAtStreak]).toEqual([2, 6]);
+  });
+
+  // The single pass must equal opening the app every day, for every cadence
+  describe.each(['Day', 'Week', 'Month', 'Year'] as const)(
+    'against the daily loop (%s)',
+    cadence => {
+      it.each([1, 2, 3, 4, 5, 6])('should match random history %i', seed => {
+        let x = seed * 7919;
+        const rand = () => {
+          x = (x * 16807) % 2147483647;
+          return x / 2147483647;
+        };
+        const span = cadence === 'Year' ? 900 : cadence === 'Month' ? 400 : 150;
+        const density = { Day: 0.8, Week: 0.4, Month: 0.12, Year: 0.02 }[
+          cadence
+        ];
+        const markers = [];
+        for (let i = -span; i <= 0; i++) {
+          if (rand() < density) markers.push(mark(addDays(TODAY_KEY, i)));
+        }
+        const interval = 1 + Math.floor(rand() * 5);
+        let daily = NO_FREEZE;
+        for (let i = -span; i <= 0; i++) {
+          const day = addDays(TODAY_KEY, i);
+          const before = markers.filter(m => m.date < day);
+          daily = applyFreezes(daily, before, cadence, day);
+          const upTo = markers.filter(m => m.date <= day);
+          daily = earnFreezes(
+            daily,
+            getStreak(upTo, cadence, day, daily.frozenDates),
+            interval,
+          );
+        }
+
+        expect(
+          rebuildFreezeState(
+            markers,
+            cadence,
+            interval,
+            addDays(TODAY_KEY, -span),
+            TODAY_KEY,
+          ),
+        ).toEqual(daily);
+      });
+    },
+  );
+
+  it('should rebuild three years of daily marks quickly', () => {
+    const markers = days(-1095, 0).filter((_, i) => i % 9 !== 0);
+    const started = Date.now();
+    rebuildFreezeState(markers, 'Day', 7, addDays(TODAY_KEY, -1095), TODAY_KEY);
+
+    expect(Date.now() - started).toBeLessThan(100);
   });
 });

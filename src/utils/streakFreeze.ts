@@ -147,3 +147,110 @@ export function withAppliedFreezes<T extends Freezable>(
   const next = applyFreezes(current, markers, item.cadence, todayKey);
   return next === current ? item : { ...item, streakFreeze: next };
 }
+
+// After past days change: replays the whole history day by day, as if the app
+// had been opened every day. Each morning freezes cover missed days (before
+// that day's mark), each evening the day's streak earns freezes. The stored
+// state is otherwise never worked out from history (streak-freeze.md, decision 2).
+//
+// Gives the same result as calling applyFreezes and earnFreezes once a day,
+// but in a single pass: it carries the current run forward instead of
+// re-reading the whole history each day, so years of marks take milliseconds.
+export function rebuildFreezeState(
+  markers: LogEntry[],
+  cadence: HabitCadence,
+  interval: number,
+  startKey: string,
+  todayKey: string,
+): StreakFreezeState {
+  const n = clampFreezeInterval(interval);
+  const dates = [
+    ...new Set(
+      markers
+        .filter(entry => entry.kind === 'marker' && entry.date <= todayKey)
+        .map(entry => entry.date),
+    ),
+  ].sort();
+  let available = 0;
+  let earnedAtStreak = 0;
+  let lastUsedOn: string | undefined;
+  const frozenDates: string[] = []; // added oldest first, so stays sorted
+
+  // Frozen days in (older, newer]
+  const frozenBetween = (older: string, newer: string) => {
+    let count = 0;
+    for (let i = frozenDates.length - 1; i >= 0; i--) {
+      if (frozenDates[i] <= older) break;
+      if (frozenDates[i] <= newer) count += 1;
+    }
+    return count;
+  };
+
+  // The run holding the latest mark, as getStreak sees it with window `w`
+  const run: string[] = [];
+  let runWindow = 0;
+  let marked = 0; // dates[0..marked) are on or before the current day
+  const rebuildRun = (w: number) => {
+    run.length = 0;
+    let i = marked - 1;
+    run.unshift(dates[i]);
+    while (
+      i > 0 &&
+      daysBetween(dates[i - 1], dates[i]) <=
+        w + frozenBetween(dates[i - 1], dates[i])
+    ) {
+      i -= 1;
+      run.unshift(dates[i]);
+    }
+  };
+
+  let day = dates.length > 0 && dates[0] < startKey ? dates[0] : startKey;
+  for (; day <= todayKey; day = addDays(day, 1)) {
+    const w = windowLength(cadence, day);
+    if (run.length > 0 && w !== runWindow) rebuildRun(w);
+    runWindow = w;
+
+    // Morning: a freeze for each day the run would break on, oldest first
+    let alive = false;
+    while (run.length > 0) {
+      const last = run[run.length - 1];
+      const slack = w + frozenBetween(last, day);
+      if (daysBetween(last, day) <= slack) {
+        alive = true;
+        break;
+      }
+      if (available === 0) break;
+      frozenDates.push(addDays(last, slack));
+      available -= 1;
+      lastUsedOn = day;
+    }
+    if (!alive) {
+      run.length = 0;
+      earnedAtStreak = 0;
+    }
+
+    // Evening: the day's mark, then freezes earned by the streak
+    if (marked < dates.length && dates[marked] === day) {
+      marked += 1;
+      if (alive) run.push(day);
+      else run.splice(0, run.length, day);
+    }
+    const streak = run.length;
+    while (streak - earnedAtStreak >= n) {
+      available += 1;
+      earnedAtStreak += n;
+    }
+    if (earnedAtStreak > 0 && streak < earnedAtStreak) {
+      available = Math.max(0, available - 1);
+      earnedAtStreak -= n;
+    }
+    if (streak === 0) earnedAtStreak = 0;
+  }
+
+  return {
+    available,
+    earnedAtStreak,
+    frozenDates,
+    ...(lastUsedOn !== undefined ? { lastUsedOn } : {}),
+  };
+}
