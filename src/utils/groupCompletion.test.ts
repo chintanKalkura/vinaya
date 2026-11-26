@@ -134,6 +134,40 @@ describe('isGroupComplete', () => {
   });
 });
 
+// docs/feature-development/release-1-readiness/hours-habits-in-any-group.md
+describe('isGroupComplete with Hours habits in Required, Any and All groups', () => {
+  it('should complete an Any group when its only Hours habit meets its target', () => {
+    const habits = [makeHoursHabit('a', 2, TODAY, 2)];
+    expect(
+      isGroupComplete(makeGroup('Any', { habitIds: ['a'] }), habits, TODAY),
+    ).toBe(true);
+  });
+
+  it('should not complete an Any group when the Hours habit is below its target', () => {
+    const habits = [makeHoursHabit('a', 1, TODAY, 2), makeHabit('b')];
+    expect(isGroupComplete(makeGroup('Any'), habits, TODAY)).toBe(false);
+  });
+
+  it('should not complete an All group with a marked Checkmark and an Hours habit below target', () => {
+    const habits = [makeHabit('a', TODAY), makeHoursHabit('b', 1, TODAY, 2)];
+    expect(isGroupComplete(makeGroup('All'), habits, TODAY)).toBe(false);
+  });
+
+  it('should complete an All group once the Hours habit also meets its target', () => {
+    const habits = [makeHabit('a', TODAY), makeHoursHabit('b', 2, TODAY, 2)];
+    expect(isGroupComplete(makeGroup('All'), habits, TODAY)).toBe(true);
+  });
+
+  it('should follow a required Hours habit in a Required group', () => {
+    const group = makeGroup('Required', { requiredHabitIds: ['b'] });
+    const below = [makeHabit('a', TODAY), makeHoursHabit('b', 1, TODAY, 2)];
+    const met = [makeHabit('a'), makeHoursHabit('b', 2, TODAY, 2)];
+
+    expect(isGroupComplete(group, below, TODAY)).toBe(false);
+    expect(isGroupComplete(group, met, TODAY)).toBe(true);
+  });
+});
+
 describe('isHabitMarkedToday', () => {
   it('should mark an Hours habit when hours today meet its target', () => {
     expect(isHabitMarkedToday(makeHoursHabit('a', 2, TODAY, 2), TODAY)).toBe(

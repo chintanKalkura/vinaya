@@ -39,12 +39,13 @@ export const GROUP_TYPE_DESCRIPTIONS: Record<HabitGroupType, string> = {
   Hours: 'Total hours across habits must meet target',
 };
 
-// Required/Any/All groups take Checkmark habits; Hours groups take Hours habits
+// Required/Any/All groups take both types; Hours groups take Hours habits only.
+// docs/feature-development/release-1-readiness/hours-habits-in-any-group.md
 export function canTakeHabit(
   groupType: HabitGroupType,
   habitType: HabitType,
 ): boolean {
-  return (groupType === 'Hours') === (habitType === 'Hours');
+  return groupType !== 'Hours' || habitType === 'Hours';
 }
 
 // Drops habits the new type can't take; leaving Required clears the required list

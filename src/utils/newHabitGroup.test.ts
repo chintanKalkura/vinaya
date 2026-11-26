@@ -61,7 +61,9 @@ describe('canTakeHabit', () => {
     ['Any', 'Checkmark', true],
     ['All', 'Checkmark', true],
     ['Hours', 'Checkmark', false],
-    ['Required', 'Hours', false],
+    ['Required', 'Hours', true],
+    ['Any', 'Hours', true],
+    ['All', 'Hours', true],
     ['Hours', 'Hours', true],
   ] as const)('should let a %s group take a %s habit: %s', (g, h, ok) => {
     expect(canTakeHabit(g, h)).toBe(ok);
@@ -73,6 +75,16 @@ describe('changeGroupType', () => {
     expect(
       changeGroupType(draft({ habitIds: ['run', 'study'] }), 'Hours', TYPES)
         .habitIds,
+    ).toEqual(['study']);
+  });
+
+  it('should keep Hours habits when leaving Hours', () => {
+    expect(
+      changeGroupType(
+        draft({ groupType: 'Hours', habitIds: ['study'] }),
+        'Any',
+        TYPES,
+      ).habitIds,
     ).toEqual(['study']);
   });
 
