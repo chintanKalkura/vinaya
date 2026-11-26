@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Layers,
@@ -61,6 +62,8 @@ export default function HabitDetailScreen({
     removeHabit,
     removeGroup,
     todayKey,
+    openPastDays,
+    canEditPastDays,
   } = useHabitsData();
   const { weekStart } = useSettings().settings;
   const item: Habit | HabitGroup | undefined =
@@ -94,6 +97,18 @@ export default function HabitDetailScreen({
   const edit = () => (isHabit ? editHabit(id) : editGroup(id));
   const menuItems: MenuItem[] = [
     { key: 'edit', label: 'Edit', Icon: Pencil, onPress: edit },
+    // Groups are never marked by hand, so only habits have Edit past days
+    ...(isHabit
+      ? [
+          {
+            key: 'past-days',
+            label: 'Edit past days',
+            Icon: CalendarDays,
+            disabled: !canEditPastDays(id),
+            onPress: () => openPastDays(id),
+          },
+        ]
+      : []),
     {
       key: 'delete',
       label: isHabit ? 'Delete habit' : 'Delete group',

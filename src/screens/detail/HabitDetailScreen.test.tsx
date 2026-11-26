@@ -1,6 +1,11 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
 import HabitDetailScreen, { DetailKind } from './HabitDetailScreen';
 import { HabitsDataProvider } from '../habits/HabitsData';
 import {
@@ -200,5 +205,85 @@ describe('HabitDetailScreen sections', () => {
       utils.getByTestId('detail-member-rate-run').props.children,
       utils.onOpenHabit.mock.calls,
     ]).toEqual(['0%', [['run']]]);
+  });
+});
+
+describe('Edit past days from the page and the edit form', () => {
+  const recent = new Date();
+  recent.setDate(recent.getDate() - 3);
+
+  it('should be in a habit page menu, and not in a group page menu', async () => {
+    const habitPage = renderPage('habit', 'run');
+    fireEvent.press(await habitPage.findByTestId('detail-menu'));
+    const onHabit = !!habitPage.getByText('Edit past days');
+    habitPage.unmount();
+
+    const groupPage = renderPage('group', 'fitness');
+    fireEvent.press(await groupPage.findByTestId('detail-menu'));
+
+    expect([onHabit, groupPage.queryByText('Edit past days')]).toEqual([
+      true,
+      null,
+    ]);
+  });
+
+  it('should be greyed on the day the habit is created', async () => {
+    await saveHabits({ run: { ...habit, createdAt: Date.now() } });
+    const utils = renderPage('habit', 'run');
+    fireEvent.press(await utils.findByTestId('detail-menu'));
+
+    expect(
+      utils.getByTestId('detail-menu-past-days').props.accessibilityState
+        .disabled,
+    ).toBe(true);
+  });
+
+  it('should save a past day from the page and update the habit', async () => {
+    await saveHabits({
+      run: {
+        ...habit,
+        cadence: 'Day',
+        target: undefined,
+        createdAt: recent.getTime(),
+      },
+    });
+    const utils = renderPage('habit', 'run');
+    fireEvent.press(await utils.findByTestId('detail-menu'));
+    fireEvent.press(utils.getByTestId('detail-menu-past-days'));
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const key = [
+      yesterday.getFullYear(),
+      String(yesterday.getMonth() + 1).padStart(2, '0'),
+      String(yesterday.getDate()).padStart(2, '0'),
+    ].join('-');
+    const sheet = await utils.findByTestId('past-days-sheet');
+    fireEvent.press(within(sheet).getByTestId(`day-${key}`));
+    fireEvent.press(utils.getByTestId('past-days-save'));
+
+    await waitFor(async () =>
+      expect((await loadHabits()).run.history.map(e => e.date)).toEqual([key]),
+    );
+    await waitFor(() =>
+      expect(utils.queryByTestId('past-days-sheet')).toBeNull(),
+    );
+  });
+
+  it('should open from the Edit Habit menu, over the form', async () => {
+    await saveHabits({ run: { ...habit, createdAt: recent.getTime() } });
+    const utils = renderPage('habit', 'run');
+    fireEvent.press(await utils.findByTestId('detail-edit'));
+    fireEvent.press(await utils.findByTestId('edit-habit-menu'));
+    const items = [
+      !!utils.getByText('Edit past days'),
+      !!utils.getByText('Delete habit'),
+    ];
+    fireEvent.press(utils.getByTestId('edit-habit-menu-past-days'));
+
+    expect([
+      items,
+      !!(await utils.findByTestId('past-days-sheet')),
+      !!utils.getByText('Edit Habit'),
+    ]).toEqual([[true, true], true, true]);
   });
 });

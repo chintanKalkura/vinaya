@@ -8,10 +8,11 @@ import React, {
   useState,
 } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Trash2 } from 'lucide-react-native';
+import { CalendarDays, Trash2 } from 'lucide-react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { usePalette } from '../../theming';
+import { useSettings } from '../../settings/SettingsProvider';
 import { useToday } from '../../hooks/useToday';
 import { loadHabitsAndGroups } from '../../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../../storage/devSeed';
@@ -21,8 +22,11 @@ import {
   updateHabit,
   markHabitDone,
   setHabitHours,
+  setPastDays,
   unmarkHabitDone,
 } from '../../services/habitService';
+import { editableRange } from '../../utils/pastDays';
+import EditPastDaysSheet from '../detail/EditPastDaysSheet';
 import {
   applyStreakFreezes,
   createHabitGroup,
@@ -64,6 +68,8 @@ interface HabitsData {
   editGroup: (groupId: string) => void;
   removeHabit: (habitId: string) => Promise<void>;
   removeGroup: (groupId: string) => Promise<void>;
+  openPastDays: (habitId: string) => void;
+  canEditPastDays: (habitId: string) => boolean; // false on the creation day
 }
 
 const HabitsDataContext = createContext<HabitsData | null>(null);
@@ -87,6 +93,9 @@ export function HabitsDataProvider({
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
+  // Edit past days: docs/style-choices/detail/edit-past-days.md
+  const [pastDaysHabitId, setPastDaysHabitId] = useState<string | null>(null);
+  const { weekStart } = useSettings().settings;
   const [flow, dispatch] = useReducer(formFlowReducer, INITIAL_FORM_FLOW);
   // Storage errors: docs/feature-development/release-1-readiness/storage-write-safety.md
   const [loadError, setLoadError] = useState(false);
@@ -272,6 +281,25 @@ export function HabitsDataProvider({
     [runSave],
   );
 
+  const canEditPastDays = useCallback(
+    (habitId: string) => {
+      const habit = habits[habitId];
+      return (
+        !!habit &&
+        editableRange(habit.cadence, habit.createdAt, todayKey) !== undefined
+      );
+    },
+    [habits, todayKey],
+  );
+
+  const savePastDays = useCallback(
+    (changes: { date: string; value: number }[]) =>
+      pastDaysHabitId
+        ? runSave(() => setPastDays(pastDaysHabitId, changes, todayKey))
+        : Promise.resolve(false),
+    [pastDaysHabitId, todayKey, runSave],
+  );
+
   const saveErrorIn = (inForm: boolean) => (
     <SaveErrorSnackbar
       key={saveErrorCount}
@@ -306,8 +334,11 @@ export function HabitsDataProvider({
       editGroup: groupId => dispatch({ type: 'editGroup', groupId }),
       removeHabit,
       removeGroup,
+      openPastDays: habitId => setPastDaysHabitId(habitId),
+      canEditPastDays,
     }),
     [
+      canEditPastDays,
       habits,
       groups,
       todayKey,
@@ -400,6 +431,13 @@ export function HabitsDataProvider({
                 iconSize={22}
                 items={[
                   {
+                    key: 'past-days',
+                    label: 'Edit past days',
+                    Icon: CalendarDays,
+                    disabled: !canEditPastDays(editingHabitId),
+                    onPress: () => setPastDaysHabitId(editingHabitId),
+                  },
+                  {
                     key: 'delete',
                     label: 'Delete habit',
                     Icon: Trash2,
@@ -444,6 +482,16 @@ export function HabitsDataProvider({
                 ]}
               />
             }
+          />
+        ) : null}
+        {/* Over the page or the Edit Habit form; saves on its own */}
+        {pastDaysHabitId && habits[pastDaysHabitId] ? (
+          <EditPastDaysSheet
+            habit={habits[pastDaysHabitId]}
+            todayKey={todayKey}
+            weekStart={weekStart}
+            onSave={savePastDays}
+            onClose={() => setPastDaysHabitId(null)}
           />
         ) : null}
         {flow.habitForGroup ? (
