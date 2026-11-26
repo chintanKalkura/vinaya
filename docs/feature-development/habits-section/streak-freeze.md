@@ -29,7 +29,7 @@ Streak freezes should apply when applicable.
 
 ## Decisions
 1. **Configuration.** "1 skip per N streaks", N from 1 to 100, default 7 (`DEFAULT_HABIT_LIMITS`). It is stored as `streakFreezeInterval` on both `Habit` and `HabitGroup`. A group earns and uses freezes on its own streak; its members' freezes don't affect it.
-2. **Stored state.** Each habit and group stores `streakFreeze`: `available` (freezes held), `earnedAtStreak`, `frozenDates` (days a freeze covered) and `lastUsedOn`. It is never worked out from history. When it is missing, nothing has been earned or used.
+2. **Stored state.** Each habit and group stores `streakFreeze`: `available` (freezes held), `earnedAtStreak`, `frozenDates` (days a freeze covered) and `lastUsedOn`. It is never worked out from history, with one exception: after Edit past days changes a habit's past days, its state (and that of each group it belongs to) is rebuilt by replaying the history day by day, as if the app had been opened every day (`rebuildFreezeState` in `src/utils/streakFreeze.ts`, `../release-1-readiness/habit-group-detail-page.md`). A frozen day that gets marked gives its freeze back, and a newly unmarked day can use a held freeze. When the state is missing, nothing has been earned or used.
 3. **Earning.** One freeze is earned each time the streak reaches a new multiple of N in the current run (N, 2N, 3N…). Earning happens when a habit is marked, unmarked or has hours logged, and when a group's day completes.
    - Example: N = 7 and a streak of 11 → 1 freeze. The second freeze comes at streak 14, not 12.
    - Unmarking today takes back the freeze that today's mark earned, if it is still held.

@@ -24,7 +24,7 @@ Which part of the habit is orange or grey, and how the streak is laid out, follo
 ## Rules
 1. A Day-cadence Checkmark habit has one state per calendar day: marked or not marked.
 2. A day runs from local midnight to local midnight on the device.
-3. Only today can be marked or unmarked. Past days cannot be changed. (The How to use help says so; update it if this changes: `habit-group-detail-page.md`.)
+3. Only today is marked or unmarked from the Habits screen. Past days are changed only through **Edit past days** on the habit's page or its edit form: past days only (never today), back to 7 days for Day habits, 15 for Week, 60 for Month and 180 for Year, and never before the habit was created (`../release-1-readiness/habit-group-detail-page.md`, `setPastDays`). The How to use help still says "Only today can be marked" until that wording is replaced with the feature.
 4. Tapping an unmarked habit marks it for today.
 5. Tapping a marked habit unmarks it for today.
 6. Marks are stored in the habit's `recentLog`. Its shape is defined by the Habit type in the code; read it there.
@@ -57,7 +57,7 @@ Today = D. "Marked" lists the days with a mark.
 - [ ] Marking on one screen is reflected on the other
 - [ ] After restarting the app, marks and streaks are unchanged
 - [ ] Every row of the streak test table passes
-- [ ] Past days cannot be marked or unmarked
+- [ ] Past days cannot be marked or unmarked from the Habits screen
 - [ ] No mark is written for a habit that is not Day-cadence Checkmark type
 - [ ] The visuals match screens 01 and 04
 

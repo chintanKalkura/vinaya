@@ -1,6 +1,6 @@
 # Feature: Display settings.
 
-Status: done (25 Nov 2026). Week start is stored but hidden until something uses it. Look: `../../style-choices/profile/display-settings.md`, `../../style-choices/theme/light-palette.md`.
+Status: done (25 Nov 2026). Week start shown since 26 Nov 2026, for the habit and group page stats. Look: `../../style-choices/profile/display-settings.md`, `../../style-choices/theme/light-palette.md`.
 
 ## Goal
 Users can choose which view the Habits screen opens in, light or dark theme, and the first day of the week.
@@ -8,7 +8,7 @@ Users can choose which view the Habits screen opens in, light or dark theme, and
 ## Scope (owner's answers, 16 Nov 2026)
 - Default view.
 - Light/dark theme. Light palette: "Lavender" (owner, 25 Nov 2026).
-- Week start day. **TBD with Claude Code**, together with the detail page.
+- Week start day: Monday (default) or Sunday.
 
 ## Decisions
 1. **Where.** In the Profile tab (`profile-tab.md`), layout to be designed.
@@ -19,7 +19,7 @@ Users can choose which view the Habits screen opens in, light or dark theme, and
    - Light palette: Lavender, covering every `v2*` colour in `theme.ts`, including the frozen look; card tints for each banner colour come with `banner-colours.md`. Must pass the same contrast checks as `accessibility-fixes.md`.
    - Components read colours from a theme context instead of importing `colors` directly; that refactor can be done before the light palette exists.
    - Status bar and navigation bar follow the theme.
-5. **Week start.** Week cadence uses a rolling 7-day window (`week-month-year-cadence.md`), so week start has no effect on streaks or completion today. Where it is used (the detail page calendar, stats): TBD with Claude Code. The setting isn't shown until something uses it.
+5. **Week start.** Monday (default) or Sunday, shown in Display settings. Banners and streaks still use the rolling 7-day window (`week-month-year-cadence.md`), so it doesn't change them. It decides the calendar weeks behind weekly completion rates, the heatmap's weekday order, and the first column of every calendar grid on the habit and group page and in Edit past days (`habit-group-detail-page.md`).
 6. Changes apply immediately.
 
 ## Out of scope
