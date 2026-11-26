@@ -195,6 +195,7 @@ describe('NewHabitGroupForm', () => {
     fireEvent.press(utils.getByTestId('new-group-type-Hours'));
     assign(utils, ['study']);
     fireEvent.changeText(utils.getByTestId('new-group-hours-input'), '3');
+    fireEvent.press(utils.getByTestId('new-group-colour-red'));
 
     fireEvent.press(utils.getByTestId('new-group-create'));
 
@@ -207,6 +208,7 @@ describe('NewHabitGroupForm', () => {
       habitIds: ['study'],
       requiredHabitIds: [],
       targetHours: 3,
+      colour: 'red',
     });
   });
 

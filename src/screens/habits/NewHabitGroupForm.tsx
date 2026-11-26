@@ -26,6 +26,7 @@ import HabitPickerSheet, { PickerItem } from './HabitPickerSheet';
 import SegmentedControl from './SegmentedControl';
 import Stepper from './Stepper';
 import StreakFreezeField from './StreakFreezeField';
+import CompletionColourField from './CompletionColourField';
 import { useFormStyles } from './formStyles';
 
 // Screens 11-15: docs/feature-development/habits-section/create-habit-group.md
@@ -181,6 +182,15 @@ export default function NewHabitGroupForm({
         placeholder="Group name"
         placeholderTextColor={colors.v2GreyText}
         style={formStyles.nameInput}
+      />
+
+      <Text style={formStyles.label}>COMPLETION COLOUR</Text>
+      <CompletionColourField
+        value={draft.colour}
+        onChange={colour => update({ colour })}
+        name={draft.name}
+        placeholder="Your group"
+        testID="new-group-colour"
       />
 
       <Text style={formStyles.label}>CADENCE</Text>
