@@ -32,16 +32,17 @@ Full screen over the app, on the screen background. Five cards swiped sideways (
 
 ## How to use (Profile)
 
-The Profile stack header "How to use", then eight topic rows (white 16 semibold, chevron down; up when open, hairline divider). Tapping a topic opens its text (grey 15/22) under it and closes the one open before. An orange "Show the walkthrough again" button sits below the list.
+The Profile stack header "How to use", then nine topic rows (white 16 semibold, chevron down; up when open, hairline divider). Tapping a topic opens its text (grey 15/22) under it and closes the one open before. An orange "Show the walkthrough again" button sits below the list.
 
 | Topic | Text |
 |---|---|
 | Creating a habit | Tap + and choose New Habit. Give it a name, a cadence (Day, Week, Month or Year) and, for Week, Month or Year, how many days in that period it should be done. Choose Checkmark to mark it done, or Hours to log time against a daily target. You can add it to a group here, or create a new group for it. |
-| Marking done and logging hours | Tap a habit's circle to mark it done today, and tap again to undo. For an Hours habit, tap its progress bar, set today's hours and tap Done. Only today can be marked. **Change "Only today can be marked" when past days become markable (`habit-group-detail-page.md`).** |
+| Marking done and logging hours | Tap a habit's circle to mark it done today, and tap again to undo. For an Hours habit, tap its progress bar, set today's hours and tap Done. To fix a day you missed, open the habit, tap ⋮ and choose Edit past days. |
 | Streaks and streak freezes | The number beside a habit is its streak. "1 skip per N streaks" means every N days of streak earns one freeze. When you miss a day, a freeze is used automatically and the streak carries on; the habit turns icy blue that day and shows how many freezes are left. |
 | Groups and their types | A group completes when its habits meet its rule. Required: the habits you mark as required are done. Any: any one habit is done. All: every habit is done. Hours: the hours logged across its habits reach the group's target. A habit can be in several groups. |
 | Week, Month and Year cadence | These use rolling windows that end today: the last 7 days, the last month's worth of days, or the last year. A Week habit with a target of 3 is complete while it has been done on 3 of the last 7 days. |
 | Views, sort and filter | Switch between list view and group view with the icons at the top. The cadence filter shows only Day, Week, Month or Year items. Sort and filter orders by streak, name or most recent, and can show only what is completed. |
+| A habit's page | Tap a habit or a group to open its page, with its streaks, completion rate and history. |
 | Editing and deleting | Tap ⋮ on a habit or a group to edit or delete it. A habit's type can't be changed. Deleting a habit removes it from its groups; deleting a group keeps its habits. |
 | Backup and sign-in | Signing in is optional. Signed in with Google, Vinaya backs up your habits once a week to a hidden folder in your own Google Drive, and you can tap Back up now in Profile at any time. Sign in on a new phone to bring them back. Without signing in, your habits stay only on this phone. |
 
