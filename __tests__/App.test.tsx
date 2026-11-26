@@ -173,3 +173,77 @@ describe('App support', () => {
     expect(await utils.findByTestId('support-unavailable')).toBeTruthy();
   });
 });
+
+// docs/feature-development/release-1-readiness/habit-group-detail-page.md
+describe('App habit and group pages', () => {
+  const { saveHabits, saveHabitGroups } = jest.requireActual(
+    '../src/storage/habitStorage',
+  );
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    await saveHabits({
+      run: {
+        id: 'run',
+        name: 'Run',
+        cadence: 'Day',
+        type: 'Checkmark',
+        streakFreezeInterval: 7,
+        status: 'active',
+        sortOrder: 0,
+        createdAt: 0,
+        recentLog: [],
+        history: [],
+      },
+    });
+    await saveHabitGroups({
+      fitness: {
+        id: 'fitness',
+        name: 'Fitness',
+        cadence: 'Day',
+        groupType: 'Any',
+        habitIds: ['run'],
+        streakFreezeInterval: 7,
+        status: 'active',
+        sortOrder: 0,
+        createdAt: 0,
+        recentLog: [],
+        history: [],
+      },
+    });
+  });
+
+  it('opens a habit page, then its group page, and back returns step by step', async () => {
+    const utils = render(<App />);
+    fireEvent.press(await utils.findByTestId('habit-row-open-run'));
+    const habitTitle = (await utils.findByTestId('detail-title')).props
+      .children;
+
+    fireEvent.press(utils.getByTestId('detail-group-chip-fitness'));
+    // Only the page on top is visible; the habit page waits under it
+    const titles = async () =>
+      (await utils.findAllByTestId('detail-title')).map(t => t.props.children);
+    await waitFor(async () => expect(await titles()).toEqual(['Fitness']));
+    fireEvent.press(utils.getByTestId('detail-back'));
+    await waitFor(async () => expect(await titles()).toEqual(['Run']));
+
+    expect(habitTitle).toBe('Run');
+  });
+
+  it('keeps the group view and returns to it from a group page', async () => {
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('view-mode-toggle-group'));
+    fireEvent.press(await utils.findByTestId('group-header-fitness'));
+    await utils.findByTestId('detail-screen');
+
+    fireEvent.press(utils.getByTestId('detail-back'));
+
+    await waitFor(() =>
+      expect(utils.queryByTestId('detail-screen')).toBeNull(),
+    );
+    expect(
+      utils.getByTestId('view-mode-toggle-group').props.accessibilityState
+        .selected,
+    ).toBe(true);
+  });
+});
