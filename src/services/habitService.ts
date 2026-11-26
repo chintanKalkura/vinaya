@@ -223,6 +223,8 @@ export function updateHabit(
     if (habit.type === 'Hours') {
       updated.targetHours = clampTargetHours(draft.targetHours);
     }
+    if (draft.colour === 'orange') delete updated.colour;
+    else updated.colour = draft.colour;
 
     await saveHabit(updated);
     if (updated.targetHours !== habit.targetHours) {

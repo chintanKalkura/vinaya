@@ -38,6 +38,7 @@ describe('DEFAULT_DRAFT', () => {
       streakFreezeInterval: 7,
       type: 'Checkmark',
       targetHours: 1,
+      colour: 'orange',
     });
   });
 });
@@ -67,6 +68,26 @@ describe('canJoinGroup', () => {
     ['Hours', 'Hours', true],
   ] as const)('should let a %s habit join a %s group: %s', (type, gt, ok) => {
     expect(canJoinGroup(type, group(gt))).toBe(ok);
+  });
+});
+
+describe('completion colour', () => {
+  it('should store a colour other than orange and load it back', () => {
+    const built = buildHabit(draft({ colour: 'purple' }), 'p', 0, 0);
+
+    expect([built.colour, draftFromHabit(built).colour]).toEqual([
+      'purple',
+      'purple',
+    ]);
+  });
+
+  it('should store no colour for orange, and read a missing colour as orange', () => {
+    const built = buildHabit(draft({ colour: 'orange' }), 'o', 0, 0);
+
+    expect(['colour' in built, draftFromHabit(built).colour]).toEqual([
+      false,
+      'orange',
+    ]);
   });
 });
 
@@ -147,6 +168,7 @@ describe('draftFromHabit and isDraftChanged', () => {
       streakFreezeInterval: 7,
       type: 'Hours',
       targetHours: 2,
+      colour: 'orange',
     });
   });
 
@@ -169,6 +191,7 @@ describe('draftFromHabit and isDraftChanged', () => {
     ['target', { target: 4 }],
     ['streak freeze', { streakFreezeInterval: 3 }],
     ['daily target hours', { targetHours: 5 }],
+    ['colour', { colour: 'green' }],
   ] as const)('should notice a changed %s', (_label, change) => {
     const saved = draftFromHabit(habit);
 
