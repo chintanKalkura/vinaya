@@ -29,7 +29,7 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 7. **List menus unchanged.** The ⋮ on banners and group cards stays Edit / Delete, so Edit past days stays tucked away.
 
 ### Stats
-8. **Rating.** Five stars filled from the overall completion rate, rounded to the nearest fifth: 20% is one star, 40% two, 60% three, 80% four, 100% five (so 84% shows 4, 90% shows 5, under 10% shows none). Filled stars use the item's completion colour, empty ones are grey outlines; no text. Before anything counts, all five are empty. A fuller formula may replace this later.
+8. **Rating.** Five stars filled from the overall completion rate, rounded to the nearest fifth: 20% is one star, 40% two, 60% three, 80% four, 100% five (so 84% shows 4, 90% shows 5, under 10% shows none). Filled stars use the item's completion colour, empty ones are grey outlines; no text. Before anything counts, all five are empty. A fuller formula may replace this later (README, step 7).
 9. **Streaks.** Current, best and previous. Previous is the run before the latest one; when the current streak is 0, it is the run that just ended. Runs follow the banner's streak rules, with frozen days bridging a run without adding to it.
 10. **Completion rate (overall).** Completed units ÷ units since the item was created.
     - Day: a unit is a day.
