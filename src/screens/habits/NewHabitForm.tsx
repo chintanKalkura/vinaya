@@ -51,6 +51,7 @@ interface NewHabitFormProps {
   hideGroupRow?: boolean; // opened from the group form
   editing?: Habit; // Edit Habit: docs/feature-development/habits-section/edit-habit-group.md
   saveError?: React.ReactNode;
+  headerMenu?: React.ReactNode; // the edit form's ⋮, right of the title
 }
 
 export default function NewHabitForm({
@@ -63,6 +64,7 @@ export default function NewHabitForm({
   hideGroupRow = false,
   editing,
   saveError,
+  headerMenu,
 }: NewHabitFormProps): React.JSX.Element {
   const formStyles = useFormStyles();
   const colors = usePalette();
@@ -140,6 +142,7 @@ export default function NewHabitForm({
       backTestID="new-habit-back"
       onBack={onBack}
       saveError={saveError}
+      menu={headerMenu}
     >
       <Text style={formStyles.label}>NAME</Text>
       <TextInput
