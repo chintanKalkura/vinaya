@@ -10,14 +10,36 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from './src/theme';
 import HabitsScreen from './src/screens/HabitsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ComingSoonScreen from './src/screens/ComingSoonScreen';
+import AboutScreen from './src/screens/profile/AboutScreen';
 import BottomMenu, { Tab } from './src/screens/habits/BottomMenu';
 import { useAutoBackup } from './src/hooks/useAutoBackup';
 
 const Tabs = createBottomTabNavigator();
+// Profile and the screens its menu opens; back returns to the menu
+const ProfileStack = createNativeStackNavigator();
+
+function ProfileTab({ onDataChanged }: { onDataChanged: () => void }) {
+  return (
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStack.Screen name="ProfileMenu">
+        {({ navigation }) => (
+          <ProfileScreen
+            onDataChanged={onDataChanged}
+            onOpenAbout={() => navigation.navigate('About')}
+          />
+        )}
+      </ProfileStack.Screen>
+      <ProfileStack.Screen name="About">
+        {({ navigation }) => <AboutScreen onBack={navigation.goBack} />}
+      </ProfileStack.Screen>
+    </ProfileStack.Navigator>
+  );
+}
 
 // The app's own colours, so screens don't flash white between tabs
 const navigationTheme: Theme = {
@@ -70,7 +92,7 @@ export default function App() {
             {() => <ComingSoonScreen section="Level-Up" />}
           </Tabs.Screen>
           <Tabs.Screen name="Profile">
-            {() => <ProfileScreen onDataChanged={dataChanged} />}
+            {() => <ProfileTab onDataChanged={dataChanged} />}
           </Tabs.Screen>
         </Tabs.Navigator>
       </NavigationContainer>

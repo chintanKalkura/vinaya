@@ -1,5 +1,6 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Text } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import AccountSection, {
   NOT_SIGNED_IN_TEXT,
@@ -174,5 +175,40 @@ describe('restoreText', () => {
 describe('lastBackupText', () => {
   it('should say when there has been no backup', () => {
     expect(lastBackupText(undefined)).toBe('Not backed up yet');
+  });
+});
+
+describe('AccountSection menu rows', () => {
+  it('should hide Sign out and Delete data when signed out', async () => {
+    const { findByText, queryByTestId } = render(
+      <AccountSection onDataChanged={() => {}} />,
+    );
+    await findByText(NOT_SIGNED_IN_TEXT);
+
+    expect([queryByTestId('sign-out'), queryByTestId('delete-backup')]).toEqual(
+      [null, null],
+    );
+  });
+
+  it('should draw the Profile menu rows above Sign out', async () => {
+    await updateBackupState({ account: ACCOUNT });
+    const { findByTestId, toJSON } = render(
+      <AccountSection onDataChanged={() => {}}>
+        <Text>Display settings</Text>
+      </AccountSection>,
+    );
+    await findByTestId('sign-out');
+    const tree = JSON.stringify(toJSON());
+
+    expect(tree.indexOf('Display settings')).toBeLessThan(
+      tree.indexOf('Sign out'),
+    );
+  });
+
+  it('should label the delete row Delete data', async () => {
+    await updateBackupState({ account: ACCOUNT });
+    const { findByText } = render(<AccountSection onDataChanged={() => {}} />);
+
+    expect(await findByText('Delete data')).toBeTruthy();
   });
 });

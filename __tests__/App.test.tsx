@@ -94,3 +94,17 @@ describe('App coming-soon tabs', () => {
     expect(utils.queryByTestId('fab')).toBeNull();
   });
 });
+
+describe('App Profile stack', () => {
+  it('opens About from Profile and goes back to the menu', async () => {
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
+
+    fireEvent.press(await utils.findByTestId('profile-about'));
+    await utils.findByTestId('about-screen');
+    fireEvent.press(utils.getByTestId('about-back'));
+
+    expect(!!(await utils.findByTestId('profile-screen'))).toBe(true);
+  });
+});

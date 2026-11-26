@@ -16,6 +16,7 @@ Vinaya 1.0 live on Google Play from a personal developer account.
 ## 2. Websites you need (free: GitHub Pages works)
 - [ ] **Privacy policy**: what's stored on the phone, the optional Google sign-in, backup to the user's own Drive (`drive.appdata`), Play purchase handling, no ads, no analytics (update if that changes), contact email.
 - [ ] **Account deletion page**: in-app path and the no-app path (`google-drive-backup.md`, decision 10).
+- [ ] **Wire both pages into the app**: set `PRIVACY_POLICY_URL` and `ACCOUNT_DELETION_URL` in `src/config/links.ts` (Profile → About shows the links but opens nothing until then).
 
 ## 3. Google Cloud (for sign-in and Drive)
 - [ ] Project created; Drive API enabled.
