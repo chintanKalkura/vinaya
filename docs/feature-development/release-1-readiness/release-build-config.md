@@ -17,7 +17,7 @@ The project builds a signed Android App Bundle that Google Play accepts, with no
 4. **Bundle.** `./gradlew bundleRelease` produces `app-release.aab`. Document the command in `docs/start-app.md`.
 5. **Versioning.** `versionCode` increases by 1 for every Play upload; `versionName` follows `1.0.0` style. Both set in `android/app/build.gradle`, bumped by hand in the release PR.
 6. **Application ID.** Check `com.vinaya` is not already taken on Play before the first upload; it can't change afterwards. If taken, choose a new ID before release (design decision required). Decided (owner, 22 Nov 2026): keep `com.vinaya`. play.google.com has no listing for it (404); an unpublished app also 404s, so it is confirmed only at the first upload.
-7. **Shrinking.** Turn on R8 (`minifyEnabled true`, `shrinkResources true`) for release, keeping the rules React Native, Notifee, AsyncStorage, SVG, billing and Google Sign-In need. Verify on a device.
+7. **Shrinking.** Turn on R8 (`minifyEnabled true`, `shrinkResources true`) for release, keeping the rules React Native, Notifee, AsyncStorage, SVG, billing and Google Sign-In need. Verify on a device. Checked 25 Nov 2026 with react-native-iap and React Navigation: `assembleRelease` with R8 builds and runs on the emulator; the library merges the `com.android.vending.BILLING` permission.
 8. **Target SDK.** Stays at 36, which Play requires for new apps.
 9. **Backup flag.** `android:allowBackup` decided with `google-drive-backup.md`.
 

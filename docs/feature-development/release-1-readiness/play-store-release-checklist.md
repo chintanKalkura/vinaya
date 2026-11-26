@@ -39,7 +39,8 @@ Vinaya 1.0 live on Google Play from a personal developer account.
   - [ ] Target audience: adults (18+ or 13+), not children, to stay out of the Families programme
   - [ ] Data safety: answer for Google sign-in (email/name used for sign-in), backup to the user's Drive, and purchases through Play. Check Google's Data safety guidance on what counts as "collected" when data goes to the user's own Drive and not to your servers.
   - [ ] Data deletion: account deletion URL
-- [ ] In-app products `support_49`, `support_99`, `support_199`, `support_399` (plus any extra tiers) created and active.
+- [ ] In-app products `support_49`, `support_99`, `support_199`, `support_399` created as one-time consumables and active (no other tiers).
+- [ ] A test purchase by a license tester on an internal-track build: thank-you shows, the same amount can be bought again; a UPI payment shows Payment pending.
 
 ## 6. Internal testing (no review, quick)
 - [ ] Upload the AAB to the internal track; install on your phone from Play.

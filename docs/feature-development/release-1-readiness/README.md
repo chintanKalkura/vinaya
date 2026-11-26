@@ -17,7 +17,7 @@ Work them in this order. Within a step, any order.
 | | `profile-tab.md` | in progress (menu and About done; About links not wired) |
 | | `display-settings.md` | done (week start stored, hidden) |
 | | `how-to-use.md` | done |
-| | `support-the-developer.md` | custom amount: open question |
+| | `support-the-developer.md` | done in app; Play Console products and test purchase pending |
 | | `hours-habits-in-any-group.md` | ready (mixed card layout: design decision) |
 | | `banner-colours.md` | colour set and picker to be designed |
 | | `habit-group-detail-page.md` | to be designed |

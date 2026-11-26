@@ -14,7 +14,7 @@ The title "Vinaya - Profile" in the Habits title look, the Account & backup card
 │ [ Back up now ]           │
 └───────────────────────────┘
  Display settings        >
- Support the developer   >     (support PR)
+ Support the developer   >
  How to use              >
  Sign out                      signed in only
  Delete data                   red, signed in only

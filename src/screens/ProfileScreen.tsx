@@ -12,6 +12,7 @@ interface ProfileScreenProps {
   onOpenAbout: () => void;
   onOpenDisplaySettings: () => void;
   onOpenHowToUse: () => void;
+  onOpenSupport: () => void;
 }
 
 export default function ProfileScreen({
@@ -19,6 +20,7 @@ export default function ProfileScreen({
   onOpenAbout,
   onOpenDisplaySettings,
   onOpenHowToUse,
+  onOpenSupport,
 }: ProfileScreenProps): React.JSX.Element {
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
@@ -33,14 +35,19 @@ export default function ProfileScreen({
       </Text>
       <ScrollView contentContainerStyle={styles.content}>
         <View>
-          {/* The Support the developer row joins these in AccountSection's
-              slot, above Sign out */}
+          {/* The menu rows sit in AccountSection's slot, above Sign out */}
           <AccountSection onDataChanged={onDataChanged}>
             <MenuRow
               testID="profile-display-settings"
               label="Display settings"
               chevron
               onPress={onOpenDisplaySettings}
+            />
+            <MenuRow
+              testID="profile-support"
+              label="Support the developer"
+              chevron
+              onPress={onOpenSupport}
             />
             <MenuRow
               testID="profile-how-to-use"

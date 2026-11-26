@@ -21,6 +21,9 @@ import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/profile/AboutScreen';
 import DisplaySettingsScreen from './src/screens/profile/DisplaySettingsScreen';
 import HelpScreen from './src/screens/howToUse/HelpScreen';
+import SupportScreen from './src/screens/profile/SupportScreen';
+import { consumeLeftoverPurchases } from './src/support/support';
+import { playBillingClient } from './src/support/playBillingClient';
 import WalkthroughScreen from './src/screens/howToUse/WalkthroughScreen';
 import {
   hasSeenOnboarding,
@@ -48,6 +51,7 @@ function ProfileTab({ onDataChanged, onShowWalkthrough }: ProfileTabProps) {
             onOpenAbout={() => navigation.navigate('About')}
             onOpenDisplaySettings={() => navigation.navigate('DisplaySettings')}
             onOpenHowToUse={() => navigation.navigate('HowToUse')}
+            onOpenSupport={() => navigation.navigate('Support')}
           />
         )}
       </ProfileStack.Screen>
@@ -55,6 +59,9 @@ function ProfileTab({ onDataChanged, onShowWalkthrough }: ProfileTabProps) {
         {({ navigation }) => (
           <DisplaySettingsScreen onBack={navigation.goBack} />
         )}
+      </ProfileStack.Screen>
+      <ProfileStack.Screen name="Support">
+        {({ navigation }) => <SupportScreen onBack={navigation.goBack} />}
       </ProfileStack.Screen>
       <ProfileStack.Screen name="HowToUse">
         {({ navigation }) => (
@@ -87,6 +94,11 @@ export default function App() {
   const dataChanged = useCallback(() => setDataVersion(v => v + 1), []);
 
   useAutoBackup(dataChanged);
+
+  // Support purchases left unconsumed last time: support-the-developer.md
+  useEffect(() => {
+    consumeLeftoverPurchases(playBillingClient);
+  }, []);
 
   return (
     <SafeAreaProvider>
