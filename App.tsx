@@ -70,6 +70,7 @@ function DetailRoute({
       id={route.params.id}
       onBack={navigation.goBack}
       onOpenGroup={id => navigation.push('Detail', { kind: 'group', id })}
+      onOpenHabit={id => navigation.push('Detail', { kind: 'habit', id })}
       onGone={navigation.popToTop}
     />
   );
