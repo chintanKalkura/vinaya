@@ -7,13 +7,17 @@ The v1 app (21-day challenge, journal screen, reminders, Mindfulness Bell, count
 ```
 App.tsx                     — tab navigator: Habits, Journal and Level-Up (coming soon), Profile; auto backup
 src/
-├── theme.ts                — v2 palette (`colors.v2*`); contrast checked by theme.contrast.test.ts
+├── theme.ts                — dark and light (Lavender) palettes; contrast checked by theme.contrast.test.ts
+├── theming.tsx             — ThemeProvider, usePalette, useThemedStyles (styles built per palette)
+├── settings/               — SettingsProvider: display settings (settings_v2) and the palette they pick
+├── systemBars.ts           — SystemBars native module (navigation bar icon colour)
 ├── types/                  — habit.ts, habitGroup.ts, habitConfig.ts (limits), log.ts, backup.ts
 ├── utils/                  — pure logic: dates, cadence windows, streaks, streak freezes, hours,
 │                             group completion, sort/filter, new habit/group drafts, tombstones, contrast
 ├── storage/
 │   ├── habitStorage.ts     — AsyncStorage collections (habits_v2, habit_groups_v2, tombstones_v2),
 │   │                         the single storage write queue, read/write errors
+│   ├── settingsStorage.ts  — settings_v2 (default view, theme, week start), through the write queue
 │   ├── devSeed.ts          — debug-only sample data
 │   └── appInfo.ts          — AppInfo native module (install time, version name)
 ├── services/               — habitService, habitGroupService: every change is one queued storage operation
@@ -26,12 +30,14 @@ src/
     ├── habits/             — rows, pills, group cards, header, sheets, forms, menus, labels, tap targets
     ├── ProfileScreen.tsx
     ├── ComingSoonScreen.tsx — Journal and Level-Up until they're built
-    └── profile/            — AccountSection (sign-in and backup)
+    └── profile/            — AccountSection (sign-in and backup), menu rows, About, Display settings
 ```
 
 Specs: `feature-development/`. Look and feel: `style-choices/` (listed in `CLAUDE.md`).
 
 **Code style** (enforced via `.prettierrc.js`): single quotes, trailing commas, no parens on single arrow-function params.
+
+**Colours:** components never import `colors` directly; they build styles with `useThemedStyles(makeStyles)` and read icon colours with `usePalette()` (`style-choices/theme/light-palette.md`).
 
 **TypeScript** extends `@react-native/typescript-config`; all source files are `.ts`/`.tsx`.
 

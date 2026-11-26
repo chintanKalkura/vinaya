@@ -2,7 +2,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { Check, Snowflake } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { useHabitVisual } from './useHabitVisual';
 import { getColorScheme } from './colorRules';
 import { checkmarkLabel } from './a11yLabels';
@@ -22,12 +23,15 @@ export default function HabitPill({
   onPress,
   required = false,
 }: HabitPillProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const { status } = useHabitVisual(habit, todayKey);
   const scheme = getColorScheme(
     'pill',
     status.complete,
     status.markedToday,
     status.frozenToday,
+    colors,
   );
 
   return (
@@ -95,33 +99,34 @@ export default function HabitPill({
 // The 18px check grows to 48×48 to tap, inside the 48dp-tall pill
 export const PILL_CHECK_HIT_SLOP = { top: 15, bottom: 15, left: 12, right: 18 };
 
-const styles = StyleSheet.create({
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 48,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: colors.v2CardBackgroundInset,
-  },
-  check: {
-    marginRight: 6,
-  },
-  icon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  streak: {
-    fontStyle: 'italic',
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    pill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 48,
+      borderWidth: 1,
+      borderRadius: 20,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      backgroundColor: colors.v2CardBackgroundInset,
+    },
+    check: {
+      marginRight: 6,
+    },
+    icon: {
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    name: {
+      fontWeight: '600',
+      marginRight: 8,
+    },
+    streak: {
+      fontStyle: 'italic',
+    },
+  });

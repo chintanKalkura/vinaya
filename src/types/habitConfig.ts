@@ -11,7 +11,7 @@ export interface HabitLimitsConfig {
 }
 
 export const DEFAULT_HABIT_LIMITS: HabitLimitsConfig = {
-  cadenceTargetMax: {Week: 6, Month: 20, Year: 100},
+  cadenceTargetMax: { Week: 6, Month: 20, Year: 100 },
   hoursTargetMax: 24,
   streakFreezeIntervalDefault: 7,
   streakFreezeIntervalMax: 100,

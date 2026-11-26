@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Snowflake } from 'lucide-react-native';
 import { Habit } from '../../types/habit';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { useHabitVisual } from './useHabitVisual';
 import HoursProgress from './HoursProgress';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
@@ -33,12 +34,15 @@ export default function HabitListRow({
   onEdit,
   onDelete,
 }: HabitListRowProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const { status, hours } = useHabitVisual(habit, todayKey);
   const scheme = getColorScheme(
     colorKind,
     status.complete,
     status.markedToday,
     status.frozenToday,
+    colors,
   );
   // Banners (list view) right-align the streak and show the cadence label;
   // pills (Hours habits inside a group card) keep the streak beside the name
@@ -212,60 +216,61 @@ export const CHECK_HIT_SLOP = { top: 12, bottom: 16, left: 14, right: 14 };
 export const BANNER_HOURS_HIT_SLOP = { top: 10, bottom: 22 };
 export const CELL_HOURS_HIT_SLOP = { top: 16, bottom: 16 };
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: colors.v2CardBackground,
-  },
-  bannerRow: {
-    paddingBottom: 12 + CADENCE_LABEL_SPACE,
-  },
-  check: {
-    marginRight: 10,
-  },
-  icon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textColumn: {
-    flex: 1,
-  },
-  menuSpace: {
-    width: BANNER_MENU_SPACE,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  name: {
-    flexShrink: 1,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  streak: {
-    fontStyle: 'italic',
-    fontWeight: '600',
-  },
-  streakRight: {
-    marginLeft: 'auto',
-  },
-  groupName: {
-    color: colors.v2GreyText,
-    fontStyle: 'italic',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  hoursProgress: {
-    marginTop: 10,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      borderRadius: 16,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      backgroundColor: colors.v2CardBackground,
+    },
+    bannerRow: {
+      paddingBottom: 12 + CADENCE_LABEL_SPACE,
+    },
+    check: {
+      marginRight: 10,
+    },
+    icon: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    textColumn: {
+      flex: 1,
+    },
+    menuSpace: {
+      width: BANNER_MENU_SPACE,
+    },
+    nameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    name: {
+      flexShrink: 1,
+      fontWeight: '600',
+      marginRight: 8,
+    },
+    streak: {
+      fontStyle: 'italic',
+      fontWeight: '600',
+    },
+    streakRight: {
+      marginLeft: 'auto',
+    },
+    groupName: {
+      color: colors.v2GreyText,
+      fontStyle: 'italic',
+      fontSize: 12,
+      marginTop: 2,
+    },
+    hoursProgress: {
+      marginTop: 10,
+    },
+  });

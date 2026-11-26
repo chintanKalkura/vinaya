@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 
 // − / value / + with tap-to-type; used by the New Habit form
 interface StepperProps {
@@ -21,6 +22,8 @@ export default function Stepper({
   testID,
   suffix,
 }: StepperProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const [text, setText] = useState(String(value));
 
   useEffect(() => setText(String(value)), [value]);
@@ -68,38 +71,39 @@ export default function Stepper({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  // 48dp to tap: docs/style-choices/habits-section/tap-targets.md
-  stepButton: {
-    width: 48,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-    backgroundColor: colors.v2Border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  input: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2Background,
-    color: colors.v2Orange,
-    fontSize: 22,
-    fontWeight: '700',
-    textAlign: 'center',
-    padding: 0,
-  },
-  suffix: {
-    color: colors.v2GreyText,
-    fontSize: 13,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    // 48dp to tap: docs/style-choices/habits-section/tap-targets.md
+    stepButton: {
+      width: 48,
+      minHeight: 48,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+      backgroundColor: colors.v2Border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    input: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2Background,
+      color: colors.v2Orange,
+      fontSize: 22,
+      fontWeight: '700',
+      textAlign: 'center',
+      padding: 0,
+    },
+    suffix: {
+      color: colors.v2GreyText,
+      fontSize: 13,
+    },
+  });

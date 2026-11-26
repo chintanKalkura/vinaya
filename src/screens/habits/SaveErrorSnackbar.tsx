@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 
 // Non-blocking "Couldn't save" above the FAB, or at the bottom of an open
 // form: docs/style-choices/habits-section/storage-error-messages.md
@@ -21,6 +22,7 @@ export default function SaveErrorSnackbar({
   onDismiss,
   inForm = false,
 }: SaveErrorSnackbarProps): React.JSX.Element | null {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -48,20 +50,21 @@ export default function SaveErrorSnackbar({
   );
 }
 
-const styles = StyleSheet.create({
-  snackbar: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.v2Red,
-    backgroundColor: colors.v2CardBackground,
-  },
-  text: {
-    color: colors.v2White,
-    fontSize: 14,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    snackbar: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.v2Red,
+      backgroundColor: colors.v2CardBackground,
+    },
+    text: {
+      color: colors.v2White,
+      fontSize: 14,
+    },
+  });

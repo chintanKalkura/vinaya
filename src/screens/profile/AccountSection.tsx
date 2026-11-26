@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 import MenuRow from './MenuRow';
 import {
   createDriveStore,
@@ -50,6 +51,7 @@ export default function AccountSection({
   onDataChanged,
   children,
 }: AccountSectionProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   const [state, setState] = useState<BackupState>({});
   const [busy, setBusy] = useState<Busy>('none');
   const [actionError, setActionError] = useState<string | null>(null);
@@ -274,115 +276,116 @@ export default function AccountSection({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.v2CardBackground,
-    borderRadius: 18,
-    padding: 18,
-    gap: 10,
-  },
-  heading: {
-    color: colors.v2GreyText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  body: {
-    color: colors.v2White,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  name: {
-    color: colors.v2White,
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  email: {
-    color: colors.v2GreyText,
-    fontSize: 14,
-    marginTop: -6,
-  },
-  status: {
-    color: colors.v2GreyText,
-    fontSize: 14,
-  },
-  error: {
-    color: colors.v2Red,
-    fontSize: 14,
-  },
-  primary: {
-    minHeight: 46,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.v2Orange,
-    marginTop: 4,
-  },
-  primaryDisabled: {
-    opacity: 0.6,
-  },
-  primaryLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  section: {
-    gap: 12,
-  },
-  backdrop: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(5, 5, 12, 0.85)',
-  },
-  dialog: {
-    width: '78%',
-    borderRadius: 18,
-    backgroundColor: colors.v2CardBackground,
-    padding: 18,
-    gap: 12,
-  },
-  dialogTitle: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 17,
-  },
-  dialogBody: {
-    color: colors.v2GreyText,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  dialogButton: {
-    minHeight: 46,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  okButton: {
-    backgroundColor: colors.v2Orange,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  half: {
-    flex: 1,
-  },
-  cancel: {
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-  },
-  cancelLabel: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  confirm: {
-    backgroundColor: colors.v2Red,
-  },
-  confirmLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.v2CardBackground,
+      borderRadius: 18,
+      padding: 18,
+      gap: 10,
+    },
+    heading: {
+      color: colors.v2GreyText,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 1,
+    },
+    body: {
+      color: colors.v2White,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    name: {
+      color: colors.v2White,
+      fontSize: 17,
+      fontWeight: '700',
+    },
+    email: {
+      color: colors.v2GreyText,
+      fontSize: 14,
+      marginTop: -6,
+    },
+    status: {
+      color: colors.v2GreyText,
+      fontSize: 14,
+    },
+    error: {
+      color: colors.v2Red,
+      fontSize: 14,
+    },
+    primary: {
+      minHeight: 46,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.v2Orange,
+      marginTop: 4,
+    },
+    primaryDisabled: {
+      opacity: 0.6,
+    },
+    primaryLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    section: {
+      gap: 12,
+    },
+    backdrop: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.v2Scrim,
+    },
+    dialog: {
+      width: '78%',
+      borderRadius: 18,
+      backgroundColor: colors.v2CardBackground,
+      padding: 18,
+      gap: 12,
+    },
+    dialogTitle: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 17,
+    },
+    dialogBody: {
+      color: colors.v2GreyText,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    dialogButton: {
+      minHeight: 46,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    okButton: {
+      backgroundColor: colors.v2Orange,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    half: {
+      flex: 1,
+    },
+    cancel: {
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+    },
+    cancelLabel: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    confirm: {
+      backgroundColor: colors.v2Red,
+    },
+    confirmLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+  });

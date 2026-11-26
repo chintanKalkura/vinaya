@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { MIN_TOUCH_SIZE } from '../habits/TouchTarget';
 
 // One row of the Profile menu: docs/style-choices/profile/profile-menu.md
@@ -28,6 +29,8 @@ export default function MenuRow({
   accessibilityRole = 'button',
   right,
 }: MenuRowProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       testID={testID}
@@ -47,33 +50,34 @@ export default function MenuRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    minHeight: MIN_TOUCH_SIZE + 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingHorizontal: 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.v2Border,
-  },
-  label: {
-    flexShrink: 1,
-    color: colors.v2White,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  danger: {
-    color: colors.v2Red,
-  },
-  right: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  value: {
-    color: colors.v2GreyText,
-    fontSize: 15,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      minHeight: MIN_TOUCH_SIZE + 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      paddingHorizontal: 4,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.v2Border,
+    },
+    label: {
+      flexShrink: 1,
+      color: colors.v2White,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    danger: {
+      color: colors.v2Red,
+    },
+    right: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    value: {
+      color: colors.v2GreyText,
+      fontSize: 15,
+    },
+  });

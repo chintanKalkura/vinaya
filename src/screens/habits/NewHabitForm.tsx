@@ -11,7 +11,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { Habit, HabitCadence, HabitType } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
-import { colors } from '../../theme';
+import { usePalette } from '../../theming';
 import TouchTarget from './TouchTarget';
 import { clampCadenceTarget } from '../../utils/cadence';
 import {
@@ -29,7 +29,7 @@ import FormScreen from './FormScreen';
 import SegmentedControl from './SegmentedControl';
 import Stepper from './Stepper';
 import StreakFreezeField from './StreakFreezeField';
-import { formStyles } from './formStyles';
+import { useFormStyles } from './formStyles';
 
 // Screens 06-10: docs/feature-development/habits-section/create-habit.md
 const CADENCES: readonly HabitCadence[] = ['Day', 'Week', 'Month', 'Year'];
@@ -63,6 +63,8 @@ export default function NewHabitForm({
   editing,
   saveError,
 }: NewHabitFormProps): React.JSX.Element {
+  const formStyles = useFormStyles();
+  const colors = usePalette();
   const [draft, setDraft] = useState<NewHabitDraft>(DEFAULT_DRAFT);
 
   // Every opening starts fresh, or from the habit being edited

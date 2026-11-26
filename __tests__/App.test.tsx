@@ -7,7 +7,8 @@ import ReactTestRenderer from 'react-test-renderer';
 import App from '../App';
 // Imported at the top so its automatic unmount runs after every test here
 import { act, fireEvent, render } from '@testing-library/react-native';
-import { BackHandler } from 'react-native';
+import { BackHandler, StyleSheet } from 'react-native';
+import { lightColors } from '../src/theme';
 import { COMING_SOON } from '../src/screens/ComingSoonScreen';
 
 test('renders correctly', async () => {
@@ -106,5 +107,22 @@ describe('App Profile stack', () => {
     fireEvent.press(utils.getByTestId('about-back'));
 
     expect(!!(await utils.findByTestId('profile-screen'))).toBe(true);
+  });
+});
+
+describe('App display settings', () => {
+  it('opens Display settings from Profile and recolours the app in Light', async () => {
+    const utils = render(<App />);
+    await utils.findByTestId('fab');
+    fireEvent.press(utils.getByTestId('bottom-menu-Profile'));
+
+    fireEvent.press(await utils.findByTestId('profile-display-settings'));
+    fireEvent.press(await utils.findByTestId('setting-theme-Light'));
+
+    expect(
+      StyleSheet.flatten(
+        (await utils.findByTestId('display-settings-screen')).props.style,
+      ).backgroundColor,
+    ).toBe(lightColors.v2Background);
   });
 });

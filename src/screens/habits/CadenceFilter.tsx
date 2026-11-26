@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { HabitCadence } from '../../types/habit';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import TouchTarget from './TouchTarget';
 
 // Design: docs/style-choices/habits-section/cadence-filter.md
@@ -27,6 +28,8 @@ export default function CadenceFilter({
   value,
   onChange,
 }: CadenceFilterProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const triggerRef = useRef<View>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState(DEFAULT_POSITION);
@@ -112,41 +115,42 @@ export default function CadenceFilter({
   );
 }
 
-const styles = StyleSheet.create({
-  trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    backgroundColor: colors.v2Orange,
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-  },
-  triggerLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-  },
-  menu: {
-    position: 'absolute',
-    minWidth: 150,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    backgroundColor: colors.v2CardBackground,
-    paddingVertical: 6,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  checkSlot: {
-    width: 22,
-  },
-  optionLabel: {
-    fontWeight: '600',
-    fontSize: 15,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    trigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      gap: 6,
+      backgroundColor: colors.v2Orange,
+      borderRadius: 16,
+      paddingVertical: 6,
+      paddingHorizontal: 14,
+    },
+    triggerLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+    },
+    menu: {
+      position: 'absolute',
+      minWidth: 150,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      backgroundColor: colors.v2CardBackground,
+      paddingVertical: 6,
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    checkSlot: {
+      width: 22,
+    },
+    optionLabel: {
+      fontWeight: '600',
+      fontSize: 15,
+    },
+  });

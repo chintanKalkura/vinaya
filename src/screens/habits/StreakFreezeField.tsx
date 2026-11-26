@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 import { clampFreezeInterval } from '../../utils/streakFreeze';
-import { formStyles } from './formStyles';
+import { useFormStyles } from './formStyles';
 
 // "1 skip per [N] streaks", typed in, 1-100
 interface StreakFreezeFieldProps {
@@ -16,6 +17,8 @@ export default function StreakFreezeField({
   onChange,
   testID,
 }: StreakFreezeFieldProps): React.JSX.Element {
+  const formStyles = useFormStyles();
+  const styles = useThemedStyles(makeStyles);
   const [text, setText] = useState(String(value));
 
   useEffect(() => setText(String(value)), [value]);
@@ -44,27 +47,28 @@ export default function StreakFreezeField({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  text: {
-    color: colors.v2GreyText,
-    fontSize: 15,
-  },
-  input: {
-    width: 64,
-    minHeight: 40,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2Background,
-    color: colors.v2Orange,
-    fontSize: 18,
-    fontWeight: '700',
-    textAlign: 'center',
-    padding: 0,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    text: {
+      color: colors.v2GreyText,
+      fontSize: 15,
+    },
+    input: {
+      width: 64,
+      minHeight: 40,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2Background,
+      color: colors.v2Orange,
+      fontSize: 18,
+      fontWeight: '700',
+      textAlign: 'center',
+      padding: 0,
+    },
+  });

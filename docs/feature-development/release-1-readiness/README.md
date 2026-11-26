@@ -15,7 +15,7 @@ Work them in this order. Within a step, any order.
 | | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | done |
 | | `profile-tab.md` | in progress (menu and About done; About links not wired) |
-| | `display-settings.md` | light theme and week start to be designed |
+| | `display-settings.md` | done (week start stored, hidden) |
 | | `how-to-use.md` | screens and wording to be designed |
 | | `support-the-developer.md` | custom amount: open question |
 | | `hours-habits-in-any-group.md` | ready (mixed card layout: design decision) |

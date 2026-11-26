@@ -1,22 +1,22 @@
 # Feature: Display settings.
 
-Status: needs design (light theme, week start use), then ready for planning.
+Status: done (25 Nov 2026). Week start is stored but hidden until something uses it. Look: `../../style-choices/profile/display-settings.md`, `../../style-choices/theme/light-palette.md`.
 
 ## Goal
 Users can choose which view the Habits screen opens in, light or dark theme, and the first day of the week.
 
 ## Scope (owner's answers, 16 Nov 2026)
 - Default view.
-- Light/dark theme. The light palette is **to be designed with Claude Code**.
+- Light/dark theme. Light palette: "Lavender" (owner, 25 Nov 2026).
 - Week start day. **TBD with Claude Code**, together with the detail page.
 
 ## Decisions
 1. **Where.** In the Profile tab (`profile-tab.md`), layout to be designed.
 2. **Storage.** A `settings_v2` AsyncStorage key holding `{ defaultView: 'list' | 'group', theme: 'dark' | 'light' | 'system', weekStart: 'monday' | 'sunday' }`, written through the storage write queue and included in backups (`google-drive-backup.md`).
-3. **Default view.** List (current behaviour) unless changed. Applies the next time the Habits screen opens; the header toggle still switches views for the session.
+3. **Default view.** List (current behaviour) unless changed. Applies immediately (owner, 25 Nov 2026): the Habits screen switches to it when it's changed; the header toggle still switches views for the session.
 4. **Theme.**
-   - Dark is the current v2 palette and the default. Whether to offer "System" (follow the phone): design decision required.
-   - Light palette: to be designed, covering every `v2*` colour in `theme.ts`, including card tints for each banner colour (`banner-colours.md`) and the frozen look. Must pass the same contrast checks as `accessibility-fixes.md`.
+   - Dark is the current v2 palette and the default. Options: Dark, Light and System (follows the phone, live).
+   - Light palette: Lavender, covering every `v2*` colour in `theme.ts`, including the frozen look; card tints for each banner colour come with `banner-colours.md`. Must pass the same contrast checks as `accessibility-fixes.md`.
    - Components read colours from a theme context instead of importing `colors` directly; that refactor can be done before the light palette exists.
    - Status bar and navigation bar follow the theme.
 5. **Week start.** Week cadence uses a rolling 7-day window (`week-month-year-cadence.md`), so week start has no effect on streaks or completion today. Where it is used (the detail page calendar, stats): TBD with Claude Code. The setting isn't shown until something uses it.
@@ -32,6 +32,6 @@ Users can choose which view the Habits screen opens in, light or dark theme, and
 - Contrast test runs for both palettes.
 
 ## Acceptance criteria
-- [ ] The Habits screen opens in the chosen default view
-- [ ] Switching theme recolours the whole app immediately, with both themes passing contrast
-- [ ] Settings survive a restart and are restored from a backup
+- [x] The Habits screen opens in the chosen default view
+- [x] Switching theme recolours the whole app immediately, with both themes passing contrast
+- [x] Settings survive a restart and are restored from a backup

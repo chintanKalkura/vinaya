@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { LayoutGrid, List, ListFilter } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import CadenceFilter, { CadenceFilterValue } from './CadenceFilter';
 import TouchTarget from './TouchTarget';
 
@@ -22,6 +23,8 @@ export default function HabitsHeader({
   onChangeViewMode,
   onOpenSort,
 }: HabitsHeaderProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const isGroup = viewMode === 'group';
 
   return (
@@ -90,53 +93,54 @@ export default function HabitsHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    // 48dp targets fill the vertical padding, so the header keeps its height
-    paddingTop: 8,
-    gap: 8,
-  },
-  title: {
-    flex: 1,
-    color: colors.v2White,
-    fontFamily: 'serif',
-    fontStyle: 'italic',
-    fontWeight: '600',
-    fontSize: 20,
-  },
-  toggleGroup: {
-    flexDirection: 'row',
-    paddingHorizontal: 3,
-  },
-  toggleBackground: {
-    ...StyleSheet.absoluteFillObject,
-    top: 8,
-    bottom: 8,
-    backgroundColor: colors.v2CardBackground,
-    borderRadius: 10,
-  },
-  // Each target overlaps its neighbour so the pair stays as wide as before
-  toggleTarget: {
-    marginHorizontal: -7,
-  },
-  sortTarget: {
-    marginHorizontal: -5,
-  },
-  toggleButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-  },
-  toggleButtonActive: {
-    backgroundColor: colors.v2Orange,
-  },
-  sortButton: {
-    backgroundColor: colors.v2CardBackground,
-    borderRadius: 10,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      // 48dp targets fill the vertical padding, so the header keeps its height
+      paddingTop: 8,
+      gap: 8,
+    },
+    title: {
+      flex: 1,
+      color: colors.v2White,
+      fontFamily: 'serif',
+      fontStyle: 'italic',
+      fontWeight: '600',
+      fontSize: 20,
+    },
+    toggleGroup: {
+      flexDirection: 'row',
+      paddingHorizontal: 3,
+    },
+    toggleBackground: {
+      ...StyleSheet.absoluteFillObject,
+      top: 8,
+      bottom: 8,
+      backgroundColor: colors.v2CardBackground,
+      borderRadius: 10,
+    },
+    // Each target overlaps its neighbour so the pair stays as wide as before
+    toggleTarget: {
+      marginHorizontal: -7,
+    },
+    sortTarget: {
+      marginHorizontal: -5,
+    },
+    toggleButton: {
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+    },
+    toggleButtonActive: {
+      backgroundColor: colors.v2Orange,
+    },
+    sortButton: {
+      backgroundColor: colors.v2CardBackground,
+      borderRadius: 10,
+      paddingVertical: 7,
+      paddingHorizontal: 10,
+    },
+  });

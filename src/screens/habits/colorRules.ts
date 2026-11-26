@@ -1,5 +1,6 @@
 import { StyleSheet, ViewStyle } from 'react-native';
-import { colors } from '../../theme';
+import { Palette, darkColors } from '../../theme';
+import { themedStyles } from '../../theming';
 
 // Single source of the Habits coloring rules: docs/style-choices/habits-section/coloring-rules.md
 export type ColorKind = 'pill' | 'banner';
@@ -15,18 +16,19 @@ export interface ColorScheme {
   container: ViewStyle | null;
 }
 
-const bannerStyles = StyleSheet.create({
-  complete: {
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2OrangeCardBackground,
-  },
-  frozen: {
-    borderWidth: 2,
-    borderColor: colors.v2Ice,
-    backgroundColor: colors.v2IceCardBackground,
-  },
-});
+const makeBannerStyles = (colors: Palette) =>
+  StyleSheet.create({
+    complete: {
+      borderWidth: 2,
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2OrangeCardBackground,
+    },
+    frozen: {
+      borderWidth: 2,
+      borderColor: colors.v2Ice,
+      backgroundColor: colors.v2IceCardBackground,
+    },
+  });
 
 // Title, number and banner follow `complete`; the icon follows `markedToday`.
 // Complete beats frozen today, and frozen today beats grey.
@@ -35,7 +37,9 @@ export function getColorScheme(
   complete: boolean,
   markedToday: boolean = complete,
   frozenToday: boolean = false,
+  colors: Palette = darkColors,
 ): ColorScheme {
+  const bannerStyles = themedStyles(makeBannerStyles, colors);
   const frozen = frozenToday && !complete;
   const accent = complete
     ? colors.v2Orange

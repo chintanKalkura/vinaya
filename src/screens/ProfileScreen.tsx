@@ -1,7 +1,8 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme';
+import { Palette } from '../theme';
+import { useThemedStyles } from '../theming';
 import AccountSection from './profile/AccountSection';
 import MenuRow from './profile/MenuRow';
 
@@ -9,12 +10,15 @@ import MenuRow from './profile/MenuRow';
 interface ProfileScreenProps {
   onDataChanged: () => void;
   onOpenAbout: () => void;
+  onOpenDisplaySettings: () => void;
 }
 
 export default function ProfileScreen({
   onDataChanged,
   onOpenAbout,
+  onOpenDisplaySettings,
 }: ProfileScreenProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
 
   return (
@@ -27,9 +31,16 @@ export default function ProfileScreen({
       </Text>
       <ScrollView contentContainerStyle={styles.content}>
         <View>
-          {/* Display settings, Support the developer and How to use rows go
-              in AccountSection's slot, above Sign out */}
-          <AccountSection onDataChanged={onDataChanged} />
+          {/* Support the developer and How to use rows join Display
+              settings in AccountSection's slot, above Sign out */}
+          <AccountSection onDataChanged={onDataChanged}>
+            <MenuRow
+              testID="profile-display-settings"
+              label="Display settings"
+              chevron
+              onPress={onOpenDisplaySettings}
+            />
+          </AccountSection>
           <MenuRow
             testID="profile-about"
             label="About"
@@ -42,24 +53,25 @@ export default function ProfileScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.v2Background,
-  },
-  // Same title look as the Habits header
-  title: {
-    color: colors.v2White,
-    fontFamily: 'serif',
-    fontStyle: 'italic',
-    fontWeight: '600',
-    fontSize: 20,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  content: {
-    padding: 16,
-    gap: 12,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.v2Background,
+    },
+    // Same title look as the Habits header
+    title: {
+      color: colors.v2White,
+      fontFamily: 'serif',
+      fontStyle: 'italic',
+      fontWeight: '600',
+      fontSize: 20,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    content: {
+      padding: 16,
+      gap: 12,
+    },
+  });

@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { ChartNoAxesColumnIncreasing, Snowflake } from 'lucide-react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 import { getGroupStatus } from '../../services/habitGroupService';
 import { getHoursToday } from '../../utils/hours';
 import { getColorScheme } from './colorRules';
@@ -35,6 +36,8 @@ export default function GroupCard({
   onEdit,
   onDelete,
 }: GroupCardProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const isHoursGroup = group.groupType === 'Hours';
   const status = getGroupStatus(group, todayKey);
   const scheme = getColorScheme(
@@ -42,6 +45,7 @@ export default function GroupCard({
     status.complete,
     status.markedToday,
     status.frozenToday,
+    colors,
   );
   const hoursTotal = habits.reduce(
     (sum, habit) => sum + getHoursToday(habit, todayKey),
@@ -193,77 +197,78 @@ export default function GroupCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    borderRadius: 16,
-    backgroundColor: colors.v2CardBackground,
-    padding: 14,
-    paddingBottom: 14 + CADENCE_LABEL_SPACE,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  menuSpace: {
-    width: BANNER_MENU_SPACE,
-  },
-  headerInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  // Keeps the title where the old 22px selector put it
-  statusSlot: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  status: {
-    width: 10,
-    height: 10,
-  },
-  statusRound: {
-    borderRadius: 5,
-  },
-  statusSquare: {
-    borderRadius: 2,
-  },
-  title: {
-    flex: 1,
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 24,
-  },
-  number: {
-    fontWeight: '700',
-    fontSize: 32,
-  },
-  frozenIcon: {
-    marginRight: 10,
-  },
-  hoursIcon: {
-    marginRight: 10,
-  },
-  hoursProgress: {
-    marginBottom: 12,
-  },
-  hoursGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 8,
-  },
-  hoursCell: {
-    width: '48.5%',
-  },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      borderRadius: 16,
+      backgroundColor: colors.v2CardBackground,
+      padding: 14,
+      paddingBottom: 14 + CADENCE_LABEL_SPACE,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    menuSpace: {
+      width: BANNER_MENU_SPACE,
+    },
+    headerInfo: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    // Keeps the title where the old 22px selector put it
+    statusSlot: {
+      width: 22,
+      height: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 10,
+    },
+    status: {
+      width: 10,
+      height: 10,
+    },
+    statusRound: {
+      borderRadius: 5,
+    },
+    statusSquare: {
+      borderRadius: 2,
+    },
+    title: {
+      flex: 1,
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 24,
+    },
+    number: {
+      fontWeight: '700',
+      fontSize: 32,
+    },
+    frozenIcon: {
+      marginRight: 10,
+    },
+    hoursIcon: {
+      marginRight: 10,
+    },
+    hoursProgress: {
+      marginBottom: 12,
+    },
+    hoursGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      rowGap: 8,
+    },
+    hoursCell: {
+      width: '48.5%',
+    },
+    pillRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+  });

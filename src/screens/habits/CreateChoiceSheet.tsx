@@ -2,7 +2,8 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, CircleDot, LayoutGrid } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { usePalette, useThemedStyles } from '../../theming';
 
 // Screen 05: what to add from the + button
 interface CreateChoiceSheetProps {
@@ -18,6 +19,8 @@ export default function CreateChoiceSheet({
   onNewGroup,
   onClose,
 }: CreateChoiceSheetProps): React.JSX.Element {
+  const colors = usePalette();
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const options = [
     {
@@ -76,46 +79,47 @@ export default function CreateChoiceSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(5, 5, 12, 0.85)',
-  },
-  sheet: {
-    backgroundColor: colors.v2CardBackground,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 18,
-    gap: 12,
-  },
-  title: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    borderRadius: 14,
-    backgroundColor: colors.v2CardBackgroundInset,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  optionText: {
-    flex: 1,
-  },
-  optionTitle: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  optionSubtitle: {
-    color: colors.v2GreyText,
-    fontSize: 13,
-    marginTop: 2,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: colors.v2Scrim,
+    },
+    sheet: {
+      backgroundColor: colors.v2CardBackground,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 18,
+      gap: 12,
+    },
+    title: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 16,
+      marginBottom: 2,
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      borderRadius: 14,
+      backgroundColor: colors.v2CardBackgroundInset,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+    },
+    optionText: {
+      flex: 1,
+    },
+    optionTitle: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    optionSubtitle: {
+      color: colors.v2GreyText,
+      fontSize: 13,
+      marginTop: 2,
+    },
+  });

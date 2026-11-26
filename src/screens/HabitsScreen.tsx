@@ -9,7 +9,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Habit } from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
-import { colors } from '../theme';
+import { Palette } from '../theme';
+import { useThemedStyles } from '../theming';
+import { useSettings } from '../settings/SettingsProvider';
 import { useToday } from '../hooks/useToday';
 import { loadHabitsAndGroups } from '../storage/habitStorage';
 import { seedDevFixturesIfNeeded } from '../storage/devSeed';
@@ -63,10 +65,17 @@ interface HabitsScreenProps {
 export default function HabitsScreen({
   dataVersion = 0,
 }: HabitsScreenProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   const [habits, setHabits] = useState<Record<string, Habit>>({});
   const [groups, setGroups] = useState<Record<string, HabitGroup>>({});
   const [hoursHabitId, setHoursHabitId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<HabitsViewMode>('list');
+  // Opens in the default view from Display settings, and follows it when it
+  // changes; the header toggle still switches views for the session
+  const { defaultView } = useSettings().settings;
+  const [viewMode, setViewMode] = useState<HabitsViewMode>(defaultView);
+  useEffect(() => {
+    setViewMode(defaultView);
+  }, [defaultView]);
   const [cadenceFilter, setCadenceFilter] = useState<CadenceFilterValue>('All');
   const [flow, dispatch] = useReducer(formFlowReducer, INITIAL_FORM_FLOW);
   // Session only: docs/feature-development/habits-section/sort-filter-delete-habit.md
@@ -480,30 +489,31 @@ export default function HabitsScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.v2Background,
-  },
-  content: {
-    padding: 16,
-    gap: 12,
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    // The tab bar is below the screen, so this sits 16 above it
-    bottom: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.v2Orange,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabIcon: {
-    color: colors.v2Background,
-    fontSize: 30,
-    lineHeight: 34,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.v2Background,
+    },
+    content: {
+      padding: 16,
+      gap: 12,
+    },
+    fab: {
+      position: 'absolute',
+      right: 16,
+      // The tab bar is below the screen, so this sits 16 above it
+      bottom: 16,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.v2Orange,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fabIcon: {
+      color: colors.v2Background,
+      fontSize: 30,
+      lineHeight: 34,
+    },
+  });

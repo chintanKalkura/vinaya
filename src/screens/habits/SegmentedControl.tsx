@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 
 // Pill row with the selected option in orange (Cadence and Type)
 interface SegmentedControlProps<T extends string> {
@@ -18,6 +19,7 @@ export default function SegmentedControl<T extends string>({
   testID,
   disabledOptions = [],
 }: SegmentedControlProps<T>): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View testID={testID} style={styles.row}>
       {options.map(option => {
@@ -47,31 +49,32 @@ export default function SegmentedControl<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    borderRadius: 20,
-    backgroundColor: colors.v2CardBackground,
-    padding: 3,
-  },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 17,
-  },
-  selected: {
-    backgroundColor: colors.v2Orange,
-  },
-  disabled: {
-    opacity: 0.35,
-  },
-  label: {
-    color: colors.v2GreyText,
-    fontWeight: '600',
-  },
-  selectedLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      borderRadius: 20,
+      backgroundColor: colors.v2CardBackground,
+      padding: 3,
+    },
+    segment: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 8,
+      borderRadius: 17,
+    },
+    selected: {
+      backgroundColor: colors.v2Orange,
+    },
+    disabled: {
+      opacity: 0.35,
+    },
+    label: {
+      color: colors.v2GreyText,
+      fontWeight: '600',
+    },
+    selectedLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+    },
+  });

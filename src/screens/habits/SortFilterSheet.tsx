@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme';
+import { Palette } from '../../theme';
+import { useThemedStyles } from '../../theming';
 import TouchTarget from './TouchTarget';
 import { SORT_KEYS, SortFilterState, SortKey } from '../../utils/sortFilter';
 
@@ -27,6 +28,7 @@ export default function SortFilterSheet({
   onApply,
   onClose,
 }: SortFilterSheetProps): React.JSX.Element {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<SortFilterState>(value);
 
@@ -144,116 +146,117 @@ export default function SortFilterSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(5, 5, 12, 0.85)',
-  },
-  sheet: {
-    backgroundColor: colors.v2CardBackground,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.v2GreyOutline,
-    marginBottom: 12,
-  },
-  title: {
-    color: colors.v2White,
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  label: {
-    color: colors.v2GreyText,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    marginTop: 14,
-    marginBottom: 8,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.v2GreyOutline,
-    borderRadius: 18,
-    backgroundColor: colors.v2Border,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  chipSelected: {
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2Orange,
-  },
-  chipLabel: {
-    color: colors.v2White,
-    fontWeight: '600',
-  },
-  chipLabelSelected: {
-    color: colors.v2Background,
-    fontWeight: '700',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 10,
-  },
-  show: {
-    width: '48.5%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderColor: colors.v2Border,
-    borderRadius: 10,
-    backgroundColor: colors.v2CardBackgroundInset,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
-  showSelected: {
-    borderWidth: 2,
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2OrangeCardBackground,
-  },
-  showDisabled: {
-    opacity: 0.35,
-  },
-  dot: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: colors.v2GreyText,
-  },
-  dotSelected: {
-    borderColor: colors.v2Orange,
-    backgroundColor: colors.v2Orange,
-  },
-  showLabel: {
-    color: colors.v2White,
-    fontWeight: '600',
-  },
-  apply: {
-    minHeight: 52,
-    borderRadius: 14,
-    backgroundColor: colors.v2Orange,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 18,
-  },
-  applyLabel: {
-    color: colors.v2Background,
-    fontWeight: '700',
-    fontSize: 17,
-  },
-});
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: colors.v2Scrim,
+    },
+    sheet: {
+      backgroundColor: colors.v2CardBackground,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingHorizontal: 18,
+      paddingTop: 10,
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.v2GreyOutline,
+      marginBottom: 12,
+    },
+    title: {
+      color: colors.v2White,
+      fontWeight: '700',
+      fontSize: 18,
+    },
+    label: {
+      color: colors.v2GreyText,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.6,
+      marginTop: 14,
+      marginBottom: 8,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.v2GreyOutline,
+      borderRadius: 18,
+      backgroundColor: colors.v2Border,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+    },
+    chipSelected: {
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2Orange,
+    },
+    chipLabel: {
+      color: colors.v2White,
+      fontWeight: '600',
+    },
+    chipLabelSelected: {
+      color: colors.v2Background,
+      fontWeight: '700',
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      rowGap: 10,
+    },
+    show: {
+      width: '48.5%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      borderWidth: 1,
+      borderColor: colors.v2Border,
+      borderRadius: 10,
+      backgroundColor: colors.v2CardBackgroundInset,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+    },
+    showSelected: {
+      borderWidth: 2,
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2OrangeCardBackground,
+    },
+    showDisabled: {
+      opacity: 0.35,
+    },
+    dot: {
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      borderWidth: 1.5,
+      borderColor: colors.v2GreyText,
+    },
+    dotSelected: {
+      borderColor: colors.v2Orange,
+      backgroundColor: colors.v2Orange,
+    },
+    showLabel: {
+      color: colors.v2White,
+      fontWeight: '600',
+    },
+    apply: {
+      minHeight: 52,
+      borderRadius: 14,
+      backgroundColor: colors.v2Orange,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 18,
+    },
+    applyLabel: {
+      color: colors.v2Background,
+      fontWeight: '700',
+      fontSize: 17,
+    },
+  });
