@@ -21,9 +21,11 @@ For Day the two states are always the same. The rolling windows and targets are 
 
 The streak is never used to pick a color. A habit or group with an active streak that is not complete is shown as not complete.
 
-**Frozen today.** On the day a streak freeze is used, an element that is not complete is drawn icy blue instead of grey. The order is: complete (orange), then frozen today (icy), then grey. The full design is in `streak-freeze.md`.
+**Frozen today.** On the day a streak freeze is used, an element that is not complete is drawn icy blue instead of grey. The order is: complete (orange, or the item's completion colour), then frozen today (icy), then grey. The full design is in `streak-freeze.md`.
 
 The same rules apply to Checkmark and Hours habits.
+
+**Completion colour.** Wherever this document says orange for complete, the item's chosen completion colour is used instead (orange when none is set). Pills inside a group card use the group's colour. See `../theme/completion-colours.md`.
 
 ## 2. Element kinds
 

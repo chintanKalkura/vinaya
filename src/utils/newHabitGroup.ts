@@ -1,4 +1,4 @@
-import { HabitCadence, HabitType } from '../types/habit';
+import { CompletionColourId, HabitCadence, HabitType } from '../types/habit';
 import { HabitGroup, HabitGroupType } from '../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { clampCadenceTarget } from './cadence';
@@ -19,6 +19,7 @@ export interface NewHabitGroupDraft {
   habitIds: string[];
   requiredHabitIds: string[]; // Required only, a subset of habitIds
   targetHours: number; // Hours only
+  colour: CompletionColourId; // banner-colours.md
 }
 
 export const DEFAULT_GROUP_DRAFT: NewHabitGroupDraft = {
@@ -30,6 +31,7 @@ export const DEFAULT_GROUP_DRAFT: NewHabitGroupDraft = {
   habitIds: [],
   requiredHabitIds: [],
   targetHours: 1,
+  colour: 'orange',
 };
 
 export const GROUP_TYPE_DESCRIPTIONS: Record<HabitGroupType, string> = {
@@ -120,6 +122,7 @@ export function buildHabitGroup(
   if (draft.groupType === 'Hours') {
     group.targetHours = clampTargetHours(draft.targetHours);
   }
+  if (draft.colour !== 'orange') group.colour = draft.colour;
   return group;
 }
 
@@ -134,6 +137,7 @@ export function draftFromGroup(group: HabitGroup): NewHabitGroupDraft {
     habitIds: [...group.habitIds],
     requiredHabitIds: [...(group.requiredHabitIds ?? [])],
     targetHours: group.targetHours ?? 1,
+    colour: group.colour ?? 'orange',
   };
 }
 
@@ -155,6 +159,7 @@ export function isGroupDraftChanged(
     !sameSet(saved.habitIds, draft.habitIds) ||
     (draft.groupType === 'Required' &&
       !sameSet(saved.requiredHabitIds, draft.requiredHabitIds)) ||
-    (draft.groupType === 'Hours' && saved.targetHours !== draft.targetHours)
+    (draft.groupType === 'Hours' && saved.targetHours !== draft.targetHours) ||
+    saved.colour !== draft.colour
   );
 }

@@ -1,8 +1,10 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import NewHabitForm from './NewHabitForm';
 import { Habit } from '../../types/habit';
 import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
+import { colors } from '../../theme';
 
 function group(id: string, groupType: HabitGroupType): HabitGroup {
   return {
@@ -206,6 +208,7 @@ describe('NewHabitForm', () => {
     fireEvent.press(getByTestId('new-habit-type-Hours'));
     fireEvent.changeText(getByTestId('new-habit-hours-input'), '8');
     fireEvent.press(getByTestId('new-habit-group-productive'));
+    fireEvent.press(getByTestId('new-habit-colour-green'));
 
     fireEvent.press(getByTestId('new-habit-create'));
 
@@ -216,6 +219,7 @@ describe('NewHabitForm', () => {
       streakFreezeInterval: 10,
       type: 'Hours',
       targetHours: 8,
+      colour: 'green',
       groupId: 'productive',
     });
   });
@@ -228,6 +232,50 @@ describe('NewHabitForm', () => {
     fireEvent.press(getByTestId('new-habit-create'));
 
     expect(onCreate.mock.calls[0][0].streakFreezeInterval).toBe(100);
+  });
+
+  it('should start on orange with the preview closed', () => {
+    const { getByTestId, queryByTestId } = renderForm();
+
+    expect([
+      getByTestId('new-habit-colour-orange').props.accessibilityState.selected,
+      queryByTestId('new-habit-colour-preview-panel'),
+    ]).toEqual([true, null]);
+  });
+
+  it('should open the preview and follow the chosen colour while open', () => {
+    const { getByTestId } = renderForm();
+    fireEvent.press(getByTestId('new-habit-colour-preview-toggle'));
+    fireEvent.press(getByTestId('new-habit-colour-blue'));
+    const preview = StyleSheet.flatten(
+      getByTestId('new-habit-colour-preview').props.style,
+    );
+
+    expect([
+      getByTestId('new-habit-colour-preview-toggle').props.accessibilityState
+        .expanded,
+      preview.borderColor,
+      preview.backgroundColor,
+    ]).toEqual([
+      true,
+      colors.completion.blue.accent,
+      colors.completion.blue.tint,
+    ]);
+  });
+
+  it('should close the preview with the close button or Preview again', () => {
+    const { getByTestId, queryByTestId } = renderForm();
+    const toggle = () =>
+      fireEvent.press(getByTestId('new-habit-colour-preview-toggle'));
+    const isOpen = () => !!queryByTestId('new-habit-colour-preview-panel');
+
+    toggle();
+    fireEvent.press(getByTestId('new-habit-colour-preview-close'));
+    const afterClose = isOpen();
+    toggle();
+    toggle();
+
+    expect([afterClose, isOpen()]).toEqual([false, false]);
   });
 
   it('should go back', () => {
@@ -302,6 +350,20 @@ describe('NewHabitForm editing', () => {
     fireEvent.press(utils.getByTestId('new-habit-target-decrement'));
 
     expect([before, changed, saveDisabled(utils)]).toEqual([true, false, true]);
+  });
+
+  it('should load the saved colour, and enable Save when it changes', () => {
+    const utils = renderEdit();
+    const selected = (id: string) =>
+      utils.getByTestId(`new-habit-colour-${id}`).props.accessibilityState
+        .selected;
+    const before = [selected('orange'), saveDisabled(utils)];
+    fireEvent.press(utils.getByTestId('new-habit-colour-purple'));
+
+    expect([before, [selected('purple'), saveDisabled(utils)]]).toEqual([
+      [true, true],
+      [true, false],
+    ]);
   });
 
   it('should save the edited draft', () => {

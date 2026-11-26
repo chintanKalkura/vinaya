@@ -640,6 +640,19 @@ describe('updateHabit', () => {
     });
   });
 
+  it('saves a new colour, and drops it when set back to orange', async () => {
+    await saveHabits({ 'habit-1': makeHabit() });
+
+    await updateHabit('habit-1', edit({ colour: 'red' }));
+    const red = (await loadHabits())['habit-1'].colour;
+    await updateHabit('habit-1', edit({ colour: 'orange' }));
+
+    expect([red, 'colour' in (await loadHabits())['habit-1']]).toEqual([
+      'red',
+      false,
+    ]);
+  });
+
   it('removes the target when switching to Day', async () => {
     await saveHabits({
       'habit-1': makeHabit({ cadence: 'Week', target: 3 }),

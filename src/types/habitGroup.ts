@@ -1,5 +1,10 @@
 import { LogEntry } from './log';
-import { HabitCadence, HabitStatus, StreakFreezeState } from './habit';
+import {
+  CompletionColourId,
+  HabitCadence,
+  HabitStatus,
+  StreakFreezeState,
+} from './habit';
 
 export type HabitGroupType = 'Required' | 'Any' | 'All' | 'Hours';
 
@@ -14,6 +19,7 @@ export interface HabitGroup {
   targetHours?: number; // Hours type only — daily aggregate target across assigned habits, max hoursTargetMax
   streakFreezeInterval: number; // the "N" in "1 skip per N streaks", on the group's own streak
   streakFreeze?: StreakFreezeState; // missing reads as nothing earned or used
+  colour?: CompletionColourId; // missing reads as orange; also colours its pills when complete
   status: HabitStatus;
   sortOrder: number;
   createdAt: number;

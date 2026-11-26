@@ -1,5 +1,5 @@
 import { getColorScheme } from './colorRules';
-import { colors } from '../../theme';
+import { colors, lightColors } from '../../theme';
 
 describe('getColorScheme', () => {
   describe('pill', () => {
@@ -172,5 +172,54 @@ describe('getColorScheme frozen today', () => {
       false,
       colors.v2Orange,
     ]);
+  });
+});
+
+// docs/feature-development/release-1-readiness/banner-colours.md
+describe('getColorScheme with a completion colour', () => {
+  it('should use the colour for every complete element of a banner', () => {
+    const scheme = getColorScheme('banner', true, true, false, colors, 'green');
+    const green = colors.completion.green;
+
+    expect([
+      scheme.numberColor,
+      scheme.iconColor,
+      scheme.barColor,
+      scheme.container?.borderColor,
+      scheme.container?.backgroundColor,
+      scheme.titleColor,
+    ]).toEqual([
+      green.accent,
+      green.accent,
+      green.accent,
+      green.accent,
+      green.tint,
+      colors.v2White,
+    ]);
+  });
+
+  it("should use the theme's own shade of the colour", () => {
+    expect(
+      getColorScheme('pill', true, true, false, lightColors, 'purple')
+        .numberColor,
+    ).toBe(lightColors.completion.purple.accent);
+  });
+
+  it('should use orange when no colour is set', () => {
+    expect(getColorScheme('banner', true).container?.borderColor).toBe(
+      colors.v2Orange,
+    );
+  });
+
+  it('should leave not complete and frozen unchanged', () => {
+    const grey = getColorScheme('banner', false, false, false, colors, 'red');
+    const frozen = getColorScheme('banner', false, false, true, colors, 'red');
+
+    expect([
+      grey.numberColor,
+      grey.container,
+      frozen.numberColor,
+      frozen.container?.borderColor,
+    ]).toEqual([colors.v2GreyText, null, colors.v2Ice, colors.v2Ice]);
   });
 });

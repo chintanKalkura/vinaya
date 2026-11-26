@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Snowflake } from 'lucide-react-native';
-import { Habit } from '../../types/habit';
+import { CompletionColourId, Habit } from '../../types/habit';
 import { Palette } from '../../theme';
 import { usePalette, useThemedStyles } from '../../theming';
 import { useHabitVisual } from './useHabitVisual';
@@ -22,6 +22,7 @@ interface HabitListRowProps {
   onPress: (habitId: string) => void;
   colorKind: ColorKind;
   required?: boolean; // pills in a Required group: blue border, like HabitPill
+  colour?: CompletionColourId; // pills take their group's colour; banners their own
   onEdit?: (habitId: string) => void; // banners only
   onDelete?: (habitId: string) => void; // banners only
 }
@@ -33,6 +34,7 @@ export default function HabitListRow({
   onPress,
   colorKind,
   required = false,
+  colour,
   onEdit,
   onDelete,
 }: HabitListRowProps): React.JSX.Element {
@@ -45,6 +47,7 @@ export default function HabitListRow({
     status.markedToday,
     status.frozenToday,
     colors,
+    colorKind === 'pill' ? colour : habit.colour,
   );
   // Banners (list view) right-align the streak and show the cadence label;
   // pills (Hours habits inside a group card) keep the streak beside the name

@@ -34,7 +34,7 @@ user should be able to create a habit group and configure it with all possible v
    - In list view, a habit's subtext is all its group names, comma-joined in group sort order, on one line, truncated with "…".
    - Assigning a habit to a new group never removes it from its other groups.
 3. **Fields**, in the gaps doc 1.2 order, with Streak Freeze added after Target:
-   - Name, Cadence, Target, Streak Freeze, Group Type, the type description, Assigned Habits, Assign Habits and Create Habit buttons, the type-specific section, Create Habit Group.
+   - Name, Completion Colour (`../../style-choices/theme/completion-colours.md`), Cadence, Target, Streak Freeze, Group Type, the type description, Assigned Habits, Assign Habits and Create Habit buttons, the type-specific section, Create Habit Group.
 
    | Field | Default | Limits |
    |---|---|---|

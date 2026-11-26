@@ -13,6 +13,7 @@ import { HabitGroup, HabitGroupType } from '../../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../../types/habitConfig';
 import { usePalette } from '../../theming';
 import TouchTarget from './TouchTarget';
+import CompletionColourField from './CompletionColourField';
 import { clampCadenceTarget } from '../../utils/cadence';
 import {
   DEFAULT_DRAFT,
@@ -149,6 +150,15 @@ export default function NewHabitForm({
         placeholder="Habit name"
         placeholderTextColor={colors.v2GreyText}
         style={formStyles.nameInput}
+      />
+
+      <Text style={formStyles.label}>COMPLETION COLOUR</Text>
+      <CompletionColourField
+        value={draft.colour}
+        onChange={colour => update({ colour })}
+        name={draft.name}
+        placeholder="Your habit"
+        testID="new-habit-colour"
       />
 
       <Text style={formStyles.label}>CADENCE</Text>

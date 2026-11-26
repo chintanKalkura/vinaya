@@ -1,4 +1,9 @@
-import { Habit, HabitCadence, HabitType } from '../types/habit';
+import {
+  CompletionColourId,
+  Habit,
+  HabitCadence,
+  HabitType,
+} from '../types/habit';
 import { HabitGroup } from '../types/habitGroup';
 import { DEFAULT_HABIT_LIMITS } from '../types/habitConfig';
 import { clampCadenceTarget } from './cadence';
@@ -19,6 +24,7 @@ export interface NewHabitDraft {
   streakFreezeInterval: number;
   type: HabitType;
   targetHours: number; // Hours only
+  colour: CompletionColourId; // banner-colours.md
   groupId?: string; // the group to join; membership is stored on the group
 }
 
@@ -29,6 +35,7 @@ export const DEFAULT_DRAFT: NewHabitDraft = {
   streakFreezeInterval: DEFAULT_HABIT_LIMITS.streakFreezeIntervalDefault,
   type: 'Checkmark',
   targetHours: 1,
+  colour: 'orange',
 };
 
 export function isDraftValid(draft: NewHabitDraft): boolean {
@@ -69,6 +76,7 @@ export function buildHabit(
   if (draft.type === 'Hours') {
     habit.targetHours = clampTargetHours(draft.targetHours);
   }
+  if (draft.colour !== 'orange') habit.colour = draft.colour;
   return habit;
 }
 
@@ -81,6 +89,7 @@ export function draftFromHabit(habit: Habit): NewHabitDraft {
     streakFreezeInterval: habit.streakFreezeInterval,
     type: habit.type,
     targetHours: habit.targetHours ?? 1,
+    colour: habit.colour ?? 'orange',
   };
 }
 
@@ -95,6 +104,7 @@ export function isDraftChanged(
     (draft.cadence !== 'Day' && saved.target !== draft.target) ||
     saved.streakFreezeInterval !== draft.streakFreezeInterval ||
     saved.type !== draft.type ||
-    (draft.type === 'Hours' && saved.targetHours !== draft.targetHours)
+    (draft.type === 'Hours' && saved.targetHours !== draft.targetHours) ||
+    saved.colour !== draft.colour
   );
 }

@@ -4,6 +4,18 @@ export type HabitCadence = 'Day' | 'Week' | 'Month' | 'Year';
 export type HabitType = 'Checkmark' | 'Hours';
 export type HabitStatus = 'active' | 'paused' | 'archived';
 
+// The colour shown only when a habit or group is complete; missing means
+// orange. docs/feature-development/release-1-readiness/banner-colours.md
+export const COMPLETION_COLOUR_IDS = [
+  'orange',
+  'blue',
+  'red',
+  'yellow',
+  'green',
+  'purple',
+] as const;
+export type CompletionColourId = (typeof COMPLETION_COLOUR_IDS)[number];
+
 // Stored freeze state, updated on marking and once a day: docs/feature-development/habits-section/streak-freeze.md
 export interface StreakFreezeState {
   available: number; // freezes held, kept after a streak breaks
@@ -21,6 +33,7 @@ export interface Habit {
   targetHours?: number; // Hours type, any cadence — daily target, max hoursTargetMax
   streakFreezeInterval: number; // the "N" in "1 skip per N streaks", max streakFreezeIntervalMax
   streakFreeze?: StreakFreezeState; // missing reads as nothing earned or used
+  colour?: CompletionColourId; // missing reads as orange; stored only when not orange
   status: HabitStatus;
   sortOrder: number;
   createdAt: number;

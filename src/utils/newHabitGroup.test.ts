@@ -40,6 +40,7 @@ describe('DEFAULT_GROUP_DRAFT', () => {
       habitIds: [],
       requiredHabitIds: [],
       targetHours: 1,
+      colour: 'orange',
     });
   });
 });
@@ -137,6 +138,24 @@ describe('isGroupDraftValid', () => {
   });
 });
 
+describe('group completion colour', () => {
+  it('should store a colour other than orange and none for orange', () => {
+    const blue = buildHabitGroup(
+      draft({ habitIds: ['run'], colour: 'blue' }),
+      'b',
+      0,
+      0,
+    );
+    const orange = buildHabitGroup(draft({ habitIds: ['run'] }), 'o', 0, 0);
+
+    expect([
+      blue.colour,
+      'colour' in orange,
+      draftFromGroup(blue).colour,
+    ]).toEqual(['blue', false, 'blue']);
+  });
+});
+
 describe('buildHabitGroup', () => {
   it('should build a Day Any group with empty logs', () => {
     expect(buildHabitGroup(draft({ name: ' Routine ' }), 'id', 2, 100)).toEqual(
@@ -221,6 +240,7 @@ describe('draftFromGroup and isGroupDraftChanged', () => {
       habitIds: ['run', 'read'],
       requiredHabitIds: ['run'],
       targetHours: 1,
+      colour: 'orange',
     });
   });
 
@@ -237,6 +257,7 @@ describe('draftFromGroup and isGroupDraftChanged', () => {
     ['habits', { habitIds: ['run'] }],
     ['required habits', { requiredHabitIds: ['read'] }],
     ['streak freeze', { streakFreezeInterval: 3 }],
+    ['colour', { colour: 'blue' }],
   ] as const)('should notice changed %s', (_label, change) => {
     const saved = draftFromGroup(group);
 
