@@ -16,6 +16,7 @@ Same keys as the dark palette. `v2White` is the main text colour in both themes,
 | v2Border | #3a3a5c | #cfcce2 | outlines, dividers |
 | v2Orange / v2BorderActive | #f5821f | #a44a00 | accent, complete |
 | v2OrangeCardBackground | #3a2a12 | #f5e2d1 | complete card tint |
+| completion | per colour | per colour | completion colours and their tints: `completion-colours.md` |
 | v2Blue | #3d9be9 | #2a57a0 | blue accents |
 | v2Ice | #5ec8e5 | #11627b | frozen accent |
 | v2IceCardBackground | #1f2c43 | #dbebf1 | frozen card tint |

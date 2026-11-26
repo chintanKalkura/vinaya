@@ -1,6 +1,6 @@
 # Feature: Choose a colour for habits and groups.
 
-Status: needs design (colour set and picker), then ready for planning.
+Status: done (26 Nov 2026). Look and values: `../../style-choices/theme/completion-colours.md`.
 
 ## Goal
 Users can give each habit and group its own colour from a small fixed set, and that colour is used wherever orange marks "complete".
@@ -11,11 +11,11 @@ Users can give each habit and group its own colour from a small fixed set, and t
 - The chosen colour replaces orange as the complete colour.
 
 ## Decisions
-1. **Field.** `colour?: BannerColourId` on `Habit` and `HabitGroup`. Missing means the default, orange, so existing data needs no migration.
-2. **Set.** Orange (default) plus a few more. Exact count, hues and their card-background tints: **to be designed with Claude Code**. Each colour must pass 3:1 against the card background and 4.5:1 where it colours text (streak number), in every theme (`display-settings.md`).
+1. **Field.** `colour?: CompletionColourId` on `Habit` and `HabitGroup`. Missing means the default, orange, so existing data needs no migration.
+2. **Set.** Orange (default) plus a few more. Six colours: orange (default), blue, red, yellow, green and purple (purple replaces white, which can't show on the light theme). Each is a pair, one shade per theme, because no single hex passes 4.5:1 as text on both cards. Each passes 4.5:1 as text on its tint and on the card, in every theme. Values: `../../style-choices/theme/completion-colours.md`.
 3. **Where it applies.** Every place `colorRules.ts` uses orange for complete: banner border, complete card background (as a tint of the colour), streak number, check icon fill, group selector and Hours chart icons, and the progress bar fill. Frozen and not complete looks are unchanged.
-4. **Pills inside a group card.** Whether a pill uses its own habit's colour or the group's colour: design decision required.
-5. **Picker.** A row of swatches on New/Edit Habit and New/Edit Habit Group forms. Placement in the field order: to be designed with Claude Code.
+4. **Pills inside a group card.** Pills and Hours cells use the group's colour (owner's choice, 26 Nov 2026).
+5. **Picker.** "COMPLETION COLOUR", right after Name on New/Edit Habit and New/Edit Habit Group. The swatches are filled check circles, and a "Not done" / "Done" preview shows that the colour only appears when complete.
 6. **Backup.** The colour is part of the habit/group and is included in backups.
 7. **Other uses of orange** (FAB, selected tab, filter highlights, buttons) stay the app's orange.
 
@@ -28,6 +28,6 @@ Users can give each habit and group its own colour from a small fixed set, and t
 - Forms: swatch selection saves; Edit loads and changes it; Save enables on change.
 
 ## Acceptance criteria
-- [ ] Each habit and group can be given a colour from the set when creating or editing
-- [ ] A completed item shows its chosen colour wherever orange was used
-- [ ] No colour in the set is grey or the freeze colour, and all pass contrast
+- [x] Each habit and group can be given a colour from the set when creating or editing
+- [x] A completed item shows its chosen colour wherever orange was used
+- [x] No colour in the set is grey or the freeze colour, and all pass contrast
