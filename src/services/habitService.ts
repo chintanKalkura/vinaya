@@ -193,11 +193,13 @@ export function setHabitHours(
   });
 }
 
-// Saves edited fields; the log, type and freezes held are kept. Group results
-// don't depend on these fields, so groups need no re-check.
+// Saves edited fields; the log, type and freezes held are kept. Only a new
+// daily target can change a group result (an Hours habit counts as done at
+// its target), so groups are re-checked when it changes.
 export function updateHabit(
   habitId: string,
   draft: NewHabitDraft,
+  todayKey: string = toDateKey(new Date()),
 ): Promise<Habit> {
   return withStorageQueue(async () => {
     const habits = await loadHabits();
@@ -223,6 +225,13 @@ export function updateHabit(
     }
 
     await saveHabit(updated);
+    if (updated.targetHours !== habit.targetHours) {
+      const groupIds =
+        groupIdsByHabit(await loadHabitGroups())[updated.id] ?? [];
+      for (const groupId of groupIds) {
+        await syncGroupCompletionInQueue(groupId, todayKey);
+      }
+    }
     return updated;
   });
 }
