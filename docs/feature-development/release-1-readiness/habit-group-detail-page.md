@@ -89,7 +89,7 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 
 ### Wording (approved 26 Nov 2026)
 24. **Help, "Marking done and logging hours":** "Tap a habit's circle to mark it done today, and tap again to undo. For an Hours habit, tap its progress bar, set today's hours and tap Done. To fix a day you missed, open the habit, tap ⋮ and choose Edit past days."
-25. **Help, new topic "A habit's page":** "Tap a habit or a group to open its page, with its streaks, completion rate and history."
+25. **Help, new topic "A habit's page":** "Tap a habit or a group to open its page, with its rating, streaks, completion rate and history." ("rating" added 27 Nov 2026)
 26. **Unchanged:** the Week, Month and Year cadence topic, and walkthrough card 2.
 27. **Empty states:** trend and heatmap say "Not enough days yet."; streaks show 0, the completion rate "—" and the stars stay empty until the first day counts; History shows its days, none done.
 28. **Pop-up text:** title "Edit past days"; under it "<Name> · the last <n> days. Tap days to mark or unmark them." (Hours: "Tap a day, then set its hours."); buttons Discard and Save ("Save 3 changes" once something changed).

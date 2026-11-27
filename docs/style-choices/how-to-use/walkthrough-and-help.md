@@ -42,7 +42,7 @@ The Profile stack header "How to use", then nine topic rows (white 16 semibold, 
 | Groups and their types | A group completes when its habits meet its rule. Required: the habits you mark as required are done. Any: any one habit is done. All: every habit is done. Hours: the hours logged across its habits reach the group's target. A habit can be in several groups. |
 | Week, Month and Year cadence | These use rolling windows that end today: the last 7 days, the last month's worth of days, or the last year. A Week habit with a target of 3 is complete while it has been done on 3 of the last 7 days. |
 | Views, sort and filter | Switch between list view and group view with the icons at the top. The cadence filter shows only Day, Week, Month or Year items. Sort and filter orders by streak, name or most recent, and can show only what is completed. |
-| A habit's page | Tap a habit or a group to open its page, with its streaks, completion rate and history. |
+| A habit's page | Tap a habit or a group to open its page, with its rating, streaks, completion rate and history. |
 | Editing and deleting | Tap ⋮ on a habit or a group to edit or delete it. A habit's type can't be changed. Deleting a habit removes it from its groups; deleting a group keeps its habits. |
 | Backup and sign-in | Signing in is optional. Signed in with Google, Vinaya backs up your habits once a week to a hidden folder in your own Google Drive, and you can tap Back up now in Profile at any time. Sign in on a new phone to bring them back. Without signing in, your habits stay only on this phone. |
 
