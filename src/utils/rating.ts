@@ -153,7 +153,11 @@ export function rating(
   const dates = [
     ...new Set(
       markers
-        .filter(m => m.kind === 'marker' && m.date <= todayKey)
+        // Days before creation count as not done, even if marked (seed data)
+        .filter(
+          m =>
+            m.kind === 'marker' && m.date <= todayKey && m.date >= createdKey,
+        )
         .map(m => m.date),
     ),
   ].sort();

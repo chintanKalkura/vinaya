@@ -93,6 +93,12 @@ describe('rating, daily habits', () => {
     ]);
   });
 
+  it('should not count marks from before the habit was created', () => {
+    const r = rating(daysAgo(...range(10, 0)), 'Day', undefined, TODAY, TODAY);
+
+    expect(states(r).slice(0, 3)).toEqual(['earned', 'todo', 'todo']);
+  });
+
   it('should take "Most days for 2 weeks" over the whole 14 days', () => {
     // This week 7 of 7, the week before 5 of 7: 12 of 14 together
     const log = daysAgo(...range(6, 0), 7, 8, 9, 10, 11);
