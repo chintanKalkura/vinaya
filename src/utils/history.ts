@@ -27,39 +27,58 @@ export interface StreakSummary {
   previous: number; // the run before the latest one; the ended run when current is 0
 }
 
+export interface StreakRun {
+  length: number; // marked days in the run
+  end: string; // its last marked day
+}
+
 // Runs follow the same rules as getStreak: a mark continues the run while it
-// is within one window of the one before, frozen days adding one day each
+// is within one window of the one before, frozen days adding one day each.
+// Oldest first; `alive` says whether the latest run is still going.
+export function streakRuns(
+  markers: LogEntry[],
+  cadence: HabitCadence,
+  todayKey: string,
+  frozenDates: string[] = [],
+): { runs: StreakRun[]; alive: boolean } {
+  const dates = markedDates(markers, todayKey);
+  if (dates.length === 0) return { runs: [], alive: false };
+  const w = windowLength(cadence, todayKey);
+  const frozen = [...frozenDates].sort();
+  const frozenBetween = (older: string, newer: string) =>
+    frozen.filter(date => date > older && date <= newer).length;
+
+  const runs: StreakRun[] = [];
+  let length = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const gap = daysBetween(dates[i - 1], dates[i]);
+    if (gap <= w + frozenBetween(dates[i - 1], dates[i])) length += 1;
+    else {
+      runs.push({ length, end: dates[i - 1] });
+      length = 1;
+    }
+  }
+  const last = dates[dates.length - 1];
+  runs.push({ length, end: last });
+  const alive =
+    daysBetween(last, todayKey) <= w + frozenBetween(last, todayKey);
+  return { runs, alive };
+}
+
 export function streakSummary(
   markers: LogEntry[],
   cadence: HabitCadence,
   todayKey: string,
   frozenDates: string[] = [],
 ): StreakSummary {
-  const dates = markedDates(markers, todayKey);
-  if (dates.length === 0) return { current: 0, best: 0, previous: 0 };
-  const w = windowLength(cadence, todayKey);
-  const frozen = [...frozenDates].sort();
-  const frozenBetween = (older: string, newer: string) =>
-    frozen.filter(date => date > older && date <= newer).length;
-
-  const runs: number[] = [];
-  let length = 1;
-  for (let i = 1; i < dates.length; i++) {
-    const gap = daysBetween(dates[i - 1], dates[i]);
-    if (gap <= w + frozenBetween(dates[i - 1], dates[i])) length += 1;
-    else {
-      runs.push(length);
-      length = 1;
-    }
-  }
-  runs.push(length);
-
-  const last = dates[dates.length - 1];
-  const alive =
-    daysBetween(last, todayKey) <= w + frozenBetween(last, todayKey);
-  const current = alive ? runs[runs.length - 1] : 0;
-  const previous = alive ? runs[runs.length - 2] ?? 0 : runs[runs.length - 1];
-  return { current, best: Math.max(...runs), previous };
+  const { runs, alive } = streakRuns(markers, cadence, todayKey, frozenDates);
+  if (runs.length === 0) return { current: 0, best: 0, previous: 0 };
+  const lengths = runs.map(run => run.length);
+  const current = alive ? lengths[lengths.length - 1] : 0;
+  const previous = alive
+    ? lengths[lengths.length - 2] ?? 0
+    : lengths[lengths.length - 1];
+  return { current, best: Math.max(...lengths), previous };
 }
 
 // ---- Calendar periods ----
@@ -306,13 +325,6 @@ export function calendarRangeStart(
   ).getDate();
   back.setDate(Math.min(today.getDate(), lastDay));
   return addDays(toDateKey(back), 1);
-}
-
-// ---- Rating ----
-
-// Stars (0–5) from the overall completion rate, rounded to the nearest fifth
-export function starRating(rate: number | null): number {
-  return rate === null ? 0 : Math.round(rate * 5);
 }
 
 // ---- Heatmap shade ----
