@@ -29,6 +29,6 @@ Remove dead v1 code, stop flaky tests, and make the docs Claude Code reads first
 
 ## Acceptance criteria
 - [ ] No flaky test in 20 consecutive runs
-- [ ] No exported function throws "not implemented"
-- [ ] `architecture.md` and `app-context.md` describe the current code
-- [ ] `HabitsScreen.tsx` mounts only the form that is open
+- [x] No exported function throws "not implemented"
+- [x] `architecture.md` and `app-context.md` describe the current code
+- [x] `HabitsScreen.tsx` mounts only the form that is open *(the forms now live in `src/screens/habits/HabitsData.tsx`, same rule)*

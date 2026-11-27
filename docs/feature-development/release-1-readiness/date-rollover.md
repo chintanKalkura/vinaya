@@ -28,5 +28,5 @@ Marks, hours, streaks and freezes always use the real current day, even if the a
 - Freezes are applied for the new day on day change.
 
 ## Acceptance criteria
-- [ ] Leaving the app open overnight and marking a habit in the morning records the morning's date
-- [ ] Streaks and freezes update for the new day without restarting the app
+- [ ] Leaving the app open overnight and marking a habit in the morning records the morning's date *(check on a real phone)*
+- [ ] Streaks and freezes update for the new day without restarting the app *(check on a real phone)*

@@ -1,6 +1,6 @@
 # Feature: Create habit.
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 user should be able to create a habit and configure it with all possible vlaues.
@@ -69,9 +69,9 @@ user should be able to create a habit and configure it with all possible vlaues.
 - Habits screen: + → sheet → form → back to the sheet; a created habit appears in list view, and in its group in group view, without changing the view.
 
 ## Acceptance criteria
-- [ ] The + button opens the Choice sheet, and New Habit opens the New Habit form
-- [ ] Habits can be created for every cadence and both types, with the defaults and limits in decision 5
-- [ ] A habit can join a compatible group, and incompatible groups can't be picked
-- [ ] Back from the form returns to the Choice sheet
-- [ ] After Create Habit, the new habit shows in the view the + was tapped from
-- [ ] "New Habit Group" and "+ Create Group" do nothing
+- [x] The + button opens the Choice sheet, and New Habit opens the New Habit form
+- [x] Habits can be created for every cadence and both types, with the defaults and limits in decision 5
+- [x] A habit can join a compatible group, and incompatible groups can't be picked
+- [x] Back from the form returns to the Choice sheet
+- [x] After Create Habit, the new habit shows in the view the + was tapped from
+- [x] ~~"New Habit Group" and "+ Create Group" do nothing~~ *(changed later: both open their forms, `create-habit-group.md`)*

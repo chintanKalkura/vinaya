@@ -1,6 +1,6 @@
 # Feature: Habit and group type hours
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 Implement habit and habit group with type hours where the habit can be tracked using hours. 
@@ -66,12 +66,12 @@ Total 8 / 8, so the banner is orange.
 - HabitsScreen renders Stay Productive. Tapping an Hours pill opens the modal, and Done updates the pill and the banner.
 
 ## Acceptance criteria
-- [ ] Stay Productive renders as in screen 01, orange, with a streak of 5 and 8 of 8 hours today (shown as `8/8h`, see `../../style-choices/habits-section/hours-progress.md`)
-- [ ] The Hours Entry Modal matches screen 02, and tapping the field opens the keyboard
-- [ ] Logging hours below a habit's target turns its pill grey, and at or above the target turns it orange
-- [ ] Dropping the group total below 8 turns the banner grey and the streak drops to 4. Restoring it returns to orange and 5
-- [ ] `targetHours` exists on Habit and HabitGroup, and `hoursTarget` no longer exists
-- [ ] Hours values are capped at 24
+- [x] Stay Productive renders as in screen 01, orange, with a streak of 5 and 8 of 8 hours today (shown as `8/8h`, see `../../style-choices/habits-section/hours-progress.md`)
+- [x] The Hours Entry Modal matches screen 02, and tapping the field opens the keyboard
+- [x] Logging hours below a habit's target turns its pill grey, and at or above the target turns it orange
+- [x] Dropping the group total below 8 turns the banner grey and the streak drops to 4. Restoring it returns to orange and 5
+- [x] `targetHours` exists on Habit and HabitGroup, and `hoursTarget` no longer exists
+- [x] Hours values are capped at 24
 
 ## Open questions
 None.

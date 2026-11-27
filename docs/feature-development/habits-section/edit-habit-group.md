@@ -1,6 +1,6 @@
 # Feature: Edit habit and group.
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 user should be able to edit a habit and group and configure it with all possible values.
@@ -37,8 +37,8 @@ user should be able to edit a habit and group and configure it with all possible
 - Habits screen: edit and rename a habit; Back saves nothing and doesn't show the Choice sheet; rename a group.
 
 ## Acceptance criteria
-- [ ] Edit on a habit banner or group card opens its form with every value loaded
-- [ ] The title is Edit Habit / Edit Habit Group and the button is Save, disabled until a change
-- [ ] A habit's type and a group's type can't be changed
-- [ ] Saved changes show straight away; Back saves nothing
-- [ ] Streaks, completion and freezes held carry over
+- [x] Edit on a habit banner or group card opens its form with every value loaded
+- [x] The title is Edit Habit / Edit Habit Group and the button is Save, disabled until a change
+- [x] A habit's type and a group's type can't be changed
+- [x] Saved changes show straight away; Back saves nothing
+- [x] Streaks, completion and freezes held carry over

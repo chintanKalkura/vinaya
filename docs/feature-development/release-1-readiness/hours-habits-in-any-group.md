@@ -18,7 +18,7 @@ An Hours habit can be part of a Checkmark-style group and counts as done when it
 2. **Done for the group.** An Hours habit counts as done today when hours logged today ≥ its `targetHours`. This is the same rule that makes it complete on its own banner.
 3. **Required groups.** Hours habits can be marked required.
 4. **Group view.** In a Required/Any/All card, Hours habits show as the Hours pill (name, streak, progress bar with `{hours}/{target}h`), the same row used inside Hours groups. Checkmark pills are unchanged. When both kinds share a card, the Checkmark pills wrap first, then the Hours habits follow in the 2-column grid used by Hours groups (owner's choice, 26 Nov 2026). A required Hours habit gets the same blue border as a required Checkmark pill.
-5. **Tapping.** The progress bar opens the Hours modal; per `usability-fixes.md` the rest of the pill does nothing until the detail page exists.
+5. **Tapping.** The progress bar opens the Hours modal; the rest of the cell opens the habit's page (`habit-group-detail-page.md`).
 6. **Existing data.** No migration: current groups are unaffected.
    - Editing an Hours habit's daily target re-checks every group it is in, since the target decides whether it counts as done today.
 7. **Edit.** Assigning or unassigning an Hours habit in Edit Habit Group follows the same rules.

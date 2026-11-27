@@ -33,7 +33,7 @@ The Habits screen meets WCAG 2.2 AA contrast and Android touch-target guidance, 
 - ⋮ and checkmark targets have a 48dp effective size.
 
 ## Acceptance criteria
-- [ ] Every text and icon colour pair on the Habits screen passes AA (4.5:1 text, 3:1 icons)
-- [ ] All tappable elements are at least 48dp
-- [ ] TalkBack reads each habit and group with name, state and streak
-- [ ] At the largest system font size nothing is clipped or overlapping
+- [x] Every text and icon colour pair on the Habits screen passes AA (4.5:1 text, 3:1 icons)
+- [x] All tappable elements are at least 48dp
+- [x] TalkBack reads each habit and group with name, state and streak
+- [ ] At the largest system font size nothing is clipped or overlapping *(check on a real phone)*

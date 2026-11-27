@@ -1,6 +1,6 @@
 # Feature: Profile tab.
 
-Status: in progress. Done: the menu, Sign out, Delete data, About. Coming with their own specs: Display settings, Support the developer, How to use rows. **Not wired:** the About links.
+Status: done in the app: the account card, the menu (Display settings, Support the developer, How to use, About), Sign out and Delete data. **Not wired:** the About links, which wait for the privacy and deletion pages (`play-store-release-checklist.md`).
 
 ## Goal
 One place for the account, backup, display settings, supporting the developer, and help.
@@ -26,5 +26,5 @@ The Profile tab holds:
 - To be written with the design. At minimum: each section is reachable; signed-in and signed-out states; version shown; links open.
 
 ## Acceptance criteria
-- [ ] Account and backup, display settings, support the developer and help are all reachable from Profile
+- [x] Account and backup, display settings, support the developer and help are all reachable from Profile
 - [ ] Privacy policy and account-deletion links open

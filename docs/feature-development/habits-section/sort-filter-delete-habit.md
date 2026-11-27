@@ -1,6 +1,6 @@
 # Feature: Habit and groups should be deletable and sortable.
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 user should be able to delete and sort habits and groups.
@@ -11,7 +11,7 @@ user should be able to delete and sort habits and groups.
 ## Scope
 - Add a modal to open delete options on a habit and group.
 - Habits can be deleted only from list view and groups only from group view.
-- Add a three dot menu button on top right to open the delete options - design decision required.
+- Add a three dot menu button on top right to open the delete options (designed in `../../style-choices/habits-section/banner-menu.md`).
 - This applies only to banners and not pills.
 - Delete habit removes the habit and all assignments.
 - Delete group removes the group only, keeps the habits assigned to it intact.
@@ -55,8 +55,8 @@ user should be able to delete and sort habits and groups.
 - Habits screen: the sort button opens the sheet; Recent and A–Z reorder the list; Completed in both views; deleting a habit removes its row and its pill in group view; deleting a group keeps its habits.
 
 ## Acceptance criteria
-- [ ] The sort button opens the Sort & Filter sheet with Streak, A–Z and Recent, and Completed, Active, Paused and Archived
-- [ ] The default order is oldest first, and each sort orders the list and the group cards
-- [ ] Completed shows only items complete today, in both views
-- [ ] Habits can be deleted from list view and groups from group view, through the menu and the confirm step
-- [ ] Deleting a habit removes it from every group; deleting a group keeps its habits
+- [x] The sort button opens the Sort & Filter sheet with Streak, A–Z and Recent, and Completed, Active, Paused and Archived
+- [x] The default order is oldest first, and each sort orders the list and the group cards
+- [x] Completed shows only items complete today, in both views
+- [x] Habits can be deleted from list view and groups from group view, through the menu and the confirm step
+- [x] Deleting a habit removes it from every group; deleting a group keeps its habits

@@ -27,6 +27,6 @@ Every bottom-menu tab does something: Habits and Profile open their screens, and
 - FAB only on Habits.
 
 ## Acceptance criteria
-- [ ] All four tabs respond to taps
-- [ ] Journal and Level-Up tell the user the section is coming
-- [ ] Habits behaves exactly as before
+- [x] All four tabs respond to taps
+- [x] Journal and Level-Up tell the user the section is coming
+- [x] Habits behaves exactly as before

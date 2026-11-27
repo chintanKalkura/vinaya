@@ -37,7 +37,7 @@ No mark, hours entry, edit or delete is ever lost or silently overwritten, and t
 - Habits screen: a failed load shows the message and Retry; Retry reloads. A failed mark shows the save message and the row keeps its old state.
 
 ## Acceptance criteria
-- [ ] Tapping several habits as fast as possible, then relaunching, shows every tap saved
-- [ ] A storage read failure never results in data being overwritten
-- [ ] Every failed load or save shows the user a message
-- [ ] No unhandled promise rejections from the Habits screen
+- [x] Tapping several habits as fast as possible, then relaunching, shows every tap saved *(covered by the write-queue tests; worth repeating on a real phone)*
+- [x] A storage read failure never results in data being overwritten
+- [x] Every failed load or save shows the user a message
+- [x] No unhandled promise rejections from the Habits screen

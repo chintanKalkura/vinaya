@@ -1,6 +1,6 @@
 # Feature: Habit group streak from log
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 A habit group's banner number is its streak, calculated from the group's own log, the same way a habit's streak is calculated from the habit's log. This replaces the static `streakPlaceholder` added in the group view spec.
@@ -38,14 +38,14 @@ Out of scope:
 8 Precepts has a 12-day group log ending today (streak 12). Eat Healthy has an empty group log (streak 0). `streakPlaceholder` is removed from the `HabitGroup` type.
 
 ## Acceptance criteria
-- [ ] Banner numbers on screen 01 are calculated from the group log (12 for 8 Precepts, 0 for Eat Healthy)
-- [ ] Marking the last required habit of a group makes the group complete and today's group entry exists
-- [ ] Unmarking a required habit removes today's group entry and the number drops back
-- [ ] Marking an Any group's first habit adds the group entry; unmarking it removes it
-- [ ] Mark, unmark, mark leaves one entry for today in both the habit's and the group's `history`
-- [ ] Unmarking a habit removes today's entry from the habit's `recentLog` and `history`
-- [ ] After restarting the app, group logs and streaks are unchanged
-- [ ] `streakPlaceholder` no longer exists
+- [x] Banner numbers on screen 01 are calculated from the group log (12 for 8 Precepts, 0 for Eat Healthy)
+- [x] Marking the last required habit of a group makes the group complete and today's group entry exists
+- [x] Unmarking a required habit removes today's group entry and the number drops back
+- [x] Marking an Any group's first habit adds the group entry; unmarking it removes it
+- [x] Mark, unmark, mark leaves one entry for today in both the habit's and the group's `history`
+- [x] Unmarking a habit removes today's entry from the habit's `recentLog` and `history`
+- [x] After restarting the app, group logs and streaks are unchanged
+- [x] `streakPlaceholder` no longer exists
 
 ## Open questions
 None.
