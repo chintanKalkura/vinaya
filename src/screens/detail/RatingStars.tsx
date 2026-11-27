@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { CircleHelp, Lock, Star, X } from 'lucide-react-native';
 import { Palette } from '../../theme';
 import { usePalette, useThemedStyles } from '../../theming';
@@ -30,7 +30,7 @@ export function StarRow({
       accessible
       accessibilityRole="image"
       accessibilityLabel={`${stars} of 5 stars`}
-      style={[styles.row, { gap: size > 14 ? 4 : 2 }]}
+      style={[styles.row, size > 14 ? styles.wide : styles.tight]}
     >
       {[0, 1, 2, 3, 4].map(i => {
         const filled = i < stars;
@@ -149,6 +149,12 @@ export default function RatingStars({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
+  },
+  wide: {
+    gap: 4,
+  },
+  tight: {
+    gap: 2,
   },
 });
 
