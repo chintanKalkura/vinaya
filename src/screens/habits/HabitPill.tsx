@@ -7,6 +7,7 @@ import { usePalette, useThemedStyles } from '../../theming';
 import { useHabitVisual } from './useHabitVisual';
 import { getColorScheme } from './colorRules';
 import { checkmarkLabel } from './a11yLabels';
+import StarBurst, { useBurstOnDone } from './StarBurst';
 
 interface HabitPillProps {
   habit: Habit;
@@ -39,6 +40,7 @@ export default function HabitPill({
     colour,
   );
 
+  const burst = useBurstOnDone(status.markedToday);
   // The check marks; anywhere else on the pill opens the habit's page
   // (habit-group-detail-page.md). TalkBack reaches it through the name.
   const open = onOpen ? () => onOpen(habit.id) : undefined;
@@ -90,6 +92,11 @@ export default function HabitPill({
             ) : null}
           </View>
         )}
+        <StarBurst
+          color={scheme.iconColor}
+          playKey={burst}
+          testID={`habit-pill-burst-${habit.id}`}
+        />
       </Pressable>
       <Pressable
         testID={`habit-pill-open-${habit.id}`}

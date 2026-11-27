@@ -8,6 +8,7 @@ import { useHabitVisual } from './useHabitVisual';
 import { ratingOf } from '../../utils/rating';
 import { StarRow } from '../detail/RatingStars';
 import HoursProgress from './HoursProgress';
+import StarBurst, { useBurstOnDone } from './StarBurst';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
 import BannerMenu, {
@@ -71,6 +72,8 @@ export default function HabitListRow({
   // Where the name row's centre is in the banner, for the ⋮ target
   const [textColumnY, setTextColumnY] = useState(0);
   const [nameRowCenter, setNameRowCenter] = useState(0);
+  // Marking it done plays a star burst from the check or the bar
+  const burst = useBurstOnDone(status.markedToday);
   // Banners show the rating bottom-left (habit-group-detail-page.md, decision 8):
   // earned stars grey until the habit is complete today, then its colour
   const stars = useMemo(
@@ -204,6 +207,11 @@ export default function HabitListRow({
               testID={`habit-row-progress-${habit.id}`}
               color={scheme.barColor}
             />
+            <StarBurst
+              color={scheme.barColor}
+              playKey={burst}
+              testID={`habit-row-burst-${habit.id}`}
+            />
           </Pressable>
         </View>
         {cadenceLabel}
@@ -254,6 +262,11 @@ export default function HabitListRow({
             ) : null}
           </View>
         )}
+        <StarBurst
+          color={scheme.iconColor}
+          playKey={burst}
+          testID={`habit-row-burst-${habit.id}`}
+        />
       </Pressable>
       <Pressable
         testID={`habit-row-open-${habit.id}`}
