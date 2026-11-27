@@ -25,7 +25,7 @@ The streak is never used to pick a color. A habit or group with an active streak
 
 The same rules apply to Checkmark and Hours habits.
 
-**Completion colour.** Wherever this document says orange for complete, the item's chosen completion colour is used instead (orange when none is set). Pills inside a group card use the group's colour. See `../theme/completion-colours.md`. The habit and group page uses the same colour for its stars, current streak, trend, heatmap and done days, and icy blue for frozen days (`../detail/detail-page.md`).
+**Completion colour.** Wherever this document says orange for complete, the item's chosen completion colour is used instead (orange when none is set). Pills inside a group card use the group's colour. See `../theme/completion-colours.md`. **Stars on banners and group cards.** Small 12px stars bottom-left, level with the cadence label (after the check on habit banners, at the left edge on Hours banners and group cards): the habit's or group's rating (`../../feature-development/release-1-readiness/habit-group-detail-page.md`, decision 8). Earned stars follow the streak number: grey while the item isn't complete today, the completion colour once it is; unearned stars are grey outlines. Pills don't show stars. Marking a habit plays a short star burst from its check or bar in the completion colour (`src/screens/habits/StarBurst.tsx`; five 14px stars fly up to about 55dp and fade over 0.9s, staggered 40ms), never blocking a tap and skipped with the phone's Remove animations setting. The habit and group page uses the same colour for its stars, current streak, trend, heatmap and done days, and icy blue for frozen days (`../detail/detail-page.md`).
 
 ## 2. Element kinds
 

@@ -22,7 +22,7 @@ Work them in this order. Within a step, any order.
 | | `banner-colours.md` | done |
 | | `habit-group-detail-page.md` | done |
 | 6. Ship | `play-store-release-checklist.md` | reference checklist |
-| 7. After release 1 | `habit-group-detail-page.md`, decision 8 (Rating) | in progress: five goal-based stars on the page, banners and group cards, with a star burst on marking |
+| 7. After release 1 | `habit-group-detail-page.md`, decision 8 (Rating) | done: five goal-based stars on the page (with How to earn), banners and group cards, and a star burst on marking |
 
 Notes:
 - `google-drive-backup.md` depends on `storage-write-safety.md` (write queue) and adds tombstones that delete flows must write.
