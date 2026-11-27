@@ -13,11 +13,11 @@ import {
   completionUnits,
   heatSteps,
   heatmap,
-  starRating,
   streakSummary,
   trendAxis,
   trendPoints,
 } from '../../utils/history';
+import { Rating, ratingOf } from '../../utils/rating';
 
 // Everything the habit and group page shows, from one item's log:
 // docs/feature-development/release-1-readiness/habit-group-detail-page.md
@@ -27,7 +27,7 @@ export interface PageStats {
   createdKey: string;
   streaks: StreakSummary;
   rate: CompletionRate;
-  stars: number;
+  rating: Rating; // the five goal-based stars
   trend: TrendPoint[];
   trendStep: number;
   heat: HeatSlot[];
@@ -59,7 +59,7 @@ export function pageStats(
     createdKey,
     streaks: streakSummary(markers, item.cadence, todayKey, frozenDates),
     rate,
-    stars: starRating(rate.rate),
+    rating: ratingOf(item, todayKey),
     trend: trendPoints(units, item.cadence),
     trendStep: trendAxis(item.cadence, units.length).step,
     heat,

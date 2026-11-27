@@ -77,19 +77,72 @@ describe('MonthGrid', () => {
 });
 
 describe('RatingStars', () => {
-  it('should fill the given number of stars', () => {
+  const rating = {
+    stars: 3,
+    items: [
+      {
+        goal: 'Keep your streak going',
+        state: 'earned' as const,
+        status: 'Earned',
+      },
+      {
+        goal: 'Most days this week',
+        state: 'earned' as const,
+        status: 'Earned',
+      },
+      {
+        goal: 'Every day this week',
+        state: 'todo' as const,
+        status: '1 day missed',
+      },
+      {
+        goal: 'Most days for 2 weeks',
+        state: 'earned' as const,
+        status: 'Earned',
+      },
+      {
+        goal: 'Steady for 3 weeks',
+        state: 'locked' as const,
+        status: 'Opens 14 Dec',
+      },
+    ],
+  };
+
+  it('should fill the earned stars', () => {
     const { getByTestId, toJSON } = render(
-      <RatingStars stars={3} color="#123456" />,
+      <RatingStars rating={rating} color="#123456" />,
     );
     // The stars are SVG views, which the queries skip; count them in the tree
     const json = JSON.stringify(toJSON());
     const count = (id: string) => json.split(`"testID":"${id}"`).length - 1;
 
     expect([
-      count('detail-star-filled'),
-      count('detail-star-empty'),
+      count('detail-rating-filled'),
+      count('detail-rating-empty'),
       getByTestId('detail-rating').props.accessibilityLabel,
     ]).toEqual([3, 2, '3 of 5 stars']);
+  });
+
+  it('should open the goals from How to earn, and close them again', () => {
+    const utils = render(<RatingStars rating={rating} color="#123456" />);
+    const closed = utils.queryByTestId('rating-rules');
+    fireEvent.press(utils.getByTestId('rating-help'));
+    const goals = [1, 2, 3, 4, 5].map(
+      i => utils.getByTestId(`rating-goal-${i}`).props.accessibilityLabel,
+    );
+    fireEvent.press(utils.getByTestId('rating-rules-close'));
+
+    expect([closed, goals, utils.queryByTestId('rating-rules')]).toEqual([
+      null,
+      [
+        'Keep your streak going, Earned',
+        'Most days this week, Earned',
+        'Every day this week, 1 day missed',
+        'Most days for 2 weeks, Earned',
+        'Steady for 3 weeks, Opens 14 Dec',
+      ],
+      null,
+    ]);
   });
 });
 

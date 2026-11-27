@@ -1,8 +1,10 @@
-import { HabitCadence } from '../types/habit';
+import { Habit, HabitCadence } from '../types/habit';
+import { HabitGroup } from '../types/habitGroup';
 import { LogEntry } from '../types/log';
 import { clampCadenceTarget } from './cadence';
 import { addDays, parseDate, toDateKey } from './dates';
 import { streakRuns } from './history';
+import { habitMarkers } from './hours';
 
 // The five stars: docs/feature-development/release-1-readiness/habit-group-detail-page.md
 // (decision 8). Each star is a goal over a rolling window ending today (or
@@ -247,4 +249,18 @@ export function rating(
     stars: items.filter(item => item.state === 'earned').length,
     items,
   };
+}
+
+// A habit's or group's rating: habits by their done days (Hours: target
+// met), groups by their own completed days
+export function ratingOf(item: Habit | HabitGroup, todayKey: string): Rating {
+  const markers = 'type' in item ? habitMarkers(item) : item.history;
+  return rating(
+    markers,
+    item.cadence,
+    item.target,
+    toDateKey(new Date(item.createdAt)),
+    todayKey,
+    item.streakFreeze?.frozenDates,
+  );
 }
