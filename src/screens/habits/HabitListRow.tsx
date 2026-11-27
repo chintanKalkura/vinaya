@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Snowflake } from 'lucide-react-native';
 import { CompletionColourId, Habit } from '../../types/habit';
-import { Palette } from '../../theme';
+import { Palette, completionColour } from '../../theme';
 import { usePalette, useThemedStyles } from '../../theming';
 import { useHabitVisual } from './useHabitVisual';
+import { ratingOf } from '../../utils/rating';
+import { StarRow } from '../detail/RatingStars';
 import HoursProgress from './HoursProgress';
+import StarBurst, { useBurstOnDone } from './StarBurst';
 import CadenceLabel, { CADENCE_LABEL_SPACE } from './CadenceLabel';
 import FreezeLabel from './FreezeLabel';
 import BannerMenu, {
@@ -69,6 +72,17 @@ export default function HabitListRow({
   // Where the name row's centre is in the banner, for the ⋮ target
   const [textColumnY, setTextColumnY] = useState(0);
   const [nameRowCenter, setNameRowCenter] = useState(0);
+  // Marking it done plays a star burst from the check or the bar
+  const burst = useBurstOnDone(status.markedToday);
+  // Banners show the rating bottom-left (habit-group-detail-page.md, decision 8):
+  // earned stars grey until the habit is complete today, then its colour
+  const stars = useMemo(
+    () => (isBanner ? ratingOf(habit, todayKey).stars : 0),
+    [isBanner, habit, todayKey],
+  );
+  const starColor = status.complete
+    ? completionColour(colors, habit.colour).accent
+    : colors.v2GreyText;
   // Pills never show the freeze label. Decorative: the tap target's label says it.
   const cadenceLabel = isBanner ? (
     <View
@@ -82,6 +96,14 @@ export default function HabitListRow({
           testID={`habit-row-freeze-${habit.id}`}
         />
       ) : null}
+      <View style={[styles.stars, hours ? styles.starsHours : null]}>
+        <StarRow
+          stars={stars}
+          color={starColor}
+          size={12}
+          testID={`habit-row-stars-${habit.id}`}
+        />
+      </View>
       <CadenceLabel
         cadence={habit.cadence}
         testID={`habit-row-cadence-${habit.id}`}
@@ -141,7 +163,9 @@ export default function HabitListRow({
   const openProps = {
     accessible: !!open,
     accessibilityRole: 'button' as const,
-    accessibilityLabel: `Open ${habit.name}`,
+    accessibilityLabel: isBanner
+      ? `Open ${habit.name}, ${stars} of 5 stars`
+      : `Open ${habit.name}`,
     disabled: !open,
     onPress: open,
   };
@@ -182,6 +206,11 @@ export default function HabitListRow({
               target={habit.targetHours ?? 0}
               testID={`habit-row-progress-${habit.id}`}
               color={scheme.barColor}
+            />
+            <StarBurst
+              color={scheme.barColor}
+              playKey={burst}
+              testID={`habit-row-burst-${habit.id}`}
             />
           </Pressable>
         </View>
@@ -233,6 +262,11 @@ export default function HabitListRow({
             ) : null}
           </View>
         )}
+        <StarBurst
+          color={scheme.iconColor}
+          playKey={burst}
+          testID={`habit-row-burst-${habit.id}`}
+        />
       </Pressable>
       <Pressable
         testID={`habit-row-open-${habit.id}`}
@@ -268,6 +302,15 @@ const makeStyles = (colors: Palette) =>
       paddingVertical: 12,
       paddingHorizontal: 14,
       backgroundColor: colors.v2CardBackground,
+    },
+    // Bottom-left, level with the cadence label: under the name, past the check
+    stars: {
+      position: 'absolute',
+      left: 44,
+      bottom: 8,
+    },
+    starsHours: {
+      left: 14,
     },
     bannerRow: {
       paddingBottom: 12 + CADENCE_LABEL_SPACE,

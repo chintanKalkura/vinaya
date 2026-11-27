@@ -802,7 +802,7 @@ describe('HabitListRow opening the habit page', () => {
     expect(
       renderRow(makeHabit()).getByTestId('habit-row-open-habit-1').props
         .accessibilityLabel,
-    ).toBe('Open Cook');
+    ).toBe('Open Cook, 0 of 5 stars');
   });
 
   it('should open nothing without onOpen', () => {

@@ -17,7 +17,8 @@ src/
 ├── types/                  — habit.ts, habitGroup.ts, habitConfig.ts (limits), log.ts, backup.ts
 ├── utils/                  — pure logic: dates, cadence windows, streaks, streak freezes, hours,
 │                             group completion, sort/filter, new habit/group drafts, tombstones, contrast,
-│                             history.ts (page stats), pastDays.ts (Edit past days range), logs.ts (set one day)
+│                             history.ts (page stats), rating.ts (the five stars), pastDays.ts (Edit past days range),
+│                             logs.ts (set one day)
 ├── storage/
 │   ├── habitStorage.ts     — AsyncStorage collections (habits_v2, habit_groups_v2, tombstones_v2),
 │   │                         the single storage write queue, read/write errors
@@ -28,7 +29,7 @@ src/
 ├── services/               — habitService, habitGroupService: every change is one queued storage operation
 ├── backup/                 — Google sign-in (googleAccount), Drive store (driveBackupStore, BackupStore),
 │                             mergeBackup, schema, backupService, account flows, backup state
-├── hooks/                  — useToday (date rollover), useAutoBackup
+├── hooks/                  — useToday (date rollover), useAutoBackup, useReduceMotion
 ├── config/                 — google.ts (Web OAuth client ID)
 └── screens/
     ├── HabitsScreen.tsx    — HabitsList: list and group views, filters and sort

@@ -6,7 +6,6 @@ import {
   heatSteps,
   heatmap,
   periodStart,
-  starRating,
   streakSummary,
   trendAxis,
   trendPoints,
@@ -380,23 +379,6 @@ describe('calendar ranges', () => {
 
   it('should keep a month-end start inside a shorter month', () => {
     expect(calendarRangeStart('month', '2026-03-31')).toBe('2026-03-01');
-  });
-});
-
-describe('starRating', () => {
-  it.each([
-    [null, 0],
-    [0, 0],
-    [0.09, 0],
-    [0.1, 1],
-    [0.2, 1],
-    [0.4, 2],
-    [0.6, 3],
-    [0.84, 4],
-    [0.9, 5],
-    [1, 5],
-  ])('should give %p a rating of %i stars', (rate, stars) => {
-    expect(starRating(rate)).toBe(stars);
   });
 });
 

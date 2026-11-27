@@ -37,13 +37,13 @@ describe('pageStats', () => {
     expect([
       stats.streaks,
       stats.rate,
-      stats.stars,
+      stats.rating.stars,
       stats.trend.length,
       stats.heat.length,
     ]).toEqual([
       { current: 4, best: 4, previous: 3 },
       { done: 7, total: 10, rate: 0.7 },
-      4,
+      1, // streak only: 4 of the last 7 days, and ★4 and ★5 still locked
       10,
       7,
     ]);
@@ -69,7 +69,7 @@ describe('pageStats', () => {
       'monday',
     );
 
-    expect([stats.rate.rate, stats.stars, stats.trend]).toEqual([null, 0, []]);
+    expect([stats.rate.rate, stats.rating.stars, stats.trend]).toEqual([null, 0, []]);
   });
 });
 

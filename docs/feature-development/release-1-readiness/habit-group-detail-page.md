@@ -29,7 +29,32 @@ Tapping a habit banner or group card opens a page with that item's stats and his
 7. **List menus unchanged.** The ⋮ on banners and group cards stays Edit / Delete, so Edit past days stays tucked away.
 
 ### Stats
-8. **Rating.** Five stars filled from the overall completion rate, rounded to the nearest fifth: 20% is one star, 40% two, 60% three, 80% four, 100% five (so 84% shows 4, 90% shows 5, under 10% shows none). Filled stars use the item's completion colour, empty ones are grey outlines; no text. Before anything counts, all five are empty. A fuller formula may replace this later (README, step 7).
+8. **Rating** (owner, 27 Nov 2026; replaces the stars from the completion rate). Five stars, one per goal, each earned or not. They show how the habit or group is doing lately, and every missing star is a goal the user can see and reach.
+   - **Window n**: 7 days (Day), 4 weeks (Week), 3 months (Month), 1 year (Year). Windows count back from today (rolling, never calendar weeks or months). Today counts only once it is done; until then windows end yesterday.
+   - **Counting**: times done against the target. A daily habit counts days done. Other cadences cut the window into rolling periods back from today (7 days, a month, a year) and count each one up to its target, so a busy week can't make up for a missed one. Days before the item was created count as not done, so a new item builds up star by star. Frozen days count as not done. Hours habits count a day once its hours reach the target. Groups use their own completed days.
+   - **The stars** ("80%" rounds up: 6 of 7, 12 of 14, 17 of 21; 10 of 12 for 3 a week):
+
+     | ★ | Earned when | Opens |
+     |---|---|---|
+     | 1 | a streak is going | from the start |
+     | 2 | 80%+ of the last n | from the start |
+     | 3 | all of the last n | from the start |
+     | 4 | 80%+ of the last 2n | when the item is 2n old |
+     | 5 | 80%+ of the last 3n, or a streak of n's worth (7 days; n × target times) that ended within the last 3n | when the item is 3n old |
+
+   - **Goal wording** (approved):
+
+     | ★ | Daily | Weekly | Monthly | Yearly |
+     |---|---|---|---|---|
+     | 1 | Keep your streak going | same | same | same |
+     | 2 | Most days this week | Most of your target this month | Most of your target in 3 months | Most of your target this year |
+     | 3 | Every day this week | Every time this month | Every time in 3 months | Every time this year |
+     | 4 | Most days for 2 weeks | Most of it for 2 months | Most of it for 6 months | Most of it for 2 years |
+     | 5 | Steady for 3 weeks | Steady for 3 months | Steady for 9 months | Steady for 3 years |
+
+   - **Status under each goal**: "Earned"; otherwise "2 more days" (or times) to reach it, "1 day missed" (or time) when only a missed day in the window stands in the way of ★3, and "Opens 14 Dec" while locked. ★1 not earned says "1 more day" (or time).
+   - **Where it shows**: on the page, the stars with a **How to earn** button (question-mark icon) that opens and closes the goals card; on every list banner and group card, small stars bottom-left (earned stars grey until the item is complete today, then the completion colour, like the streak number). Marking a habit plays a short star burst from its check (option A), skipped when the phone's Remove animations setting is on.
+   - **Separate from the completion rate**: the rate on the page counts calendar periods since creation ("since the start"); the rating uses rolling windows ("lately").
 9. **Streaks.** Current, best and previous. Previous is the run before the latest one; when the current streak is 0, it is the run that just ended. Runs follow the banner's streak rules, with frozen days bridging a run without adding to it.
 10. **Completion rate (overall).** Completed units ÷ units since the item was created.
     - Day: a unit is a day.

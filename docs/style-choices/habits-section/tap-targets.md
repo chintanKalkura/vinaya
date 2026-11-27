@@ -13,7 +13,7 @@ Implemented in `../../../src/screens/habits/HabitListRow.tsx`, `HabitPill.tsx`, 
 | Hours banner and Hours cell | the progress bar row (bar and `2/4h`), opens the Hours modal | name, group, streak, rest of the banner or cell |
 | Group card | its habits' checks and bars (each pill or cell opens its habit) | the header, status icon and the rest of the card open the group |
 
-The ⋮ keeps its own target. Scrolling or tapping a name can never mark a habit. For TalkBack, the name area of a banner, pill or cell is a button read "Open <name>", and a group card's header is a button with the hint "Opens the group page".
+The ⋮ keeps its own target. Scrolling or tapping a name can never mark a habit. For TalkBack, the name area of a banner is a button read "Open <name>, 4 of 5 stars" (pills and cells: "Open <name>"), and a group card's header is a button whose label ends with its stars, with the hint "Opens the group page".
 
 ## 48dp tap areas
 

@@ -203,7 +203,7 @@ export default function HabitDetailScreen({
           ) : null}
         </View>
 
-        <RatingStars stars={stats.stars} color={accent} />
+        <RatingStars rating={stats.rating} color={accent} />
         <StreakStats streaks={stats.streaks} color={accent} />
         <CompletionRateSection
           rate={stats.rate}
