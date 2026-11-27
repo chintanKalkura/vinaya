@@ -4,14 +4,15 @@ import { fireEvent, render } from '@testing-library/react-native';
 import MonthGrid, { DayInfo } from './MonthGrid';
 import RatingStars from './RatingStars';
 import HeatmapSection from './HeatmapSection';
-import { sliceText } from './CompletionRateSection';
-import {
+import CompletionRateSection, { sliceText } from './CompletionRateSection';
+import HistorySection, {
   dayLabel,
   dayStateOf,
   hoursBars,
   monthsBetween,
 } from './HistorySection';
 import { colors } from '../../theme';
+import { Habit } from '../../types/habit';
 
 describe('MonthGrid', () => {
   const info = (state: DayInfo['state'], inRange = true): DayInfo => ({
@@ -235,5 +236,122 @@ describe('history helpers', () => {
       'Each point is 40 days, most recent first',
       'Each point is 2 weeks, most recent first',
     ]);
+  });
+});
+
+// The charts draw once their width is measured
+const layout = { nativeEvent: { layout: { width: 300, height: 130 } } };
+const countIn = (json: string, type: string) =>
+  json.split(`"type":"${type}"`).length - 1;
+
+describe('CompletionRateSection', () => {
+  const trend = [
+    { x: 5, rate: 1 },
+    { x: 10, rate: 0.8 },
+    { x: 15, rate: 0.4 },
+  ];
+
+  it('should draw a dot per slice and describe them for TalkBack', () => {
+    const utils = render(
+      <CompletionRateSection
+        rate={{ done: 8, total: 10, rate: 0.8 }}
+        trend={trend}
+        step={5}
+        cadence="Day"
+        color="#123456"
+      />,
+    );
+    fireEvent(utils.getByTestId('detail-trend'), 'layout', layout);
+    const json = JSON.stringify(utils.toJSON());
+
+    expect([
+      utils.getByTestId('detail-rate').props.children,
+      countIn(json, 'RNSVGCircle'),
+      utils.getByTestId('detail-trend').props.accessibilityLabel,
+    ]).toEqual([
+      '80%',
+      3,
+      'Completion by slice, most recent first: 100%, 80%, 40%',
+    ]);
+  });
+
+  it('should say there are not enough days with no slices yet', () => {
+    const utils = render(
+      <CompletionRateSection
+        rate={{ done: 0, total: 0, rate: null }}
+        trend={[]}
+        step={1}
+        cadence="Day"
+        color="#123456"
+      />,
+    );
+
+    expect([
+      utils.getByTestId('detail-rate').props.children,
+      !!utils.getByTestId('detail-trend-empty'),
+    ]).toEqual(['—', true]);
+  });
+});
+
+describe('HistorySection hours per day', () => {
+  const hoursHabit: Habit = {
+    id: 'h',
+    name: 'Read',
+    cadence: 'Day',
+    type: 'Hours',
+    targetHours: 2,
+    streakFreezeInterval: 7,
+    status: 'active',
+    sortOrder: 0,
+    createdAt: 0,
+    recentLog: [],
+    history: [
+      { date: '2026-11-25', kind: 'hours', value: 1 },
+      { date: '2026-11-26', kind: 'hours', value: 3 },
+    ],
+  };
+
+  it('should draw a bar a day for the last week, and switch ranges', () => {
+    const utils = render(
+      <HistorySection
+        cadence="Day"
+        markers={[{ date: '2026-11-26', kind: 'marker', value: 1 }]}
+        frozenDates={[]}
+        hoursHabit={hoursHabit}
+        todayKey="2026-11-26"
+        weekStart="monday"
+        color="#123456"
+      />,
+    );
+    const chart = utils.getByLabelText(/^Hours per day/);
+    fireEvent(chart, 'layout', layout);
+    const bars = countIn(JSON.stringify(utils.toJSON()), 'RNSVGRect');
+    const monthsBefore = utils.queryAllByTestId(/^month-/).length;
+    fireEvent.press(utils.getByTestId('history-range-3m'));
+
+    expect([
+      bars,
+      monthsBefore,
+      utils.queryAllByTestId(/^month-/).length,
+    ]).toEqual([7, 1, 4]);
+  });
+
+  it('should show the part-done day as half filled', () => {
+    const utils = render(
+      <HistorySection
+        cadence="Day"
+        markers={[{ date: '2026-11-26', kind: 'marker', value: 1 }]}
+        frozenDates={[]}
+        hoursHabit={hoursHabit}
+        todayKey="2026-11-26"
+        weekStart="monday"
+        color="#123456"
+      />,
+    );
+
+    expect([
+      utils.getByTestId('day-2026-11-25').props.accessibilityLabel,
+      utils.getByTestId('day-2026-11-26').props.accessibilityLabel,
+    ]).toEqual(['Wed 25 Nov, part done', 'Thu 26 Nov, done']);
   });
 });
