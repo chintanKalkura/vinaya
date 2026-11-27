@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   fireEvent,
@@ -14,6 +15,7 @@ import {
   saveHabits,
 } from '../../storage/habitStorage';
 import { Habit } from '../../types/habit';
+import { colors } from '../../theme';
 import { HabitGroup } from '../../types/habitGroup';
 
 const habit: Habit = {
@@ -285,5 +287,74 @@ describe('Edit past days from the page and the edit form', () => {
       !!(await utils.findByTestId('past-days-sheet')),
       !!utils.getByText('Edit Habit'),
     ]).toEqual([[true, true], true, true]);
+  });
+});
+
+describe('HabitDetailScreen colours and deleting from Edit Habit', () => {
+  const todayMark = () => {
+    const d = new Date();
+    const key = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-');
+    return { date: key, kind: 'marker' as const, value: 1 };
+  };
+
+  it("should colour a complete member's streak and grey an incomplete one", async () => {
+    const mark = todayMark();
+    await saveHabits({
+      run: {
+        ...habit,
+        cadence: 'Day',
+        target: undefined,
+        recentLog: [mark],
+        history: [mark],
+      },
+      rest: {
+        ...habit,
+        id: 'rest',
+        name: 'Rest',
+        cadence: 'Day',
+        target: undefined,
+      },
+    });
+    await saveHabitGroups({
+      fitness: { ...group, habitIds: ['run', 'rest'], colour: 'blue' },
+    });
+    const utils = renderPage('group', 'fitness');
+    const colourOf = async (id: string) =>
+      StyleSheet.flatten(
+        (await utils.findByTestId(`detail-member-streak-${id}`)).props.style,
+      ).color;
+
+    expect([await colourOf('run'), await colourOf('rest')]).toEqual([
+      colors.completion.blue.accent,
+      colors.v2GreyText,
+    ]);
+  });
+
+  it('should show the current streak grey at 0', async () => {
+    const utils = renderPage('habit', 'run');
+
+    expect(
+      StyleSheet.flatten(
+        (await utils.findByTestId('detail-streak-current')).props.style,
+      ).color,
+    ).toBe(colors.v2GreyText);
+  });
+
+  it('should delete from the Edit Habit menu, then leave the page', async () => {
+    const utils = renderPage('habit', 'run');
+    fireEvent.press(await utils.findByTestId('detail-edit'));
+    fireEvent.press(await utils.findByTestId('edit-habit-menu'));
+    fireEvent.press(utils.getByTestId('edit-habit-menu-delete'));
+    fireEvent.press(utils.getByTestId('edit-habit-menu-confirm-delete'));
+
+    await waitFor(() => expect(utils.onGone).toHaveBeenCalled());
+    expect([await loadHabits(), utils.queryByText('Edit Habit')]).toEqual([
+      {},
+      null,
+    ]);
   });
 });

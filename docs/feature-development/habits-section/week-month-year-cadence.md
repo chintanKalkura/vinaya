@@ -1,6 +1,6 @@
 # Feature: Habits and groups with week, month, and year cadence.
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 User should be able to track and record habits and groups with week, month and year.
@@ -107,12 +107,12 @@ Group logs are worked out from the member habits' logs, so they match the marks.
 - Seed: every fixture state above, and group logs consistent with their members.
 
 ## Acceptance criteria
-- [ ] The header shows one cadence dropdown, defaulting to All
-- [ ] Choosing a cadence filters groups in group view and habits in list view
-- [ ] Week, Month and Year habits can be marked or logged on any day
-- [ ] A Week/Month/Year habit or group is orange while its window meets the target, and its streak follows decision 5
-- [ ] The seeded fixtures show complete, incomplete and alive-but-incomplete states for every cadence
-- [ ] Day habits and groups behave exactly as before
+- [x] The header shows one cadence dropdown, defaulting to All
+- [x] Choosing a cadence filters groups in group view and habits in list view
+- [x] Week, Month and Year habits can be marked or logged on any day
+- [x] A Week/Month/Year habit or group is orange while its window meets the target, and its streak follows decision 5
+- [x] The seeded fixtures show complete, incomplete and alive-but-incomplete states for every cadence
+- [x] Day habits and groups behave exactly as before
 
 ## Open questions
 None.

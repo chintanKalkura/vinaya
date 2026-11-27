@@ -409,6 +409,17 @@ describe('createHabitGroup', () => {
     ...overrides,
   });
 
+  it('rejects a habit that no longer exists, or a type the group cannot take', async () => {
+    await seed([makeHabit('a'), makeHabit('b')], makeGroup('Any'));
+
+    await expect(
+      createHabitGroup(draft({ habitIds: ['a', 'gone'] }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+    await expect(
+      createHabitGroup(draft({ groupType: 'Hours', targetHours: 1 }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+  });
+
   it('saves the group last in sort order', async () => {
     await seed(
       [makeHabit('a'), makeHabit('b')],
@@ -496,6 +507,26 @@ describe('updateHabitGroup', () => {
     name: 'G',
     habitIds: ['a', 'b'],
     ...overrides,
+  });
+
+  it('rejects a missing group, an invalid draft and a missing habit', async () => {
+    await seed([makeHabit('a'), makeHabit('b')], makeGroup('Any'));
+    const edit = (overrides: Partial<NewHabitGroupDraft> = {}) => ({
+      ...DEFAULT_GROUP_DRAFT,
+      name: 'G',
+      habitIds: ['a', 'b'],
+      ...overrides,
+    });
+
+    await expect(
+      updateHabitGroup('nope', edit(), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+    await expect(
+      updateHabitGroup('g', edit({ name: ' ' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
+    await expect(
+      updateHabitGroup('g', edit({ habitIds: ['a', 'gone'] }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitGroupError);
   });
 
   it('updates the fields and members and keeps the log', async () => {

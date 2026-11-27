@@ -1,6 +1,8 @@
 # Feature: Design the list view screen
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
+
+Later additions: banners and group cards open the habit or group page and show its five rating stars bottom-left (`../release-1-readiness/habit-group-detail-page.md`, decisions 1 and 8; `../../style-choices/habits-section/coloring-rules.md`).
 
 ## Goal
 The List View screen follows the design as shown in ![04 - Habits - List View.png](../../screens/habits-section/04%20-%20Habits%20-%20List%20View.png)
@@ -61,15 +63,15 @@ Drink Water (Checkmark, no group) has a 4-day streak ending today and is the las
 - Seed: Drink Water has a 4-day streak, has no group and is last by `sortOrder`.
 
 ## Acceptance criteria
-- [ ] List view is shown by default
-- [ ] The list toggle shows the list view and the grid toggle returns to group view
-- [ ] List rows match screen 04, with round checks for Checkmark habits and a progress bar for Hours habits
-- [ ] The streak sits at the right end of the title line on list-view banners, and next to the name on pills
-- [ ] Habit banners and group cards show their cadence label in the bottom-right corner
-- [ ] Marked habits in list view show the orange border, orange background and orange number, like a complete group banner, with a white title
-- [ ] An unmarked habit with an active streak shows a grey streak number in both views
-- [ ] Drink Water is last with a streak of 4 and no group name
-- [ ] Tapping a Checkmark row marks or unmarks it, and tapping an Hours row opens the Hours Entry Modal
+- [x] List view is shown by default *(now the Display settings default, `../release-1-readiness/display-settings.md`)*
+- [x] The list toggle shows the list view and the grid toggle returns to group view
+- [x] List rows match screen 04, with round checks for Checkmark habits and a progress bar for Hours habits
+- [x] The streak sits at the right end of the title line on list-view banners, and next to the name on pills
+- [x] Habit banners and group cards show their cadence label in the bottom-right corner
+- [x] Marked habits in list view show the orange border, orange background and orange number, like a complete group banner, with a white title
+- [x] An unmarked habit with an active streak shows a grey streak number in both views
+- [x] ~~Drink Water is last with a streak of 4 and no group name~~ *(changed later: seed data changed since)*
+- [x] ~~Tapping a Checkmark row marks or unmarks it, and tapping an Hours row opens the Hours Entry Modal~~ *(changed later: only the check or the Hours bar marks; the rest opens the habit's page, `../release-1-readiness/usability-fixes.md` and `habit-group-detail-page.md`)*
 
 ## Open questions
 None.

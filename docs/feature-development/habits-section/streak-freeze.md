@@ -1,6 +1,6 @@
 # Feature: Streak freeze should be applicable as per configuration for both habits and groups
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 User should be able to configure a streak freeze for both habits and groups.
@@ -84,12 +84,12 @@ Day offsets are relative to today (0 = today). The freezes are used by `applyStr
 - Seed: every fixture state above.
 
 ## Acceptance criteria
-- [ ] Habits and groups store their freeze interval and freeze state
-- [ ] Freezes are earned in blocks of N that don't overlap, and kept after a break
-- [ ] A freeze is used on the first day a streak would break and keeps the streak without adding to it
-- [ ] On that day the habit or group is icy blue with a Snowflake icon and an icy bar, and banners show "n freezes left" at the bottom centre
-- [ ] Marking a frozen habit turns it orange
-- [ ] The seeded fixtures show frozen Checkmark and Hours habits, a frozen Checkmark group and Hours group, a frozen Week habit, and a habit with freezes held but not needed
+- [x] Habits and groups store their freeze interval and freeze state
+- [x] Freezes are earned in blocks of N that don't overlap, and kept after a break
+- [x] A freeze is used on the first day a streak would break and keeps the streak without adding to it
+- [x] On that day the habit or group is icy blue with a Snowflake icon and an icy bar, and banners show "n freezes left" at the bottom centre
+- [x] Marking a frozen habit turns it orange
+- [x] The seeded fixtures show frozen Checkmark and Hours habits, a frozen Checkmark group and Hours group, a frozen Week habit, and a habit with freezes held but not needed
 
 ## Decision pending
 None. Icy blue color, text placement and ice icon: decisions 6-8.

@@ -493,6 +493,12 @@ describe('createHabit', () => {
     ).rejects.toBeInstanceOf(InvalidHabitError);
   });
 
+  it('rejects a group that no longer exists', async () => {
+    await expect(
+      createHabit(draft({ groupId: 'gone' }), TODAY),
+    ).rejects.toBeInstanceOf(InvalidHabitError);
+  });
+
   it('rejects a group the habit type cannot join', async () => {
     await saveHabitGroups({ g: group({ groupType: 'Hours', targetHours: 1 }) });
 

@@ -14,7 +14,7 @@ Work them in this order. Within a step, any order.
 | 4. Release config and cleanup | `release-build-config.md` | done in the code (Play Console steps outside) |
 | | `tech-debt-cleanup.md` | done |
 | 5. Features | `bottom-tab-navigation.md` | done |
-| | `profile-tab.md` | in progress (menu and About done; About links not wired) |
+| | `profile-tab.md` | done in app; About links wait for the privacy and deletion pages (step 6) |
 | | `display-settings.md` | done (week start shown since the detail page) |
 | | `how-to-use.md` | done |
 | | `support-the-developer.md` | done in app; Play Console products and test purchase pending |

@@ -28,5 +28,5 @@ Fix the defect and the tap-target issues found while testing v2.
 
 ## Acceptance criteria
 - [ ] Coming back to the group form from Create Habit doesn't show the keyboard (**not done: parked, not reproducible**)
-- [ ] Scrolling or tapping a banner's name never marks a habit
-- [ ] The group status icon can't be mistaken for a checkbox
+- [x] Scrolling or tapping a banner's name never marks a habit
+- [x] The group status icon can't be mistaken for a checkbox

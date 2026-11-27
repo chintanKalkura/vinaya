@@ -28,7 +28,7 @@ Remove dead v1 code, stop flaky tests, and make the docs Claude Code reads first
 - Coverage stays at or above 80% on business logic after removals.
 
 ## Acceptance criteria
-- [ ] No flaky test in 20 consecutive runs
-- [ ] No exported function throws "not implemented"
-- [ ] `architecture.md` and `app-context.md` describe the current code
-- [ ] `HabitsScreen.tsx` mounts only the form that is open
+- [x] No flaky test in 20 consecutive runs *(the owner ran the suite repeatedly hunting for flakiness and found none, 27 Nov 2026)*
+- [x] No exported function throws "not implemented"
+- [x] `architecture.md` and `app-context.md` describe the current code
+- [x] `HabitsScreen.tsx` mounts only the form that is open *(the forms now live in `src/screens/habits/HabitsData.tsx`, same rule)*

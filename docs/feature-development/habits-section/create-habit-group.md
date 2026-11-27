@@ -1,6 +1,6 @@
 # Feature: Create habit group.
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 user should be able to create a habit group and configure it with all possible vlaues.
@@ -90,9 +90,9 @@ user should be able to create a habit group and configure it with all possible v
 - Seed: Read Fiction in two groups.
 
 ## Acceptance criteria
-- [ ] "New Habit Group" opens the group form, and back returns to the Choice sheet
-- [ ] Groups can be created for every cadence and type, with the defaults and limits in decision 3
-- [ ] The Assign and Required sheets work as on screens 12 and 14, applying on Done
-- [ ] A habit can be in several groups, and list view shows all their names
-- [ ] Create Habit on the group form returns with the new habit assigned
-- [ ] "+ Create Group" on the habit form creates the habit and its new group together
+- [x] "New Habit Group" opens the group form, and back returns to the Choice sheet
+- [x] Groups can be created for every cadence and type, with the defaults and limits in decision 3
+- [x] The Assign and Required sheets work as on screens 12 and 14, applying on Done
+- [x] A habit can be in several groups, and list view shows all their names
+- [x] Create Habit on the group form returns with the new habit assigned
+- [x] "+ Create Group" on the habit form creates the habit and its new group together

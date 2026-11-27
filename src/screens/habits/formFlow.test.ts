@@ -62,6 +62,37 @@ describe('formFlowReducer', () => {
     ]);
   });
 
+  // Back from a stacked form returns to the form under it, unchanged
+  it('should close a stacked form and keep the form under it', () => {
+    const groupOverHabit = run(
+      { type: 'openChoice' },
+      { type: 'chooseHabit' },
+      { type: 'openGroupForHabit', habit: { name: 'Run', type: 'Checkmark' } },
+      { type: 'closeGroupForHabit' },
+    );
+    const habitOverGroup = run(
+      { type: 'editGroup', groupId: 'g' },
+      { type: 'openHabitForGroup' },
+      { type: 'closeHabitForGroup' },
+    );
+
+    expect([
+      groupOverHabit.base,
+      groupOverHabit.groupForHabit,
+      groupOverHabit.pendingGroupDraft,
+      habitOverGroup.base,
+      habitOverGroup.habitForGroup,
+      habitOverGroup.groupNewHabitId,
+    ]).toEqual([
+      { kind: 'newHabit' },
+      null,
+      null,
+      { kind: 'editGroup', groupId: 'g' },
+      false,
+      undefined,
+    ]);
+  });
+
   it('should close everything when the flow finishes', () => {
     expect(
       run(

@@ -1,6 +1,6 @@
 # Feature: Mark a habit as done
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
 
 ## Goal
 A user can mark a habit as done from the Habits screen. A marked habit shows in the active colour (orange) with its current streak visible. Visual details follow the screens (see Visual reference).
@@ -51,15 +51,15 @@ Today = D. "Marked" lists the days with a mark.
 | D-1, D-2, then D marked and unmarked | no | 2 | grey | orange |
 
 ## Acceptance criteria
-- [ ] Tapping an unmarked Day habit on screen 01 marks it: habit turns orange, streak updates
-- [ ] Tapping it again unmarks it and returns to the previous state
-- [ ] Same on screen 04
-- [ ] Marking on one screen is reflected on the other
-- [ ] After restarting the app, marks and streaks are unchanged
-- [ ] Every row of the streak test table passes
-- [ ] Past days cannot be marked or unmarked from the Habits screen
-- [ ] No mark is written for a habit that is not Day-cadence Checkmark type
-- [ ] The visuals match screens 01 and 04
+- [x] Tapping an unmarked Day habit on screen 01 marks it: habit turns orange, streak updates
+- [x] Tapping it again unmarks it and returns to the previous state
+- [x] Same on screen 04
+- [x] Marking on one screen is reflected on the other
+- [x] After restarting the app, marks and streaks are unchanged
+- [x] Every row of the streak test table passes
+- [x] Past days cannot be marked or unmarked from the Habits screen
+- [x] ~~No mark is written for a habit that is not Day-cadence Checkmark type~~ *(changed later: every cadence can be marked, `week-month-year-cadence.md`; Hours habits log hours)*
+- [x] ~~The visuals match screens 01 and 04~~ *(changed later: the style docs now define the look)*
 
 ## Open questions
 None.

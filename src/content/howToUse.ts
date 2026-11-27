@@ -75,7 +75,7 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     key: 'page',
     title: "A habit's page",
-    body: 'Tap a habit or a group to open its page, with its streaks, completion rate and history.',
+    body: 'Tap a habit or a group to open its page, with its rating, streaks, completion rate and history.',
   },
   {
     key: 'edit',

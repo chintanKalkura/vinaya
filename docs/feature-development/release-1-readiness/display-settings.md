@@ -11,7 +11,7 @@ Users can choose which view the Habits screen opens in, light or dark theme, and
 - Week start day: Monday (default) or Sunday.
 
 ## Decisions
-1. **Where.** In the Profile tab (`profile-tab.md`), layout to be designed.
+1. **Where.** Profile → Display settings, its own screen (`profile-tab.md`, `../../style-choices/profile/display-settings.md`).
 2. **Storage.** A `settings_v2` AsyncStorage key holding `{ defaultView: 'list' | 'group', theme: 'dark' | 'light' | 'system', weekStart: 'monday' | 'sunday' }`, written through the storage write queue and included in backups (`google-drive-backup.md`).
 3. **Default view.** List (current behaviour) unless changed. Applies immediately (owner, 25 Nov 2026): the Habits screen switches to it when it's changed; the header toggle still switches views for the session.
 4. **Theme.**
@@ -28,7 +28,7 @@ Users can choose which view the Habits screen opens in, light or dark theme, and
 ## Tests
 - Settings load with defaults when missing; save and reload; included in the backup payload.
 - Habits screen opens in the saved default view.
-- Theme context switches palettes; components render with the light palette once it exists.
+- Theme context switches palettes; components render with the light palette.
 - Contrast test runs for both palettes.
 
 ## Acceptance criteria

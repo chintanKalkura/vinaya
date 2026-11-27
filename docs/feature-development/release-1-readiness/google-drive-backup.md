@@ -66,8 +66,8 @@ Users who sign in with Google get a weekly backup of their habits to their own G
 - Profile: not-signed-in disclaimer; last backup time; error shown.
 
 ## Acceptance criteria
-- [ ] The app works fully without signing in, and says backup and moving phones need sign-in
-- [ ] Signed in, a backup happens within a day of being 7 days old, and "Back up now" works
-- [ ] Signing in on a new phone brings back all habits, groups, logs and streaks
-- [ ] Restoring onto a phone with data keeps the phone's changes and doesn't bring back deleted items
-- [ ] "Delete backup and sign out" removes the backup from Drive; a web page explains how to do it without the app
+- [x] The app works fully without signing in, and says backup and moving phones need sign-in
+- [ ] Signed in, a backup happens within a day of being 7 days old, and "Back up now" works *(check on a real phone)*
+- [ ] Signing in on a new phone brings back all habits, groups, logs and streaks *(check on a real phone)*
+- [x] Restoring onto a phone with data keeps the phone's changes and doesn't bring back deleted items *(covered by the merge tests)*
+- [ ] "Delete backup and sign out" removes the backup from Drive; a web page explains how to do it without the app *(check on a real phone)*

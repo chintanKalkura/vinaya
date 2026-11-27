@@ -1,6 +1,8 @@
 # Feature: Design the group view screen
 
-Status: ready for planning.
+Status: done. The acceptance list is the build checklist of its time: ticked items still hold, and struck items were changed by later specs (noted).
+
+Later additions: banners and group cards open the habit or group page and show its five rating stars bottom-left (`../release-1-readiness/habit-group-detail-page.md`, decisions 1 and 8; `../../style-choices/habits-section/coloring-rules.md`).
 
 ## Goal
 The Group View screen follows the design as shown in ![01 - Habits - Group view.png](../../screens/habits-section/01%20-%20Habits%20-%20Group%20view.png).
@@ -57,17 +59,17 @@ The dev fixtures are changed so that the screen matches the PNG and both banner 
 - Banner placeholder numbers: 12 for 8 Precepts, 0 for Eat Healthy.
 
 ## Acceptance criteria
-- [ ] The screen matches the Group View PNG for 8 Precepts and Eat Healthy
-- [ ] The cadence header shows four values and pressing them changes nothing
-- [ ] The view toggle and sort button show the screen's icons and pressing them changes nothing
-- [ ] 8 Precepts is orange and Eat Healthy is grey
-- [ ] A group's colour follows rule 14 (e.g. unmarking a required habit turns 8 Precepts grey; marking Cook turns Eat Healthy orange)
-- [ ] Habits without a group are not shown
-- [ ] Required pills appear only on the habits marked required
-- [ ] Round selectors appear for the Required group, square for Any/All groups
-- [ ] The FAB and the four-item bottom menu are shown, and pressing them changes nothing
-- [ ] Stay Productive does not appear
-- [ ] Marking a habit still works as specified in mark-habit
+- [x] ~~The screen matches the Group View PNG for 8 Precepts and Eat Healthy~~ *(changed later: the style docs in `../../style-choices/habits-section/` now define the look)*
+- [x] ~~The cadence header shows four values and pressing them changes nothing~~ *(changed later: one cadence dropdown that filters, `week-month-year-cadence.md`)*
+- [x] ~~The view toggle and sort button show the screen's icons and pressing them changes nothing~~ *(changed later: both work, `habits-list-view.md` and `sort-filter-delete-habit.md`)*
+- [x] ~~8 Precepts is orange and Eat Healthy is grey~~ *(changed later: seed data changed since)*
+- [x] A group's colour follows rule 14 (e.g. unmarking a required habit turns 8 Precepts grey; marking Cook turns Eat Healthy orange)
+- [x] Habits without a group are not shown
+- [x] Required pills appear only on the habits marked required
+- [x] ~~Round selectors appear for the Required group, square for Any/All groups~~ *(changed later: a solid status shape, round for Required and All, square for Any, `../../style-choices/habits-section/tap-targets.md`)*
+- [x] ~~The FAB and the four-item bottom menu are shown, and pressing them changes nothing~~ *(changed later: the + opens the Choice sheet and the menu is the tab bar, `../release-1-readiness/bottom-tab-navigation.md`)*
+- [x] ~~Stay Productive does not appear~~ *(changed later: Hours groups are shown, `habit-and-group-type-hours.md`)*
+- [x] Marking a habit still works as specified in mark-habit
 
 ## Open questions
 None.

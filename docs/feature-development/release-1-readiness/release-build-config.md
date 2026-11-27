@@ -30,6 +30,6 @@ The project builds a signed Android App Bundle that Google Play accepts, with no
 
 ## Acceptance criteria
 - [ ] A signed release AAB builds from a clean checkout with the upload key configured locally
-- [ ] No keystore or password is committed
-- [ ] The merged release manifest has only permissions v2 uses
-- [ ] The v1 countdown widget is no longer offered on the home screen
+- [x] No keystore or password is committed
+- [x] The merged release manifest has only permissions v2 uses
+- [x] The v1 countdown widget is no longer offered on the home screen
