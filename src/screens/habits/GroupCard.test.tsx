@@ -551,7 +551,7 @@ describe('GroupCard status icon and label', () => {
     expect(
       renderGroup({ groupType: 'Any' }).getByTestId('group-header-group-1')
         .props.accessibilityLabel,
-    ).toBe('Fitness, Any group, not complete, 0 day streak');
+    ).toBe('Fitness, Any group, not complete, 0 day streak, 0 of 5 stars');
   });
 });
 

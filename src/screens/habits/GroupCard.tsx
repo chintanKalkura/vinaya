@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Habit } from '../../types/habit';
 import { HabitGroup } from '../../types/habitGroup';
 import { ChartNoAxesColumnIncreasing, Snowflake } from 'lucide-react-native';
-import { Palette } from '../../theme';
+import { Palette, completionColour } from '../../theme';
 import { usePalette, useThemedStyles } from '../../theming';
 import { getGroupStatus } from '../../services/habitGroupService';
 import { getHoursToday } from '../../utils/hours';
@@ -18,6 +18,8 @@ import BannerMenu, {
   bannerMenuTargetStyle,
 } from './BannerMenu';
 import { groupLabel } from './a11yLabels';
+import { ratingOf } from '../../utils/rating';
+import { StarRow } from '../detail/RatingStars';
 
 interface GroupCardProps {
   group: HabitGroup;
@@ -69,6 +71,11 @@ export default function GroupCard({
   // the card opens the group's page (habit-group-detail-page.md). TalkBack
   // reaches it through the header.
   const open = onOpen ? () => onOpen(group.id) : undefined;
+  // The rating bottom-left, grey until the group is complete today
+  const stars = useMemo(
+    () => ratingOf(group, todayKey).stars,
+    [group, todayKey],
+  );
   return (
     <Pressable
       testID={`group-card-${group.id}`}
@@ -93,13 +100,13 @@ export default function GroupCard({
           accessibilityHint={open ? 'Opens the group page' : undefined}
           disabled={!open}
           onPress={open}
-          accessibilityLabel={groupLabel(
+          accessibilityLabel={`${groupLabel(
             group.name,
             group.groupType,
             status.complete,
             status.streak,
             { frozen: scheme.frozen, freezesLeft: status.freezesLeft },
-          )}
+          )}, ${stars} of 5 stars`}
           style={styles.headerInfo}
         >
           {scheme.iconFrozen ? (
@@ -212,6 +219,22 @@ export default function GroupCard({
           testID={`group-freeze-${group.id}`}
         />
       ) : null}
+      <View
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        style={styles.stars}
+      >
+        <StarRow
+          stars={stars}
+          color={
+            status.complete
+              ? completionColour(colors, group.colour).accent
+              : colors.v2GreyText
+          }
+          size={12}
+          testID={`group-stars-${group.id}`}
+        />
+      </View>
       <CadenceLabel
         cadence={group.cadence}
         testID={`group-cadence-${group.id}`}
@@ -289,6 +312,11 @@ const makeStyles = (colors: Palette) =>
     },
     hoursProgress: {
       marginBottom: 12,
+    },
+    stars: {
+      position: 'absolute',
+      left: 14,
+      bottom: 8,
     },
     hoursGrid: {
       flexDirection: 'row',
